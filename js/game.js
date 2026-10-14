@@ -183,7 +183,7 @@
       UI.eqMessage(opts.prompt || 'Your turn!', 'Tap <b>Roll!</b> to throw both dice.');
       if (narrate) VO.say('your_turn');
       UI.enable($('btn-roll'), true);
-      UI.rollReady(true, n => { if (narrate && n === 2) VO.say('your_turn'); });
+      UI.rollReady(true, n => { if (narrate && n === 2) VO.say('nudge'); });
       t.el.classList.add('awaiting');
       await guard(new Promise(r => { G.rollResolver = r; }));
       opts.onRoll && opts.onRoll();

@@ -472,7 +472,6 @@ body[data-screen="intro"] #screen-game, body[data-screen="start"] #screen-game {
   border: 9px solid var(--violet); color: var(--paper-ink);
   background: #fbefd2 url(../assets/textures/paper-grain.png) center / 300px repeat;
   box-shadow: inset 0 0 0 5px var(--gold), 0 0 0 5px #24104f, 0 30px 60px rgba(5, 15, 40, .55);
-  will-change: transform, opacity;
 }
 #hero-card[data-kind="minus"], #hero-card[data-kind="snake"] { border-color: #1c4fb8; }
 #hero-card[data-kind="ladder"] { border-color: #e07a12; }

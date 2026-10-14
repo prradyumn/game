@@ -50,7 +50,10 @@ The first time you press **Play**, a coach walks you through four real scripted 
 ## Voiceover
 - All lines live in `js/voice-lines.js`: numbers −56…+56 spoken as "negative three" / "positive four", the equation words, and the tutorial script.
 - Without clips, the game speaks with the browser's built-in voice.
-- To make the Gemini voice: open `tools/voice-generator.html` in Chrome or Edge, paste your key, press **Choose the game folder & generate**, then pick this `game` folder. The page writes `audio/voice/*.wav` and `audio/voice/voice-manifest.js`. Reload the game to hear them. The key is never saved to disk.
+- The shipped clips (`audio/voice/*.mp3`) were made with `gemini-2.5-pro-preview-tts`, voice **Puck**, directed as a friendly explorer guide (numbers and the words "plus" and "equals" are read evenly so they splice into equations).
+- To regenerate from the command line: `GEMINI_API_KEY=... node tools/generate-voice.js` (`--force` remakes everything, `--only id,id` remakes chosen lines, `--voice` and `--model` override). It needs ffmpeg. Keep the key in the environment and never commit it.
+- Use a TTS model that follows spoken style direction. `gemini-3.8-flash-tts` reads the direction (and `[tags]`) aloud, so it isn't suitable.
+- Browser alternative: open `tools/voice-generator.html` in Chrome or Edge, paste your key, press **Choose the game folder & generate**, then pick this `game` folder.
 
 ## Sound effects to add later
 `audio/` names expected: click, dice-roll, dice-land, hop, splash, ladder, snake, win, lose, turn, music-loop (.mp3).
