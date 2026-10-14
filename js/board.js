@@ -348,7 +348,7 @@
       s.headEl = wrap; s.headImg = img;
       // value tag on the body
       const tk = `snakes/${s.kind}/value-tag`;
-      const tw = 72, th = A.hForW(tk, tw);
+      const tw = 84, th = A.hForW(tk, tw);
       const p = along(s.pts, 0.5);
       const tag = document.createElement('div');
       tag.className = 'value-tag snake-tag';
@@ -360,7 +360,7 @@
       const e = ladderEnds(l);
       const mx = (e.cb.x + e.ct.x) / 2, my = (e.cb.y + e.ct.y) / 2;
       const tk = l.from < 0 ? 'ladders/wet/value-tag' : 'ladders/dry/value-tag';
-      const tw = l.from < 0 ? 64 : 54, th = A.hForW(tk, tw);
+      const tw = l.from < 0 ? 74 : 62, th = A.hForW(tk, tw);
       const tag = document.createElement('div');
       tag.className = 'value-tag ladder-tag' + (l.from < 0 ? ' wet' : ' dry');
       place(tag, mx - tw / 2, my - th / 2, tw, th);

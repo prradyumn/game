@@ -30,6 +30,17 @@ Open `index.html` in Chrome/Edge/Safari (double-click works; no server needed).
 - `?debug` – show every token anchor and HUD rectangle
 - Console: `ISL.game.force([1,6],[-1,3])` queues dice results; `ISL.board.validate()` checks the board layout.
 
+## Move cinematic
+After the dice land, the camera (`js/cinema.js`) zooms in on the token and follows each hop.
+Every hop plays a note that climbs for + moves and falls for − moves, and a running count (+1, +2, …) pops over the token.
+Then the big equation card dolly-zooms in (the card pushes in while the scene pulls back), reveals the answer, and docks into the equation panel.
+Snake and ladder rides get the same treatment. With *reduce motion* turned on, the camera stays still and the card just fades.
+
+## Controls feedback
+- Roll glows and breathes while it's your move. After 3.5 s idle it nudges: a wiggle, the dice hop, a bouncing arrow and a soft chime (repeats every 5 s).
+- The token whose turn it is gets a glowing ring, plus a bobbing marker while waiting to roll. The active player card glows.
+- **Space** always rolls. **Enter** rolls unless another button has focus. **Esc** pauses, or closes the help sheet if it's open.
+
 ## Opening cinematic
 Every load opens with a ~7 s intro: you rise from the deep sea, a ladder bursts out of the water, snakes appear, the title slams in, both explorers land on the jetty, and an integer ticker counts −50 → +50. Then an SVG wave sweeps you to the start screen. **Skip ›** (or `?nointro`) jumps past it. Code: `js/intro.js`.
 

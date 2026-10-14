@@ -65,13 +65,13 @@
 
         <!-- Number line -->
         <div id="numberline" class="abs">
-          <div id="nl-title">Number line</div>
           <div id="nl-track">
             <img id="nl-plank" class="fill" src="assets/number-line/pieces/panel.png" alt="">
             <div id="nl-ticks"></div>
             <div id="nl-arcs"></div>
             <div id="nl-markers"></div>
           </div>
+          <div id="nl-title">Number line</div>
         </div>
 
         <!-- Equation panel -->
@@ -110,23 +110,39 @@
         <button id="btn-roll" class="big-btn abs" aria-label="Roll the dice">
           <img class="fill btn-bg" src="assets/ui/buttons/large-idle.png" alt="">
           <span class="btn-label">Roll!</span>
+          <span class="key-hint">or press <kbd>Space</kbd></span>
         </button>
-
-        <div id="toast" class="abs" aria-live="polite"></div>
-
-        <!-- Live tutorial coach -->
-        <div id="spotlight" class="abs" aria-hidden="true"></div>
-        <div id="coach" class="abs" role="dialog" aria-label="Tutorial">
-          <div id="coach-card" class="fill">
-            <img id="coach-pose" src="assets/tokens/student-poses/wave.png" alt="">
-            <div id="coach-step"></div>
-            <div id="coach-text" aria-live="polite"></div>
-            <div id="coach-hint">Tap <b>Roll!</b></div>
-            <button id="coach-next" class="mid-btn"><img class="fill btn-bg" src="assets/ui/buttons/medium-idle.png" alt=""><span class="btn-label">Next</span></button>
-            <button id="coach-skip" type="button">Skip tutorial ›</button>
-          </div>
+        <div id="roll-nudge" class="abs" aria-hidden="true">
+          <svg viewBox="0 0 60 70"><path d="M19 5h22v27h13L30 64 6 32h13z" fill="#ffd34d" stroke="#2b0f63" stroke-width="5" stroke-linejoin="round"/><path d="M24 10h6v24" fill="none" stroke="#fff6c8" stroke-width="4" stroke-linecap="round" opacity=".8"/></svg>
         </div>
+
       </section>
+
+      <!-- ============ STAGE OVERLAYS (stay fixed while the game camera zooms) ============ -->
+      <div id="toast" class="abs" aria-live="polite"></div>
+
+      <!-- Big equation reveal: dolly-zooms in over the board, then docks into the equation panel -->
+      <div id="eq-hero" class="fill" aria-live="polite">
+        <div id="hero-scrim" class="fill"></div>
+        <div id="hero-card">
+          <div id="hero-cap"></div>
+          <div id="hero-line"></div>
+          <div id="hero-sub"></div>
+        </div>
+      </div>
+
+      <!-- Live tutorial coach -->
+      <div id="spotlight" class="abs" aria-hidden="true"></div>
+      <div id="coach" class="abs" role="dialog" aria-label="Tutorial">
+        <div id="coach-card" class="fill">
+          <img id="coach-pose" src="assets/tokens/student-poses/wave.png" alt="">
+          <div id="coach-step"></div>
+          <div id="coach-text" aria-live="polite"></div>
+          <div id="coach-hint">Tap <b>Roll!</b></div>
+          <button id="coach-next" class="mid-btn"><img class="fill btn-bg" src="assets/ui/buttons/medium-idle.png" alt=""><span class="btn-label">Next</span></button>
+          <button id="coach-skip" type="button">Skip tutorial ›</button>
+        </div>
+      </div>
 
       <!-- ============ START SCREEN ============ -->
       <section id="screen-start" class="screen overlay-screen">
@@ -235,6 +251,7 @@
   <script src="js/fx.js"></script>
   <script src="js/board.js"></script>
   <script src="js/ui.js"></script>
+  <script src="js/cinema.js"></script>
   <script src="js/game.js"></script>
   <script src="js/tutorial.js"></script>
   <script src="js/intro.js"></script>

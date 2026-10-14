@@ -57,6 +57,7 @@
   }
   function openHowto() { setSlide(0); show('screen-howto', true); pauseGame(true, false); }
   function closeHowto() { show('screen-howto', false); pauseGame(false, false); }
+  const howtoOpen = () => $('screen-howto').classList.contains('open');
 
   /* ---------- pause ---------- */
   let paused = false;
@@ -64,6 +65,8 @@
     if (document.body.dataset.screen !== 'game') return;
     paused = on;
     on ? gsap.globalTimeline.pause() : gsap.globalTimeline.resume();
+    on ? ISL.voice.pause() : ISL.voice.resume();
+    document.body.toggleAttribute('data-paused', on);
     if (showMenu) show('screen-pause', on);
   }
 
@@ -83,9 +86,10 @@
   function hideWin() { $('screen-win').classList.remove('open'); $('confetti').innerHTML = ''; gsap.killTweensOf('#win-rays'); }
 
   function goHome() {
-    if (ISL.tutorial.active) ISL.tutorial.finish(false);
-    hideWin(); show('screen-pause', false); paused = false;
-    gsap.globalTimeline.resume();
+    if (ISL.tutorial.active) ISL.tutorial.finish(false, false);   // left early: offer it again next time
+    hideWin(); show('screen-pause', false); show('screen-howto', false); paused = false;
+    document.body.removeAttribute('data-paused');
+    gsap.globalTimeline.resume(); ISL.voice.resume();
     ISL.game.reset();
     openStart();
   }
@@ -145,7 +149,11 @@
       ISL.voice.setEnabled(on);
       $('btn-sound').querySelector('img:not(.btn-bg)').src = A.url(on ? 'ui/icons/sound-on' : 'ui/icons/sound-off');
     });
-    window.addEventListener('keydown', e => { if (e.code === 'Escape' && document.body.dataset.screen === 'game') pauseGame(!paused); });
+    window.addEventListener('keydown', e => {
+      if (e.code !== 'Escape' || document.body.dataset.screen !== 'game') return;
+      if (howtoOpen()) closeHowto();           // Esc closes the help sheet instead of un-pausing underneath it
+      else pauseGame(!paused);
+    });
 
     gsap.to('#loader', { opacity: 0, duration: 0.4, onComplete: () => $('loader').remove() });
     if (params.has('fast')) gsap.globalTimeline.timeScale(+params.get('fast') || 4);

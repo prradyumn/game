@@ -81,6 +81,15 @@
       chain = Promise.resolve();
     },
     setEnabled(on) { enabled = on; if (!on) VO.stop(); },
+    /** Freeze narration with the game (pause menu / help sheet). */
+    pause() {
+      if (current) { try { current.pause(); } catch (e) {} }
+      if ('speechSynthesis' in window) speechSynthesis.pause();
+    },
+    resume() {
+      if (current) current.play().catch(() => {});
+      if ('speechSynthesis' in window) speechSynthesis.resume();
+    },
     get enabled() { return enabled; },
     hasClips() { return Object.keys(clips()).length > 0; },
     init() {

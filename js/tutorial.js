@@ -116,10 +116,10 @@
         if (e !== game.ABORT) console.error(e);
       }
     },
-    finish(startGame) {
+    finish(startGame, markSeen = true) {
       this.active = false;
       delete document.body.dataset.tutorial;
-      try { localStorage.setItem(KEY, '1'); } catch (e) {}
+      if (markSeen) { try { localStorage.setItem(KEY, '1'); } catch (e) {} }
       ISL.game.G.forced = [];
       VO.stop();
       spot(null);

@@ -204,10 +204,43 @@
         $('roll-chip-text').textContent = fmt(v);
       }, null, 1.0);
       tl.fromTo(chip, { scale: 0, opacity: 0, rotation: -30 }, { scale: 1, opacity: 1, rotation: 0, duration: 0.45, ease: 'back.out(2.6)' }, 1.0);
-      tl.call(() => {
-        const r = $('tray').getBoundingClientRect(); // fx in board space not needed; sparkle on chip
-      }, null, 1.1);
     });
+  }
+
+  /* ---------- roll affordance ----------
+     While the student is due to roll: Roll glows + breathes and the dice sit up.
+     If nothing happens for a few seconds, escalate to a nudge (wiggle, dice hop, bouncing
+     arrow, soft chime) and repeat every few seconds until they roll. */
+  let nudgeCall = null;
+  function rollReady(on, onNudge) {
+    const btn = $('btn-roll');
+    btn.classList.toggle('ready', on);
+    $('tray').classList.toggle('ready', on);
+    $('roll-nudge').classList.remove('on');
+    if (nudgeCall) { nudgeCall.kill(); nudgeCall = null; }
+    gsap.killTweensOf(btn, 'scale,rotation');
+    gsap.killTweensOf(['#die-sign', '#die-num'], 'y');
+    gsap.set(btn, { scale: 1, rotation: 0 });
+    gsap.set(['#die-sign', '#die-num'], { y: 0 });
+    btn.querySelector('.btn-label').textContent = on || ISL.game.G.turn === 'student' ? 'Roll!' : 'Wait…';
+    if (!on) return;
+    gsap.to(btn, { scale: 1.05, duration: 0.6, yoyo: true, repeat: -1, ease: 'sine.inOut' });
+    let count = 0;
+    const schedule = d => { nudgeCall = gsap.delayedCall(d, () => { count++; nudge(); onNudge && onNudge(count); schedule(5); }); };
+    schedule(3.5);
+  }
+  function nudge() {
+    const btn = $('btn-roll');
+    gsap.fromTo(btn, { rotation: 0 }, { keyframes: { rotation: [0, -7, 7, -5, 4, -2, 0] }, duration: 0.6, ease: 'none' });
+    gsap.fromTo(['#die-sign', '#die-num'], { y: 0 }, { y: -20, duration: 0.16, yoyo: true, repeat: 1, stagger: 0.08, ease: 'power2.out' });
+    const arrow = $('roll-nudge');
+    arrow.classList.remove('on'); void arrow.offsetWidth; arrow.classList.add('on');
+    ISL.audio.play('nudge');
+  }
+  /** Brief gold glow on the equation panel when its answer lands. */
+  function flashPanel() {
+    const el = $('equation');
+    el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
   }
 
   /* ---------- toast ---------- */
@@ -224,7 +257,7 @@
   ISL.ui = {
     initButtons, enable, setBtnState, setTurn, setCardPos,
     nlShow, nlArc, nlStep, nlBuild,
-    showEquation, revealResult, eqMessage, eqPanel,
-    rollDice, setFace, toast, wait
+    showEquation, revealResult, eqMessage, eqPanel, flashPanel,
+    rollDice, setFace, toast, wait, rollReady
   };
 })(window.ISL);

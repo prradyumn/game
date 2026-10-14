@@ -8,35 +8,39 @@
 
   const STAGES = { land: { w: 1920, h: 1080 }, port: { w: 1080, h: 1920 } };
 
+  // Landscape: the board takes the whole height; HUD columns hug it on either side
+  // (the left gap leaves room for the zero jetty, which sits just outside the board).
   function tables() {
     return {
       land: {
-        'logo-small':    { x: 40,   y: 18,  w: 300, h: ar('ui/logo/wordmark-dark', 300) },
-        'topbar':        { x: 1592, y: 30,  w: 288, h: 84 },
-        'turn-banner':   { x: 40,   y: 180, w: 360, h: ar('ui/panels/turn-student', 360) },
-        'card-student':  { x: 40,   y: 384, w: 360, h: ar('ui/panels/player-student-active', 360) },
-        'card-computer': { x: 40,   y: 594, w: 360, h: ar('ui/panels/player-computer-active', 360) },
-        'board-wrap':    { x: 506,  y: 62,  w: 960, h: 960 },
-        'numberline':    { x: 1482, y: 146, w: 420, h: 196 },
-        'equation':      { x: 1492, y: 352, w: 400, h: ar('ui/panels/answer-waiting', 400) },
-        'tray':          { x: 1527, y: 612, w: 330, h: ar('dice/sign-kit/tray', 330) },
-        'btn-roll':      { x: 1552, y: 904, w: 280, h: ar('ui/buttons/large-idle', 280) },
-        'toast':         { x: 506,  y: 497, w: 960, h: 90 },
-        'coach':         { x: 20,   y: 600, w: 446, h: 452 }
+        'logo-small':    { x: 36,   y: 16,  w: 300, h: ar('ui/logo/wordmark-dark', 300) },
+        'topbar':        { x: 1612, y: 28,  w: 288, h: 84 },
+        'turn-banner':   { x: 30,   y: 168, w: 350, h: ar('ui/panels/turn-student', 350) },
+        'card-student':  { x: 30,   y: 362, w: 350, h: ar('ui/panels/player-student-active', 350) },
+        'card-computer': { x: 30,   y: 566, w: 350, h: ar('ui/panels/player-computer-active', 350) },
+        'board-wrap':    { x: 486,  y: 40,  w: 1000, h: 1000 },
+        'numberline':    { x: 1516, y: 128, w: 388, h: 186 },
+        'equation':      { x: 1520, y: 322, w: 380, h: ar('ui/panels/answer-waiting', 380) },
+        'tray':          { x: 1550, y: 578, w: 320, h: ar('dice/sign-kit/tray', 320) },
+        'btn-roll':      { x: 1565, y: 866, w: 290, h: ar('ui/buttons/large-idle', 290) },
+        'roll-nudge':    { x: 1670, y: 770, w: 80,  h: 94 },
+        'toast':         { x: 486,  y: 495, w: 1000, h: 90 },
+        'coach':         { x: 16,   y: 586, w: 446, h: 464 }
       },
       port: {
         'logo-small':    { x: 30,   y: 22,  w: 270, h: ar('ui/logo/wordmark-dark', 270) },
         'topbar':        { x: 768,  y: 40,  w: 282, h: 82 },
-        'card-student':  { x: 24,   y: 152, w: 330, h: ar('ui/panels/player-student-active', 330) },
-        'turn-banner':   { x: 384,  y: 154, w: 312, h: ar('ui/panels/turn-student', 312) },
-        'card-computer': { x: 726,  y: 152, w: 330, h: ar('ui/panels/player-computer-active', 330) },
-        'board-wrap':    { x: 112,  y: 350, w: 950, h: 950 },
-        'numberline':    { x: 36,   y: 1334, w: 510, h: 200 },
-        'equation':      { x: 46,   y: 1566, w: 490, h: ar('ui/panels/answer-waiting', 490) },
-        'tray':          { x: 600,  y: 1370, w: 420, h: ar('dice/sign-kit/tray', 420) },
-        'btn-roll':      { x: 640,  y: 1730, w: 340, h: ar('ui/buttons/large-idle', 340) },
-        'toast':         { x: 112,  y: 780, w: 950, h: 90 },
-        'coach':         { x: 20,   y: 142, w: 1040, h: 204 }
+        'card-student':  { x: 24,   y: 150, w: 330, h: ar('ui/panels/player-student-active', 330) },
+        'turn-banner':   { x: 384,  y: 152, w: 312, h: ar('ui/panels/turn-student', 312) },
+        'card-computer': { x: 726,  y: 150, w: 330, h: ar('ui/panels/player-computer-active', 330) },
+        'board-wrap':    { x: 112,  y: 352, w: 930, h: 930 },
+        'numberline':    { x: 28,   y: 1318, w: 528, h: 230 },
+        'equation':      { x: 40,   y: 1560, w: 500, h: ar('ui/panels/answer-waiting', 500) },
+        'tray':          { x: 596,  y: 1316, w: 440, h: ar('dice/sign-kit/tray', 440) },
+        'btn-roll':      { x: 646,  y: 1708, w: 340, h: ar('ui/buttons/large-idle', 340) },
+        'roll-nudge':    { x: 776,  y: 1610, w: 80,  h: 94 },
+        'toast':         { x: 112,  y: 772, w: 930, h: 90 },
+        'coach':         { x: 20,   y: 140, w: 1040, h: 200 }
       }
     };
   }

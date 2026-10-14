@@ -62,6 +62,17 @@
       gsap.fromTo(el, { scale: 0 }, { scale: 1, duration: 0.2, ease: 'back.out(3)' });
       return el;
     },
+    /** Running step count (+1, +2, …) popping over the token on each hop. */
+    stepCount(x, y, v) {
+      const el = document.createElement('span');
+      el.className = 'fx step-pop ' + (v > 0 ? 'plus' : 'minus');
+      el.textContent = ISL.board.fmt(v);
+      boardFx().appendChild(el);
+      at(el, x, y);
+      gsap.timeline({ onComplete: () => el.remove() })
+        .fromTo(el, { scale: 0.3, opacity: 0 }, { scale: 1, opacity: 1, y: '-=26', duration: 0.22, ease: 'back.out(3)' })
+        .to(el, { y: '-=22', opacity: 0, duration: 0.45, ease: 'power1.in' }, 0.32);
+    },
     /** Target ring pulsing on the destination square. */
     target(who, x, y) {
       const el = document.getElementById('target-' + (who === 'student' ? 'coral' : 'violet'));

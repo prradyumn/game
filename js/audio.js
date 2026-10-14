@@ -8,6 +8,9 @@
     dice: 'audio/dice-roll.mp3',
     diceLand: 'audio/dice-land.mp3',
     hop: 'audio/hop.mp3',
+    land: 'audio/land.mp3',
+    whoosh: 'audio/whoosh.mp3',
+    reveal: 'audio/reveal.mp3',
     splash: 'audio/splash.mp3',
     ladder: 'audio/ladder.mp3',
     snake: 'audio/snake.mp3',
@@ -51,11 +54,40 @@
     const g = c.createGain(); g.gain.value = vol;
     s.connect(f).connect(g).connect(c.destination); s.start(t);
   }
+  /** Band-passed noise swept up or down: a soft camera whoosh. */
+  function whoosh(dur, up, vol = 0.07) {
+    const c = ac(); if (!c) return;
+    const t = c.currentTime;
+    const buf = c.createBuffer(1, Math.floor(c.sampleRate * dur), c.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    const s = c.createBufferSource(); s.buffer = buf;
+    const f = c.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 1.2;
+    f.frequency.setValueAtTime(up ? 280 : 1900, t);
+    f.frequency.exponentialRampToValueAtTime(up ? 1900 : 260, t + dur);
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + dur * 0.45);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    s.connect(f).connect(g).connect(c.destination); s.start(t);
+  }
+  // Hop notes climb a major pentatonic for + moves and fall for − moves, so counting is audible.
+  const HOP_NOTES = [392, 440, 494, 587, 659, 784, 880, 988, 1175, 1319, 1568];
+  function hopNote(o) {
+    const i = Math.max(0, (o.step || 1) - 1);
+    const k = o.dir < 0 ? Math.max(0, 8 - i) : Math.min(HOP_NOTES.length - 1, 2 + i);
+    return HOP_NOTES[k];
+  }
   const SYNTH = {
     click: () => tone(660, 0.07, 'triangle', 0.12),
     dice: () => { for (let i = 0; i < 7; i++) noise(0.04, 0.08, i * 0.09, 2500); },
     diceLand: () => { noise(0.06, 0.14, 0, 1200); tone(180, 0.08, 'triangle', 0.1); },
-    hop: () => tone(520, 0.11, 'sine', 0.1, 0, 780),
+    hop: (o = {}) => { const f = hopNote(o); tone(f * 0.8, 0.13, 'sine', 0.12, 0, f * 1.18); tone(f * 2, 0.06, 'triangle', 0.025, 0.01); },
+    land: () => { noise(0.05, 0.05, 0, 200); tone(150, 0.08, 'sine', 0.1, 0, 85); },
+    plip: () => { tone(1250, 0.1, 'sine', 0.07, 0, 480); tone(620, 0.08, 'sine', 0.03, 0.03, 900); },
+    whoosh: (o = {}) => whoosh(o.up ? 0.55 : 0.7, !!o.up),
+    reveal: () => [1046, 1319, 1568, 2093].forEach((f, i) => tone(f, 0.22, 'triangle', 0.07, i * 0.06)),
+    nudge: () => { tone(988, 0.1, 'sine', 0.06); tone(1319, 0.14, 'sine', 0.06, 0.1); },
     splash: () => { noise(0.35, 0.16, 0, 600); tone(300, 0.2, 'sine', 0.05, 0, 120); },
     ladder: () => [523, 659, 784, 1046].forEach((f, i) => tone(f, 0.16, 'triangle', 0.1, i * 0.09)),
     snake: () => tone(700, 0.7, 'sawtooth', 0.05, 0, 140),
@@ -87,11 +119,19 @@
       if (music) enabled ? music.play().catch(() => {}) : music.pause();
       return enabled;
     },
-    play(name) {
+    /** opts are passed to the synth (e.g. hop {step, dir}); real files get a matching pitch via playbackRate. */
+    play(name, opts) {
       if (!enabled) return;
       const el = buffers[name];
-      if (el) { try { const c = el.cloneNode(); c.volume = 0.7; c.play().catch(() => {}); } catch (e) {} return; }
-      SYNTH[name] && SYNTH[name]();
+      if (el) {
+        try {
+          const c = el.cloneNode(); c.volume = 0.7;
+          if (name === 'hop' && opts) c.playbackRate = hopNote(opts) / 587;
+          c.play().catch(() => {});
+        } catch (e) {}
+        return;
+      }
+      SYNTH[name] && SYNTH[name](opts);
     },
     startMusic() {
       if (!buffers.music || !enabled) return;

@@ -1,10 +1,11 @@
 /* Tokens + turn state machine (student vs computer). */
 (function (ISL) {
   'use strict';
-  const A = ISL.assets, B = ISL.board, UI = ISL.ui, FX = ISL.fx, AU = ISL.audio;
+  const A = ISL.assets, B = ISL.board, UI = ISL.ui, FX = ISL.fx, AU = ISL.audio, CINE = ISL.cine;
   const $ = id => document.getElementById(id);
   const ABORT = { aborted: true };
   const SIGN_FACES = [1, 1, 1, 1, -1, -1];     // sign die: 4 plus faces, 2 minus faces
+  const ZOOM = { move: 1.9, ride: 1.45 };       // camera zoom while hopping / riding a snake or ladder
 
   /* ---------- tokens ---------- */
   const IDLE_H = { student: 86, computer: 90 };  // on-board height of the idle pose (board units)
@@ -15,7 +16,8 @@
       this.scale = IDLE_H[who] / idle[1];
       const el = document.createElement('div');
       el.className = 'token ' + who; el.id = 'token-' + who;
-      el.innerHTML = `<img class="token-shadow" src="${A.url('dice/sign-kit/shadow')}" alt=""><img class="token-img" alt="">`;
+      el.innerHTML = `<i class="token-ring"></i><img class="token-shadow" src="${A.url('dice/sign-kit/shadow')}" alt=""><img class="token-img" alt="">` +
+        `<svg class="token-marker" viewBox="0 0 60 70" style="top:${-IDLE_H[who] - 66}px"><path d="M19 5h22v27h13L30 64 6 32h13z" stroke-width="6" stroke-linejoin="round"/></svg>`;
       $('board-tokens').appendChild(el);
       this.el = el; this.img = el.querySelector('.token-img');
       const sh = el.querySelector('.token-shadow');
@@ -65,19 +67,20 @@
     });
   }
 
-  /* one hop from current spot to square n */
-  function hop(t, n, prev) {
+  /* one hop from current spot to square n; step = hop number in this move, dir = ±1 */
+  function hop(t, n, prev, step, dir, slow) {
     const a = t.xy(), b = B.anchor(n, 0);
     const tl = gsap.timeline();
-    const D = 0.27;
-    tl.call(() => { t.setPose('hop'); AU.play('hop'); });
+    const D = slow ? 0.42 : 0.3, H = slow ? 48 : 34;
+    tl.call(() => { t.setPose('hop'); AU.play('hop', { step, dir }); });
     tl.to(t.el, { x: b.x, duration: D, ease: 'none' }, 0);
-    tl.to(t.el, { y: Math.min(a.y, b.y) - 34, duration: D * 0.5, ease: 'power2.out' }, 0);
+    tl.to(t.el, { y: Math.min(a.y, b.y) - H, duration: D * 0.5, ease: 'power2.out' }, 0);
     tl.to(t.el, { y: b.y, duration: D * 0.5, ease: 'power2.in' }, D * 0.5);
     tl.call(() => { t.el.style.zIndex = Math.round(b.y + 101); }, null, D * 0.5);
     tl.fromTo(t.inner, { scaleY: 1, scaleX: 1 }, { scaleY: 0.84, scaleX: 1.12, duration: 0.07, yoyo: true, repeat: 1, ease: 'sine.out', transformOrigin: '50% 100%' }, D);
     tl.call(() => {
-      const c = B.center(n);
+      AU.play(n < 0 ? 'plip' : 'land');
+      FX.stepCount(b.x, b.y - 96, step * dir);
       if (n < 0 && prev >= 0) FX.splash(b.x, b.y);
       else if (n < 0) { FX.ripple(b.x, b.y - 4); FX.bubbles(b.x, b.y - 30, 2); }
       else if (n > 0) FX.sandPuff(b.x, b.y);
@@ -88,13 +91,15 @@
     return tl;
   }
 
-  async function moveSteps(t, to, guard) {
+  async function moveSteps(t, to, guard, slow) {
     const dir = Math.sign(to - t.pos);
     const dots = [];
+    let step = 0;
     while (t.pos !== to) {
       const prev = t.pos, n = t.pos + dir;
-      await guard(tlPromise(hop(t, n, prev)));
+      await guard(tlPromise(hop(t, n, prev, ++step, dir, slow)));
       if (n !== 0) { const c = B.center(n); dots.push(FX.pathDot(c.x, c.y + 4, dir)); }
+      if (slow) await guard(UI.wait(0.07));
     }
     gsap.to(dots, { opacity: 0, duration: 0.6, delay: 0.8, stagger: 0.05, onComplete: () => dots.forEach(d => d.remove()) });
   }
@@ -170,19 +175,23 @@
     UI.setTurn(who); AU.play('turn');
     UI.nlShow(G.positions(), who);
     t.rest(); other.rest();
+    t.el.classList.add('is-turn'); other.el.classList.remove('is-turn', 'awaiting');
     arrange(0.2);
+    const name = who === 'student' ? 'You' : 'Computer';
 
     if (who === 'student') {
       UI.eqMessage(opts.prompt || 'Your turn!', 'Tap <b>Roll!</b> to throw both dice.');
       if (narrate) VO.say('your_turn');
       UI.enable($('btn-roll'), true);
-      gsap.fromTo($('btn-roll'), { scale: 1 }, { scale: 1.06, duration: 0.5, yoyo: true, repeat: -1, ease: 'sine.inOut', id: 'rollPulse' });
+      UI.rollReady(true, n => { if (narrate && n === 2) VO.say('your_turn'); });
+      t.el.classList.add('awaiting');
       await guard(new Promise(r => { G.rollResolver = r; }));
       opts.onRoll && opts.onRoll();
-      gsap.getById('rollPulse') && gsap.getById('rollPulse').kill();
-      gsap.set($('btn-roll'), { scale: 1 });
+      t.el.classList.remove('awaiting');
+      UI.rollReady(false);
       VO.stop();
     } else {
+      UI.rollReady(false);
       UI.eqMessage('Computer is thinking…', '');
       t.setPose('thinking');
       if (narrate) VO.say('computer_turn');
@@ -202,40 +211,54 @@
     if (narrate) VO.number(roll);
     await guard(UI.showEquation(who, start, roll, target, { hideResult: true }));
     UI.nlArc(start, dest, roll > 0 ? 'plus' : 'minus');
-    await guard(UI.wait(0.35));
 
-    await moveSteps(t, dest, guard);
+    // camera swoops in on the token and follows every hop
+    await guard(CINE.cam.focus(t.el, ZOOM.move, 0.8));
+    await moveSteps(t, dest, guard, who === 'student');
     FX.hideTarget(who);
     const steps = Math.abs(dest - start);
     let sub = `${steps} step${steps === 1 ? '' : 's'} ${roll > 0 ? 'up ⬆' : 'down ⬇'}`;
     if (target > B.MAX) sub = `Past +50 — that’s the summit!`;
     if (target < B.MIN) sub = `Can’t sink below −50 — you rest on the seafloor.`;
-    UI.revealResult(target, sub);
     UI.setCardPos(who, t.pos);
     t.setPose(roll > 0 ? 'happy' : (t.pos < 0 ? 'underwater' : 'worried'));
+
+    // dolly-zoom equation reveal, then it docks into the panel
+    await guard(CINE.hero.show({
+      guard, a: start, b: roll, c: target, sub, kind: roll > 0 ? 'plus' : 'minus',
+      caption: `${name} rolled <b class="${roll > 0 ? 'plus' : 'minus'}">${B.fmt(roll)}</b>`,
+      hold: who === 'student' ? 1.1 : 0.7,
+      speak: narrate ? () => VO.equation(start, roll, target) : null
+    }));
+    UI.revealResult(target, sub);
+    UI.flashPanel();
     if (narrate) {
-      await guard(VO.equation(start, roll, target));
       if (target > B.MAX) await guard(VO.say('summit_past'));
       if (target < B.MIN) await guard(VO.say('seafloor'));
     }
-    await guard(UI.wait(0.5));
+    await guard(UI.wait(0.3));
 
     if (t.pos === B.MAX) return 'win';
 
     const s = B.snakeAt(t.pos), l = B.ladderAt(t.pos);
     if (s || l) {
       const from = t.pos, delta = (s || l).to - from;
-      await guard(UI.showEquation(who, from, delta, from + delta, {
-        hideResult: true, panel: s ? 'bad' : 'good',
-        caption: s ? `Oh no, a snake! It adds <b class="minus">${B.fmt(delta)}</b>` : `A ladder! It adds <b class="plus">${B.fmt(delta)}</b>`
-      }));
+      const caption = s ? `Oh no, a snake! It adds <b class="minus">${B.fmt(delta)}</b>` : `A ladder! It adds <b class="plus">${B.fmt(delta)}</b>`;
+      await guard(UI.showEquation(who, from, delta, from + delta, { hideResult: true, panel: s ? 'bad' : 'good', caption }));
       if (narrate) VO.say(s ? 'snake' : 'ladder');
+      await guard(CINE.cam.focus(t.el, ZOOM.ride, 0.6));
       if (s) await rideSnake(t, s, guard); else await climbLadder(t, l, guard);
-      UI.revealResult(t.pos, s ? 'Slid down the snake.' : 'Climbed the ladder!');
       UI.setCardPos(who, t.pos);
       UI.nlShow(G.positions(), who);
-      if (narrate) await guard(VO.equation(from, delta, from + delta));
-      await guard(UI.wait(0.6));
+      await guard(CINE.hero.show({
+        guard, a: from, b: delta, c: from + delta, kind: s ? 'snake' : 'ladder', caption,
+        sub: s ? 'Slid down the snake.' : 'Climbed the ladder!',
+        hold: 0.9,
+        speak: narrate ? () => VO.equation(from, delta, from + delta) : null
+      }));
+      UI.revealResult(t.pos, s ? 'Slid down the snake.' : 'Climbed the ladder!');
+      UI.flashPanel();
+      await guard(UI.wait(0.4));
     }
     t.rest();
     arrange();
@@ -274,16 +297,21 @@
       G.tokens.computer = new Token('computer');
       $('btn-roll').addEventListener('click', () => { if (G.rollResolver && !$('btn-roll').disabled) { const r = G.rollResolver; G.rollResolver = null; r(); } });
       window.addEventListener('keydown', e => {
-        if ((e.code === 'Space' || e.code === 'Enter') && G.rollResolver && !$('btn-roll').disabled && document.body.dataset.screen === 'game') {
-          e.preventDefault(); $('btn-roll').click();
-        }
+        if (e.code !== 'Space' && e.code !== 'Enter') return;
+        if (!G.rollResolver || $('btn-roll').disabled || document.body.dataset.screen !== 'game' || document.body.hasAttribute('data-paused')) return;
+        const f = document.activeElement;
+        if (e.code === 'Enter' && f && f.tagName === 'BUTTON' && f.id !== 'btn-roll') return;   // Enter activates the focused button
+        if (f && f !== document.body) f.blur();
+        e.preventDefault(); $('btn-roll').click();
       });
     },
     reset() {
       G.sid++; G.over = false; G.rollResolver = null;
       ISL.voice.stop();
-      ['student', 'computer'].forEach(w => { const t = G.tokens[w]; gsap.killTweensOf([t.el, t.inner]); t.pos = 0; t.rest(); UI.setCardPos(w, 0); });
+      CINE.cam.reset(); CINE.hero.hide();
+      ['student', 'computer'].forEach(w => { const t = G.tokens[w]; gsap.killTweensOf([t.el, t.inner]); t.el.classList.remove('is-turn', 'awaiting'); t.pos = 0; t.rest(); UI.setCardPos(w, 0); });
       G.turn = 'student';
+      UI.rollReady(false);
       arrange(0);
       gsap.set([G.tokens.student.el, G.tokens.computer.el], { rotation: 0 });
       document.getElementById('board-fx').innerHTML = '';
