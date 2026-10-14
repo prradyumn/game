@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voice Generator — Integer Snakes &amp; Ladders</title>
+<style>
+  @font-face { font-family: 'Fredoka'; font-weight: 600; src: url(../fonts/fredoka-latin-600-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Fredoka'; font-weight: 700; src: url(../fonts/fredoka-latin-700-normal.woff2) format('woff2'); }
+  :root { --violet: #6a2bd9; --ink: #2a1846; --paper: #fbefd2; --gold: #ffc531; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Fredoka, system-ui, sans-serif; background: #0d3a66 url(../assets/background/desktop.png) center / cover fixed; color: var(--ink); }
+  main { max-width: 980px; margin: 28px auto; padding: 28px 32px; background: var(--paper); border: 8px solid var(--violet); border-radius: 28px; box-shadow: inset 0 0 0 4px var(--gold), 0 18px 40px rgba(0,0,0,.4); }
+  h1 { margin: 0 0 4px; color: var(--violet); font-size: 34px; }
+  p.lead { margin: 0 0 18px; font-weight: 600; color: #6b4a1f; }
+  label { display: block; font-weight: 700; margin: 12px 0 4px; }
+  input, select, textarea { width: 100%; font: inherit; font-weight: 600; padding: 10px 12px; border-radius: 12px; border: 3px solid #d8c393; background: #fffaf0; color: var(--ink); }
+  textarea { min-height: 70px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  button { font: inherit; font-weight: 700; cursor: pointer; border: 0; border-radius: 999px; padding: 12px 26px; color: #fff; background: var(--violet); box-shadow: 0 0 0 3px var(--gold), 0 4px 0 #2b0f63; margin: 18px 10px 0 0; font-size: 20px; }
+  button.secondary { background: #8a6a3a; box-shadow: 0 0 0 3px #e2c27a, 0 4px 0 #4a2b12; font-size: 16px; padding: 8px 18px; }
+  button:disabled { opacity: .5; cursor: default; }
+  #status { margin-top: 16px; font-weight: 700; min-height: 1.4em; }
+  #status.err { color: #c0262d; }
+  progress { width: 100%; height: 18px; margin-top: 8px; }
+  #list { margin-top: 18px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 8px; max-height: 420px; overflow: auto; padding: 4px; }
+  .clip { display: flex; align-items: center; gap: 8px; background: #fff8e6; border: 2px solid #ead9b0; border-radius: 12px; padding: 6px 8px; font-size: 14px; font-weight: 600; }
+  .clip .dot { width: 12px; height: 12px; border-radius: 50%; background: #c9c3d6; flex: none; }
+  .clip.ok .dot { background: #2fae3a; } .clip.busy .dot { background: var(--gold); } .clip.bad .dot { background: #d33; }
+  .clip .txt { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .clip button { margin: 0; padding: 2px 10px; font-size: 13px; box-shadow: none; }
+  .note { font-size: 14px; color: #6b4a1f; font-weight: 600; margin-top: 10px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Voiceover generator</h1>
+  <p class="lead">Creates every voice line for the game with Gemini text-to-speech and saves it straight into the game folder. Use Chrome or Edge.</p>
+
+  <label for="key">Gemini API key</label>
+  <input id="key" type="password" autocomplete="off" placeholder="Paste your key (kept only in this tab)">
+  <div class="row">
+    <div>
+      <label for="voice">Voice</label>
+      <select id="voice">
+        <option value="Leda">Leda — youthful, friendly</option>
+        <option value="Aoede">Aoede — breezy</option>
+        <option value="Kore">Kore — firm, clear</option>
+        <option value="Zephyr">Zephyr — bright</option>
+        <option value="Puck">Puck — upbeat (male)</option>
+        <option value="Achird">Achird — friendly (male)</option>
+      </select>
+    </div>
+    <div>
+      <label for="model">Model</label>
+      <input id="model" value="gemini-2.5-flash-preview-tts">
+    </div>
+  </div>
+  <label for="style">Speaking style</label>
+  <textarea id="style">Speak in a warm, cheerful, clear voice, like a friendly teacher talking to ten-year-old students. Say numbers slowly and clearly.</textarea>
+
+  <button id="go">Choose the game folder &amp; generate</button>
+  <button id="stop" class="secondary" disabled>Stop</button>
+  <div class="note">When asked, select the <b>game</b> folder (the one with index.html). Clips go into <b>game/audio/voice/</b>. Already-made clips are skipped, so you can stop and continue any time.</div>
+  <div id="status"></div>
+  <progress id="bar" value="0" max="1"></progress>
+  <div id="list"></div>
+</main>
+
+<script src="../js/voice-lines.js"></script>
+<script>
+(() => {
+  'use strict';
+  const LINES = window.VOICE_LINES;
+  const ids = Object.keys(LINES);
+  const $ = id => document.getElementById(id);
+  let dir = null, stopFlag = false;
+
+  // ---------- batches: short number words grouped, longer sentences alone ----------
+  function batches(todo) {
+    const nums = todo.filter(id => id.startsWith('n_'));
+    const short = todo.filter(id => !id.startsWith('n_') && !id.startsWith('t_') && LINES[id].length < 40);
+    const long = todo.filter(id => !nums.includes(id) && !short.includes(id));
+    const out = [];
+    for (let i = 0; i < nums.length; i += 10) out.push(nums.slice(i, i + 10));
+    for (let i = 0; i < short.length; i += 4) out.push(short.slice(i, i + 4));
+    long.forEach(id => out.push([id]));
+    return out;
+  }
+
+  // ---------- UI ----------
+  const rows = {};
+  ids.forEach(id => {
+    const d = document.createElement('div'); d.className = 'clip';
+    d.innerHTML = `<i class="dot"></i><span class="txt" title="${LINES[id]}">${LINES[id]}</span><button class="secondary play" disabled>▶</button><button class="secondary redo" disabled>↻</button>`;
+    d.querySelector('.play').onclick = () => play(id);
+    d.querySelector('.redo').onclick = () => regenerateOne(id);
+    $('list').appendChild(d); rows[id] = d;
+  });
+  const mark = (id, s) => { rows[id].className = 'clip ' + s; rows[id].querySelectorAll('button').forEach(b => b.disabled = s !== 'ok' && s !== 'bad'); if (s === 'bad') rows[id].querySelector('.play').disabled = true; };
+  const status = (t, err) => { $('status').textContent = t; $('status').className = err ? 'err' : ''; };
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  // ---------- Gemini ----------
+  async function tts(text) {
+    const key = $('key').value.trim();
+    const model = $('model').value.trim();
+    const body = {
+      contents: [{ parts: [{ text }] }],
+      generationConfig: { responseModalities: ['AUDIO'], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: $('voice').value } } } }
+    };
+    for (let attempt = 0; attempt < 8; attempt++) {
+      if (stopFlag) throw new Error('stopped');
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      if (res.status === 429 || res.status >= 500) {
+        let wait = 20;
+        try {
+          const j = await res.json();
+          const ri = (j.error.details || []).find(d => d.retryDelay);
+          if (ri) wait = parseFloat(ri.retryDelay) + 1;
+          if (/per day|PerDay/i.test(JSON.stringify(j))) throw new Error('Daily quota reached for this key. Come back later and press generate again — finished clips are kept.');
+        } catch (e) { if (e.message.startsWith('Daily')) throw e; }
+        status(`Rate limited — waiting ${Math.round(wait)}s…`);
+        await sleep(wait * 1000); continue;
+      }
+      const j = await res.json();
+      if (!res.ok) throw new Error((j.error && j.error.message) || ('HTTP ' + res.status));
+      const part = j.candidates && j.candidates[0].content.parts.find(p => p.inlineData);
+      if (!part) throw new Error('No audio in response');
+      const rate = +(/rate=(\d+)/.exec(part.inlineData.mimeType) || [0, 24000])[1];
+      const bin = atob(part.inlineData.data);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      return { pcm: new Int16Array(bytes.buffer, 0, bytes.length >> 1), rate };
+    }
+    throw new Error('Too many retries');
+  }
+
+  // ---------- audio helpers ----------
+  function envelope(pcm, rate) {
+    const f = Math.round(rate * 0.02), n = Math.ceil(pcm.length / f), env = new Float32Array(n);
+    for (let i = 0; i < n; i++) { let m = 0; for (let k = i * f; k < Math.min(pcm.length, (i + 1) * f); k++) { const v = Math.abs(pcm[k]); if (v > m) m = v; } env[i] = m; }
+    return { env, f };
+  }
+  function trim(pcm, rate) {
+    const { env, f } = envelope(pcm, rate);
+    const peak = Math.max(...env), thr = Math.max(350, peak * 0.03);
+    let a = 0, b = env.length - 1;
+    while (a < env.length && env[a] < thr) a++;
+    while (b > a && env[b] < thr) b--;
+    const pad = Math.round(rate * 0.08);
+    return pcm.slice(Math.max(0, a * f - pad), Math.min(pcm.length, (b + 1) * f + pad));
+  }
+  /** Split one recording of N lines at its N-1 longest silences. */
+  function split(pcm, rate, n) {
+    if (n === 1) return [trim(pcm, rate)];
+    const { env, f } = envelope(pcm, rate);
+    const peak = Math.max(...env), thr = Math.max(350, peak * 0.03);
+    let first = env.findIndex(v => v >= thr), last = env.length - 1;
+    while (last > 0 && env[last] < thr) last--;
+    const runs = [];
+    for (let i = first; i <= last; i++) {
+      if (env[i] < thr) { let j = i; while (j <= last && env[j] < thr) j++; runs.push({ s: i, e: j, len: j - i }); i = j; }
+    }
+    if (runs.length < n - 1) return null;
+    const cuts = runs.slice().sort((a, b) => b.len - a.len).slice(0, n - 1);
+    if (Math.min(...cuts.map(c => c.len)) * 0.02 < 0.28) return null;          // gaps too short to trust
+    cuts.sort((a, b) => a.s - b.s);
+    const segs = []; let prev = 0;
+    cuts.forEach(c => { const mid = Math.round((c.s + c.e) / 2) * f; segs.push(pcm.slice(prev, mid)); prev = mid; });
+    segs.push(pcm.slice(prev));
+    const out = segs.map(s => trim(s, rate));
+    if (out.some(s => s.length / rate < 0.25 || s.length / rate > 9)) return null;
+    return out;
+  }
+  function wav(pcm, rate) {
+    const buf = new ArrayBuffer(44 + pcm.length * 2), v = new DataView(buf);
+    const w = (o, s) => [...s].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+    w(0, 'RIFF'); v.setUint32(4, 36 + pcm.length * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
+    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, rate, true);
+    v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, pcm.length * 2, true);
+    new Int16Array(buf, 44).set(pcm);
+    return new Blob([buf], { type: 'audio/wav' });
+  }
+
+  // ---------- files ----------
+  async function save(id, blob) {
+    const fh = await dir.getFileHandle(id + '.wav', { create: true });
+    const w = await fh.createWritable(); await w.write(blob); await w.close();
+  }
+  async function existing() {
+    const have = new Set();
+    for await (const [name] of dir.entries()) if (name.endsWith('.wav')) have.add(name.slice(0, -4));
+    return have;
+  }
+  async function writeManifest() {
+    const have = await existing();
+    const map = {}; ids.forEach(id => { if (have.has(id)) map[id] = id + '.wav'; });
+    const text = '/* Generated by tools/voice-generator.html — lists the voice clips that exist. Empty = use the browser voice. */\nwindow.VOICE_CLIPS = ' + JSON.stringify(map, null, 1) + ';\n';
+    const fh = await dir.getFileHandle('voice-manifest.js', { create: true });
+    const w = await fh.createWritable(); await w.write(text); await w.close();
+    return Object.keys(map).length;
+  }
+  async function pickDir() {
+    let root = await window.showDirectoryPicker({ id: 'isl-game', mode: 'readwrite' });
+    if (root.name === 'voice') return root;
+    if (root.name === 'audio') return root.getDirectoryHandle('voice', { create: true });
+    const audio = await root.getDirectoryHandle('audio', { create: true });
+    return audio.getDirectoryHandle('voice', { create: true });
+  }
+  async function play(id) {
+    const fh = await dir.getFileHandle(id + '.wav'); const f = await fh.getFile();
+    new Audio(URL.createObjectURL(f)).play();
+  }
+
+  // ---------- run ----------
+  const styled = lines => lines.length === 1
+    ? `${$('style').value.trim()}\n\nSay exactly this and nothing else:\n${lines[0]}`
+    : `${$('style').value.trim()}\n\nRead these ${lines.length} separate lines out loud, in this exact order. Say each line exactly as written. After every line, stay completely silent for two full seconds before the next one. Do not say anything else.\n\n${lines.join('\n\n')}`;
+
+  async function runBatch(group) {
+    group.forEach(id => mark(id, 'busy'));
+    const { pcm, rate } = await tts(styled(group.map(id => LINES[id])));
+    const segs = split(pcm, rate, group.length);
+    if (!segs) {                       // could not split cleanly → do them one by one
+      for (const id of group) { if (stopFlag) return; await runBatch([id]); }
+      return;
+    }
+    for (let i = 0; i < group.length; i++) { await save(group[i], wav(segs[i], rate)); mark(group[i], 'ok'); }
+  }
+  async function regenerateOne(id) {
+    if (!dir || !$('key').value.trim()) return status('Choose the folder and paste the key first.', true);
+    try { stopFlag = false; await runBatch([id]); await writeManifest(); status('Re-recorded: ' + LINES[id]); }
+    catch (e) { mark(id, 'bad'); status(e.message, true); }
+  }
+
+  $('go').onclick = async () => {
+    if (!$('key').value.trim()) return status('Paste your Gemini API key first.', true);
+    if (!window.showDirectoryPicker) return status('This browser cannot save into folders. Please use Chrome or Edge.', true);
+    try { dir = await pickDir(); } catch (e) { return status('No folder chosen.', true); }
+    stopFlag = false; $('go').disabled = true; $('stop').disabled = false;
+    try {
+      const have = await existing();
+      ids.forEach(id => mark(id, have.has(id) ? 'ok' : ''));
+      const todo = ids.filter(id => !have.has(id));
+      const groups = batches(todo);
+      $('bar').max = Math.max(1, todo.length); let done = 0; $('bar').value = 0;
+      for (const g of groups) {
+        if (stopFlag) break;
+        status(`Recording: ${LINES[g[0]]}${g.length > 1 ? ` … (+${g.length - 1})` : ''}`);
+        try { await runBatch(g); }
+        catch (e) { g.forEach(id => mark(id, 'bad')); if (/quota|stopped|API key|permission|not found/i.test(e.message)) throw e; status(e.message, true); }
+        done += g.length; $('bar').value = done;
+        await writeManifest();
+      }
+      const n = await writeManifest();
+      status(stopFlag ? `Stopped. ${n} of ${ids.length} clips saved.` : `Done! ${n} of ${ids.length} clips saved into audio/voice. Reload the game to hear them.`);
+    } catch (e) { status(e.message, true); try { await writeManifest(); } catch (_) {} }
+    $('go').disabled = false; $('stop').disabled = true;
+  };
+  $('stop').onclick = () => { stopFlag = true; status('Stopping after this clip…'); };
+  status(`${ids.length} voice lines ready to record.`);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>Integer Snakes &amp; Ladders</title>
+  <link rel="icon" href="assets/ui/logo/app-icon-64.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Full-viewport living background (cover). Horizon is always at 50% height. -->
+  <div id="bg" aria-hidden="true">
+    <div id="bg-image"></div>
+    <div id="ambient"></div>
+  </div>
+
+  <!-- Fixed-size design stage, scaled to fit. Every position inside is in stage pixels. -->
+  <div id="viewport">
+    <div id="stage" class="land">
+
+      <!-- ============ GAME SCREEN ============ -->
+      <section id="screen-game" class="screen">
+        <img id="logo-small" class="abs" src="assets/ui/logo/wordmark-dark.png" alt="Integer Snakes & Ladders">
+
+        <div id="topbar" class="abs">
+          <button class="icon-btn" id="btn-help" aria-label="How to play"><img src="assets/ui/icons/help.png" alt=""></button>
+          <button class="icon-btn" id="btn-sound" aria-label="Sound on/off"><img src="assets/ui/icons/sound-on.png" alt=""></button>
+          <button class="icon-btn" id="btn-pause" aria-label="Pause"><img src="assets/ui/icons/pause.png" alt=""></button>
+        </div>
+
+        <div id="turn-banner" class="abs">
+          <img class="fill" id="turn-banner-img" src="assets/ui/panels/turn-student.png" alt="">
+          <span id="turn-text">Your Turn!</span>
+        </div>
+
+        <div id="card-student" class="player-card abs" data-player="student">
+          <img class="fill card-img" src="assets/ui/panels/player-student-active.png" alt="">
+          <div class="card-text">
+            <div class="card-name">You</div>
+            <div class="card-pos"><span class="card-pos-label">at</span> <b class="card-pos-val">0</b></div>
+          </div>
+        </div>
+        <div id="card-computer" class="player-card abs" data-player="computer">
+          <img class="fill card-img" src="assets/ui/panels/player-computer-waiting.png" alt="">
+          <div class="card-text">
+            <div class="card-name">Computer</div>
+            <div class="card-pos"><span class="card-pos-label">at</span> <b class="card-pos-val">0</b></div>
+          </div>
+        </div>
+
+        <!-- Board: internal coordinate system is always 1000 x 1000 units (cell = 100). -->
+        <div id="board-wrap" class="abs">
+          <div id="board">
+            <img id="board-world" src="assets/board/world-aligned.jpg" alt="">
+            <canvas id="board-grid" width="2000" height="2000"></canvas>
+            <canvas id="board-pieces" width="2400" height="2400"></canvas>
+            <div id="board-decor"></div>
+            <div id="board-tags"></div>
+            <div id="board-labels"></div>
+            <div id="board-tokens"></div>
+            <div id="board-fx"></div>
+          </div>
+          <div id="board-frame"></div>
+        </div>
+
+        <!-- Number line -->
+        <div id="numberline" class="abs">
+          <div id="nl-title">Number line</div>
+          <div id="nl-track">
+            <img id="nl-plank" class="fill" src="assets/number-line/pieces/panel.png" alt="">
+            <div id="nl-ticks"></div>
+            <div id="nl-arcs"></div>
+            <div id="nl-markers"></div>
+          </div>
+        </div>
+
+        <!-- Equation panel -->
+        <div id="equation" class="abs">
+          <img id="eq-panel" class="fill" src="assets/ui/panels/answer-waiting.png" alt="">
+          <div id="eq-inner">
+            <div id="eq-caption">Roll the dice to start!</div>
+            <div id="eq-line"></div>
+            <div id="eq-sub"></div>
+          </div>
+        </div>
+
+        <!-- Dice tray -->
+        <div id="tray" class="abs">
+          <img id="tray-img" class="fill" src="assets/dice/sign-kit/tray.png" alt="">
+          <div class="die-slot" id="slot-sign">
+            <img class="die-shadow" src="assets/dice/sign-kit/shadow.png" alt="">
+            <div class="die" id="die-sign">
+              <img class="die-face" src="assets/dice/sign-kit/plus-face.png" alt="plus">
+              <img class="die-shine" src="assets/dice/sign-kit/shine.png" alt="">
+            </div>
+          </div>
+          <div class="die-slot" id="slot-num">
+            <img class="die-shadow" src="assets/dice/sign-kit/shadow.png" alt="">
+            <div class="die" id="die-num">
+              <img class="die-face" src="assets/dice/digits/digit-01.png" alt="1">
+              <img class="die-shine" src="assets/dice/sign-kit/shine.png" alt="">
+            </div>
+          </div>
+          <div id="roll-chip" class="abs">
+            <img class="fill" id="roll-chip-img" src="assets/ui/panels/result-plus.png" alt="">
+            <span id="roll-chip-text">+1</span>
+          </div>
+        </div>
+
+        <button id="btn-roll" class="big-btn abs" aria-label="Roll the dice">
+          <img class="fill btn-bg" src="assets/ui/buttons/large-idle.png" alt="">
+          <span class="btn-label">Roll!</span>
+        </button>
+
+        <div id="toast" class="abs" aria-live="polite"></div>
+
+        <!-- Live tutorial coach -->
+        <div id="spotlight" class="abs" aria-hidden="true"></div>
+        <div id="coach" class="abs" role="dialog" aria-label="Tutorial">
+          <div id="coach-card" class="fill">
+            <img id="coach-pose" src="assets/tokens/student-poses/wave.png" alt="">
+            <div id="coach-step"></div>
+            <div id="coach-text" aria-live="polite"></div>
+            <div id="coach-hint">Tap <b>Roll!</b></div>
+            <button id="coach-next" class="mid-btn"><img class="fill btn-bg" src="assets/ui/buttons/medium-idle.png" alt=""><span class="btn-label">Next</span></button>
+            <button id="coach-skip" type="button">Skip tutorial ›</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ START SCREEN ============ -->
+      <section id="screen-start" class="screen overlay-screen">
+        <div id="start-bg" class="fill"></div>
+        <img id="start-logo" class="abs" src="assets/ui/logo/wordmark-dark.png" alt="Integer Snakes & Ladders">
+        <img id="start-student" class="abs" src="assets/tokens/student-poses/wave.png" alt="">
+        <img id="start-computer" class="abs" src="assets/tokens/computer-poses/idle.png" alt="">
+        <div id="start-tagline" class="abs">Climb ladders, dodge snakes, master integers!</div>
+        <button id="btn-play" class="big-btn abs">
+          <img class="fill btn-bg" src="assets/ui/buttons/large-idle.png" alt="">
+          <span class="btn-label">Play</span>
+        </button>
+        <button id="btn-howto" class="mid-btn abs">
+          <img class="fill btn-bg" src="assets/ui/buttons/medium-idle.png" alt="">
+          <span class="btn-label">How to play</span>
+        </button>
+      </section>
+
+      <!-- ============ HOW TO PLAY ============ -->
+      <section id="screen-howto" class="screen modal">
+        <div class="scrim"></div>
+        <div id="howto-panel" class="abs">
+          <img class="fill" src="assets/ui/menus/settings-sheet.png" alt="">
+          <div id="howto-title">How to play</div>
+          <div id="howto-slides">
+            <div class="howto-slide">
+              <img src="assets/ui/screens/how-to-roll.png" alt="">
+              <p>Roll the <b class="plus">sign die</b> and the <b>number die</b>. Together they make an integer like <b class="plus">+4</b> or <b class="minus">−3</b>.</p>
+            </div>
+            <div class="howto-slide">
+              <img src="assets/ui/screens/how-to-think.png" alt="">
+              <p>Add the roll to where you are. Adding a <b class="minus">negative</b> moves you <b class="minus">down</b> toward the deep sea!</p>
+            </div>
+            <div class="howto-slide">
+              <img src="assets/ui/screens/how-to-finish.png" alt="">
+              <p><b class="plus">Ladders</b> add, <b class="minus">snakes</b> subtract. First explorer to reach <b class="plus">+50</b> plants the flag!</p>
+            </div>
+          </div>
+          <div id="howto-dots"><i></i><i></i><i></i></div>
+          <button id="howto-prev" class="icon-btn" aria-label="Previous"><img src="assets/ui/icons/retry.png" alt=""></button>
+          <button id="howto-next" class="mid-btn" aria-label="Next">
+            <img class="fill btn-bg" src="assets/ui/buttons/medium-idle.png" alt="">
+            <span class="btn-label">Next</span>
+          </button>
+          <button id="howto-live" type="button">▶ Replay live tutorial</button>
+          <button id="howto-close" class="icon-btn close" aria-label="Close"><img src="assets/ui/icons/close.png" alt=""></button>
+        </div>
+      </section>
+
+      <!-- ============ PAUSE ============ -->
+      <section id="screen-pause" class="screen modal">
+        <div class="scrim"></div>
+        <div id="pause-panel" class="abs">
+          <img class="fill" src="assets/ui/menus/pause-menu.png" alt="">
+          <div id="pause-title">Paused</div>
+          <button class="mid-btn" id="btn-resume"><img class="fill btn-bg" src="assets/ui/buttons/medium-idle.png" alt=""><span class="btn-label">Resume</span></button>
+          <button class="mid-btn" id="btn-restart"><img class="fill btn-bg" src="assets/ui/buttons/medium-idle.png" alt=""><span class="btn-label">Restart</span></button>
+          <button class="mid-btn" id="btn-home"><img class="fill btn-bg" src="assets/ui/buttons/medium-idle.png" alt=""><span class="btn-label">Home</span></button>
+        </div>
+      </section>
+
+      <!-- ============ WIN ============ -->
+      <section id="screen-win" class="screen modal">
+        <div class="scrim"></div>
+        <div id="win-rays" class="abs"></div>
+        <img id="win-art" class="abs" src="assets/ui/screens/student-win.png" alt="">
+        <div id="win-title" class="abs">You reached +50!</div>
+        <div id="win-sub" class="abs">You planted the flag on the summit.</div>
+        <button id="btn-again" class="big-btn abs"><img class="fill btn-bg" src="assets/ui/buttons/large-idle.png" alt=""><span class="btn-label">Play again</span></button>
+        <button id="btn-win-home" class="icon-btn abs" aria-label="Home"><img src="assets/ui/icons/home.png" alt=""></button>
+        <div id="confetti" class="fill"></div>
+      </section>
+
+      <!-- ============ INTRO CINEMATIC ============ -->
+      <section id="screen-intro" class="screen"></section>
+
+      <!-- SVG wave transition -->
+      <svg id="wipe" aria-hidden="true" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="wipe-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#7c3cf0"/><stop offset=".45" stop-color="#4b1fb0"/><stop offset="1" stop-color="#1d0c55"/>
+          </linearGradient>
+          <linearGradient id="wipe-sea" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#4fd6f2"/><stop offset="1" stop-color="#0b5fa8"/>
+          </linearGradient>
+        </defs>
+        <path id="wipe-back" fill="url(#wipe-sea)"/>
+        <path id="wipe-front" fill="url(#wipe-grad)"/>
+        <path id="wipe-foam" fill="none" stroke="#ffd65a" stroke-width="10" stroke-linejoin="round" opacity=".9"/>
+      </svg>
+
+      <div id="debug-overlay" class="fill" hidden></div>
+    </div>
+  </div>
+
+  <div id="loader"><div id="loader-bar"><i></i></div><p>Loading the coast…</p></div>
+
+  <script src="vendor/gsap.min.js"></script>
+  <script src="js/asset-sizes.js"></script>
+  <script src="js/assets.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/voice-lines.js"></script>
+  <script src="audio/voice/voice-manifest.js"></script>
+  <script src="js/voice.js"></script>
+  <script src="js/fx.js"></script>
+  <script src="js/board.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/tutorial.js"></script>
+  <script src="js/intro.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

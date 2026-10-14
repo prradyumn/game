@@ -1,0 +1,8 @@
+# Local QA scratch (not part of the game)
+_qa/
+asset-sizes.json
+
+# OS / editor clutter
+.DS_Store
+Thumbs.db
+.vscode/
