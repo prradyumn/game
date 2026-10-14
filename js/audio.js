@@ -4,22 +4,22 @@
 (function (ISL) {
   'use strict';
   const FILES = {
-    click: 'audio/click.mp3',
-    dice: 'audio/dice-roll.mp3',
-    diceLand: 'audio/dice-land.mp3',
-    hop: 'audio/hop.mp3',
-    land: 'audio/land.mp3',
-    whoosh: 'audio/whoosh.mp3',
-    reveal: 'audio/reveal.mp3',
-    splash: 'audio/splash.mp3',
-    ladder: 'audio/ladder.mp3',
-    snake: 'audio/snake.mp3',
-    win: 'audio/win.mp3',
-    lose: 'audio/lose.mp3',
-    turn: 'audio/turn.mp3',
-    music: 'audio/music-loop.mp3'
+    click: 'audio/click.ogg',
+    dice: 'audio/dice-roll.ogg',
+    diceLand: 'audio/dice-land.ogg',
+    hop: 'audio/hop.ogg',
+    land: 'audio/land.ogg',
+    whoosh: 'audio/whoosh.ogg',
+    reveal: 'audio/reveal.ogg',
+    splash: 'audio/splash.ogg',
+    ladder: 'audio/ladder.ogg',
+    snake: 'audio/snake.ogg',
+    win: 'audio/win.ogg',
+    lose: 'audio/lose.ogg',
+    turn: 'audio/turn.ogg',
+    music: 'audio/music-loop.ogg'
   };
-  // List the names whose files have been added to /audio (e.g. ['dice','hop']). Others use the synth.
+  // List the names whose files have been added to /audio as Ogg (e.g. ['dice','hop']). Others use the synth.
   const AVAILABLE = [];
   let ctx = null, enabled = true;
   const buffers = {};       // name -> HTMLAudioElement that loaded OK

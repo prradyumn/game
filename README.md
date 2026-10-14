@@ -19,9 +19,10 @@ Open `index.html` in Chrome/Edge/Safari (double-click works; no server needed).
 - `js/ui.js` – dice, number line, equation panel, banner, cards
 - `js/fx.js` – splashes, sand puffs, bubbles, sparkles, confetti, ambient clouds/birds/fish
 - `js/audio.js` – sound hooks (placeholder synth now; add files to `audio/` and list them in `AVAILABLE`)
-- `js/asset-sizes.js` – auto-generated trimmed sizes of every image
-- `assets/` – cleaned copies of the art: trimmed to their real edges, stray slivers removed,
-  number-line and menu sheets re-cut, world painting re-aligned so its 10 bands match the 10 rows exactly
+- `js/asset-sizes.js` – auto-generated logical (original) sizes of every shipped image
+- `assets/` – the shipped art as WebP: only the images the game uses, downscaled to about 2× their largest on-screen size
+- `_source-art/` (git-ignored, local only) – full-resolution PNG/JPG originals, including unused kit parts.
+  After changing art there, run `node tools/optimize-assets.js` (needs Playwright). The shipped list is `tools/used-assets.json`
 
 ## Handy URL flags
 - `?play` – skip the start screen and tutorial
@@ -50,10 +51,10 @@ The first time you press **Play**, a coach walks you through four real scripted 
 ## Voiceover
 - All lines live in `js/voice-lines.js`: numbers −56…+56 spoken as "negative three" / "positive four", the equation words, and the tutorial script.
 - Without clips, the game speaks with the browser's built-in voice.
-- The shipped clips (`audio/voice/*.mp3`) were made with `gemini-2.5-pro-preview-tts`, voice **Puck**, directed as a friendly explorer guide (numbers and the words "plus" and "equals" are read evenly so they splice into equations).
+- The shipped clips (`audio/voice/*.ogg`, Opus 32 kbps) were made with `gemini-2.5-pro-preview-tts`, voice **Puck**, directed as a friendly explorer guide (numbers and the words "plus" and "equals" are read evenly so they splice into equations).
 - To regenerate from the command line: `GEMINI_API_KEY=... node tools/generate-voice.js` (`--force` remakes everything, `--only id,id` remakes chosen lines, `--voice` and `--model` override). It needs ffmpeg. Keep the key in the environment and never commit it.
 - Use a TTS model that follows spoken style direction. `gemini-3.8-flash-tts` reads the direction (and `[tags]`) aloud, so it isn't suitable.
 - Browser alternative: open `tools/voice-generator.html` in Chrome or Edge, paste your key, press **Choose the game folder & generate**, then pick this `game` folder.
 
 ## Sound effects to add later
-`audio/` names expected: click, dice-roll, dice-land, hop, splash, ladder, snake, win, lose, turn, music-loop (.mp3).
+`audio/` names expected (Ogg, e.g. Opus): click, dice-roll, dice-land, hop, land, whoosh, reveal, splash, ladder, snake, win, lose, turn, music-loop. List each added name in `AVAILABLE` in `js/audio.js`.

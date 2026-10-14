@@ -8,7 +8,7 @@ window.ISL = window.ISL || {};
     /** URL for an asset key like "snakes/python/head-alert" */
     url(key) {
       const s = SIZES[key];
-      if (!s) { console.warn('[assets] unknown key', key); return 'assets/' + key + '.png'; }
+      if (!s) { console.warn('[assets] unknown key', key); return 'assets/' + key + '.webp'; }
       return 'assets/' + key + '.' + s[2];
     },
     /** [w,h] natural (trimmed) size in px */

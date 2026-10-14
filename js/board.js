@@ -150,7 +150,8 @@
     const ux = (t.x - b.x) / len, uy = (t.y - b.y) / len;
     const theta = Math.atan2(ux, -uy);
     const rail = A.img(set + 'rail');
-    const [rw, rh] = A.size(set + 'rail');
+    // source rects use the file's real pixels (the shipped file may be smaller than the logical size)
+    const [rw, rh] = rail && rail.naturalWidth ? [rail.naturalWidth, rail.naturalHeight] : A.size(set + 'rail');
     ctx.save();
     ctx.translate(b.x, b.y); ctx.rotate(theta);
     ctx.shadowColor = 'rgba(10,20,40,0.35)'; ctx.shadowOffsetX = 6; ctx.shadowOffsetY = 8; ctx.shadowBlur = 6;

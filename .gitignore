@@ -6,3 +6,6 @@ asset-sizes.json
 .DS_Store
 Thumbs.db
 .vscode/
+
+# Full-resolution source art (re-encode with tools/optimize-assets.js)
+_source-art/

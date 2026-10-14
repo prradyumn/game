@@ -12,7 +12,9 @@
   let current = null;       // playing HTMLAudioElement
   let enabled = true;
 
-  const clips = () => window.VOICE_CLIPS || {};
+  // Clips are Ogg Opus. Browsers that can't play it (older Safari) use the built-in voice instead.
+  const oggOK = (() => { try { return !!new Audio().canPlayType('audio/ogg; codecs="opus"'); } catch (e) { return false; } })();
+  const clips = () => (oggOK && window.VOICE_CLIPS) || {};
   function clipEl(id) {
     const file = clips()[id];
     if (!file) return null;

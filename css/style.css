@@ -25,8 +25,8 @@ button { font-family: inherit; }
 
 /* ---------- background ---------- */
 #bg { position: fixed; inset: 0; overflow: hidden; }
-#bg-image { position: absolute; inset: 0; background: url(../assets/background/desktop.png) center / cover no-repeat; }
-body[data-mode="port"] #bg-image { background-image: url(../assets/background/phone.png); }
+#bg-image { position: absolute; inset: 0; background: url(../assets/background/desktop.webp) center / cover no-repeat; }
+body[data-mode="port"] #bg-image { background-image: url(../assets/background/phone.webp); }
 #ambient { position: absolute; inset: 0; pointer-events: none; }
 #ambient .amb { position: absolute; left: 0; top: 0; will-change: transform; }
 
@@ -287,8 +287,8 @@ body[data-mode="port"] #bg-image { background-image: url(../assets/background/ph
 #toast b.minus { color: #7cc6ff; }
 
 /* ---------- start screen ---------- */
-#start-bg { background: url(../assets/ui/screens/start-backdrop.png) center / cover no-repeat; }
-.port #start-bg { background: linear-gradient(rgba(255,255,255,0), rgba(255,255,255,0)), url(../assets/background/phone.png) center / cover no-repeat; }
+#start-bg { background: url(../assets/ui/screens/start-backdrop.webp) center / cover no-repeat; }
+.port #start-bg { background: linear-gradient(rgba(255,255,255,0), rgba(255,255,255,0)), url(../assets/background/phone.webp) center / cover no-repeat; }
 #start-logo { object-fit: contain; filter: drop-shadow(0 10px 12px rgba(0,0,0,.3)); }
 #start-student, #start-computer { object-fit: contain; filter: drop-shadow(0 12px 8px rgba(0,0,0,.25)); }
 #start-tagline {
@@ -392,7 +392,7 @@ body:not([data-tutorial]) #spotlight { display: none; }
 #coach.dim #coach-card { opacity: .35; transform: scale(.96) !important; transition: opacity .3s; }
 #coach-card {
   border-radius: 28px; border: 8px solid var(--violet);
-  background: #fbefd2 url(../assets/textures/paper-grain.png) center / 300px repeat;
+  background: #fbefd2 url(../assets/textures/paper-grain.webp) center / 300px repeat;
   box-shadow: inset 0 0 0 4px var(--gold), 0 0 0 4px #24104f, 0 18px 40px rgba(5, 15, 40, .45);
 }
 #coach-pose { position: absolute; object-fit: contain; object-position: 50% 100%; filter: drop-shadow(0 6px 4px rgba(0,0,0,.2)); }
@@ -433,8 +433,8 @@ body[data-tut-roll] #btn-roll, body[data-tut-roll] #tray { z-index: 33; }
 /* ---------- intro cinematic ---------- */
 #screen-intro { z-index: 90; display: none; overflow: hidden; background: #062447; }
 #screen-intro.open { display: block; }
-#intro-bg { position: absolute; inset: 0; background: url(../assets/background/desktop.png) center / cover no-repeat; transform-origin: 50% 100%; }
-.port #intro-bg { background-image: url(../assets/background/phone.png); }
+#intro-bg { position: absolute; inset: 0; background: url(../assets/background/desktop.webp) center / cover no-repeat; transform-origin: 50% 100%; }
+.port #intro-bg { background-image: url(../assets/background/phone.webp); }
 #intro-deep { position: absolute; inset: 0; background: linear-gradient(#0a2f5c, #020b1d); pointer-events: none; }
 #intro-layer { position: absolute; inset: 0; }
 #intro-flash { position: absolute; inset: 0; background: #fff8dc; opacity: 0; pointer-events: none; }
@@ -445,7 +445,7 @@ body[data-tut-roll] #btn-roll, body[data-tut-roll] #tray { z-index: 33; }
 #intro-shine {
   position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(105deg, transparent 42%, rgba(255,255,255,.9) 50%, transparent 58%) 150% 0 / 300% 100% no-repeat;
-  -webkit-mask: url(../assets/ui/logo/wordmark-dark.png) center / 100% 100% no-repeat; mask: url(../assets/ui/logo/wordmark-dark.png) center / 100% 100% no-repeat;
+  -webkit-mask: url(../assets/ui/logo/wordmark-dark.webp) center / 100% 100% no-repeat; mask: url(../assets/ui/logo/wordmark-dark.webp) center / 100% 100% no-repeat;
   mix-blend-mode: overlay;
 }
 #intro-ticker { font-weight: 700; line-height: 1; white-space: nowrap; }
@@ -470,7 +470,7 @@ body[data-screen="intro"] #screen-game, body[data-screen="start"] #screen-game {
 #hero-card {
   position: absolute; padding: 26px 40px 28px; border-radius: 34px; text-align: center; perspective: 600px;
   border: 9px solid var(--violet); color: var(--paper-ink);
-  background: #fbefd2 url(../assets/textures/paper-grain.png) center / 300px repeat;
+  background: #fbefd2 url(../assets/textures/paper-grain.webp) center / 300px repeat;
   box-shadow: inset 0 0 0 5px var(--gold), 0 0 0 5px #24104f, 0 30px 60px rgba(5, 15, 40, .55);
 }
 #hero-card[data-kind="minus"], #hero-card[data-kind="snake"] { border-color: #1c4fb8; }
