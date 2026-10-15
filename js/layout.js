@@ -15,17 +15,19 @@
   function tables() {
     return {
       land: {
-        'logo-small':    { x: 30,   y: 14,  w: 300, h: ar('ui/logo/wordmark-dark', 300) },
+        'logo-small':    { x: 22,   y: 14,  w: 290, h: ar('ui/logo/wordmark-dark', 290) },
         'topbar':        { x: 1816, y: 24,  w: 84,  h: 84 },
-        'turn-banner':   { x: 30,   y: 168, w: 350, h: ar('ui/panels/turn-student', 350) },
-        'card-student':  { x: 30,   y: 362, w: 350, h: ar('ui/panels/player-student-active', 350) },
-        'card-computer': { x: 30,   y: 566, w: 350, h: ar('ui/panels/player-computer-active', 350) },
-        'board-wrap':    { x: 488,  y: 20,  w: 1040, h: 1040 },
-        'tray':          { x: 1560, y: 300, w: 340, h: ar('dice/sign-kit/tray', 340) },
-        'btn-roll':      { x: 1580, y: 640, w: 300, h: ar('ui/buttons/large-idle', 300) },
-        'roll-nudge':    { x: 1690, y: 556, w: 80,  h: 94 },
-        'toast':         { x: 488,  y: 60,  w: 1040, h: 90 },
-        'coach':         { x: 16,   y: 586, w: 446, h: 464 }
+        'turn-banner':   { x: 22,   y: 172, w: 290, h: ar('ui/panels/turn-student', 290) },
+        'card-student':  { x: 22,   y: 340, w: 290, h: ar('ui/panels/player-student-active', 290) },
+        'card-computer': { x: 22,   y: 516, w: 290, h: ar('ui/panels/player-computer-active', 290) },
+        'board-wrap':    { x: 426,  y: 20,  w: 1164, h: 1040 },      // wide board (aspect ~1.12)
+        'tray':          { x: 1612, y: 300, w: 290, h: ar('dice/sign-kit/tray', 290) },
+        'btn-roll':      { x: 1622, y: 616, w: 270, h: ar('ui/buttons/large-idle', 270) },
+        'roll-nudge':    { x: 1717, y: 528, w: 80,  h: 94 },
+        'toast':         { x: 426,  y: 60,  w: 1164, h: 90 },
+        'hop-hud':       { x: 788,  y: 30,  w: 440, h: 92 },
+        'hop-hud-low':   { x: 788,  y: 958, w: 440, h: 92 },
+        'coach':         { x: 12,   y: 690, w: 392, h: 372 }
       },
       port: {
         'logo-small':    { x: 30,   y: 22,  w: 270, h: ar('ui/logo/wordmark-dark', 270) },
@@ -38,6 +40,8 @@
         'btn-roll':      { x: 360,  y: 1700, w: 360, h: ar('ui/buttons/large-idle', 360) },
         'roll-nudge':    { x: 500,  y: 1612, w: 80,  h: 94 },
         'toast':         { x: 112,  y: 392, w: 930, h: 90 },
+        'hop-hud':       { x: 357,  y: 368, w: 440, h: 92 },
+        'hop-hud-low':   { x: 357,  y: 1172, w: 440, h: 92 },
         'coach':         { x: 20,   y: 140, w: 1040, h: 200 }
       }
     };
@@ -72,9 +76,9 @@
         if (!el) continue;
         Object.assign(el.style, { left: r.x + 'px', top: r.y + 'px', width: r.w + 'px', height: r.h + 'px' });
       }
-      // board: 1000-unit internal space scaled into the wrap
-      const bw = this.rects['board-wrap'].w;
-      document.getElementById('board').style.transform = `scale(${bw / 1000})`;
+      // board: 1000 units tall (W units wide, see board.js) scaled into the wrap by its height
+      const bh = this.rects['board-wrap'].h;
+      document.getElementById('board').style.transform = `scale(${bh / 1000})`;
     },
     rect(id) { return this.rects[id]; },
     init() {

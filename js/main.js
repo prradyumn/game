@@ -122,7 +122,7 @@
   function debugOverlay() {
     const o = $('debug-overlay'); o.hidden = false;
     const r = ISL.layout.rect('board-wrap');
-    const k = r.w / 1000;
+    const k = r.h / 1000;
     let html = '';
     for (let n = -50; n <= 50; n++) {
       const a = ISL.board.anchor(n);
@@ -139,7 +139,8 @@
     await A.preloadAll(p => { $('loader-bar').firstElementChild.style.width = Math.round(p * 100) + '%'; });
     if (document.fonts && document.fonts.ready) { try { await Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]); } catch (e) {} }
     ISL.board.build();
-    ISL.layout.onChange.push(() => { UI.sizeDice(); if (params.has('debug')) debugOverlay(); });
+    // switching orientation changes the board's aspect: rebuild it and put the tokens back
+    ISL.layout.onChange.push(() => { ISL.board.build(); ISL.game.arrange && ISL.game.arrange(0); UI.sizeDice(); if (params.has('debug')) debugOverlay(); });
     ISL.voice.init();
     UI.buildDice();
     ISL.game.init();

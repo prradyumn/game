@@ -187,23 +187,42 @@
   }
 
   /* ---------- hop prompt ----------
-     A bubble over the character while the player taps it along: direction arrow, "Tap to hop!"
-     and a counter (2 / 5). Lives in board space, so the camera zoom keeps it next to the token. */
-  function hopPrompt(x, y, dir, done, total, dur = 0) {
+     A pill fixed over the top of the board while the player taps the character along:
+     direction arrow, "Tap to hop!" and a counter (2 / 5). It sits outside the camera, so it
+     never covers the character mid-jump. (x, y are accepted for API compatibility and ignored.) */
+  function hopPrompt(x, y, dir, done, total, dur, tokenEl) {
+    // sit over the top of the board — or the bottom when the character is up there, so it never covers it
+    const st = $('stage').getBoundingClientRect(), k = ISL.layout.scale;
+    const tokenY = tokenEl ? (tokenEl.getBoundingClientRect().top - st.top) / k : Infinity;
+    const r = ISL.layout.rect(tokenY < ISL.layout.stage.h * 0.4 ? 'hop-hud-low' : 'hop-hud');
     let p = $('hop-prompt');
     if (!p) {
-      p = document.createElement('div'); p.id = 'hop-prompt';
+      p = document.createElement('div'); p.id = 'hop-prompt'; p.className = 'abs';
       p.innerHTML = '<b class="hp-arrow"></b><span class="hp-text">Tap to hop!</span><span class="hp-count"></span>';
-      $('board-ui').appendChild(p);
-      // centre the bubble's bottom tip on (x, y) — via GSAP, which owns this element's transform
-      gsap.set(p, { xPercent: -50, yPercent: -100, transformOrigin: '50% 100%' });
-      gsap.fromTo(p, { scale: 0.3, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: 'back.out(2.5)' });
+      $('stage').appendChild(p);
+      Object.assign(p.style, { left: r.x + 'px', top: r.y + 'px', width: r.w + 'px', height: r.h + 'px' });
+      gsap.fromTo(p, { scale: 0.4, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(2.2)' });
+    } else if (parseFloat(p.style.top) !== r.y) {
+      gsap.to(p, { top: r.y, duration: 0.35, ease: 'power2.inOut' });
     }
-    p.className = dir > 0 ? 'up' : 'down';
+    p.classList.toggle('up', dir > 0); p.classList.toggle('down', dir < 0);
     p.querySelector('.hp-arrow').textContent = dir > 0 ? '▲' : '▼';
-    p.querySelector('.hp-text').textContent = done ? (dir > 0 ? 'Keep hopping up!' : 'Keep hopping down!') : 'Tap to hop!';
-    p.querySelector('.hp-count').innerHTML = `<b>${done}</b> / ${total}`;
-    gsap.to(p, { x, y, duration: dur, ease: 'power1.inOut', overwrite: 'auto' });
+    p.querySelector('.hp-text').textContent = done ? (dir > 0 ? 'Keep hopping up!' : 'Keep hopping down!') : (dir > 0 ? 'Tap to hop up!' : 'Tap to hop down!');
+    const c = p.querySelector('.hp-count');
+    c.innerHTML = `<b>${done}</b> / ${total}`;
+    if (done) gsap.fromTo(c, { scale: 1.5 }, { scale: 1, duration: 0.3, ease: 'back.out(3)' });
+  }
+  /** Pulsing ring on the square the next tap will hop to (null hides it). */
+  function nextSquare(c, dur = 0) {
+    let el = $('next-square');
+    if (!c) { if (el) gsap.to(el, { opacity: 0, duration: 0.2, onComplete: () => el.remove() }); if (el) el.id = ''; return; }
+    if (!el) {
+      el = document.createElement('i'); el.id = 'next-square';
+      $('board-ui').appendChild(el);
+      gsap.set(el, { xPercent: -50, yPercent: -50, x: c.x, y: c.y + 8 });
+      gsap.fromTo(el, { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(2)' });
+    }
+    gsap.to(el, { x: c.x, y: c.y + 8, duration: dur, ease: 'power1.inOut', overwrite: 'auto' });
   }
   function hideHopPrompt() {
     const p = $('hop-prompt'); if (!p) return;
@@ -225,6 +244,6 @@
   ISL.ui = {
     initButtons, enable, setBtnState, setTurn, setCardPos,
     buildDice, sizeDice, rollDice, setFace, toast, wait, rollReady, poke,
-    hopPrompt, hideHopPrompt
+    hopPrompt, hideHopPrompt, nextSquare
   };
 })(window.ISL);

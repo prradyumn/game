@@ -13,7 +13,7 @@
 
   /** A token's body centre in stage pixels. */
   function tokenPoint(el) {
-    const r = ISL.layout.rect('board-wrap'), k = r.w / 1000;
+    const r = ISL.layout.rect('board-wrap'), k = r.h / 1000;
     return { x: r.x + gsap.getProperty(el, 'x') * k, y: r.y + (gsap.getProperty(el, 'y') - 45) * k };
   }
   function render() {

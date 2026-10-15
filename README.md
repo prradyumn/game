@@ -6,7 +6,7 @@ Open `index.html` in Chrome/Edge/Safari (double-click works; no server needed).
 - Board runs from **−50** (seafloor) to **+50** (summit). **0** is the jetty on the shoreline; both explorers start there.
 - Each turn: roll the **sign die** (4 plus faces, 2 minus faces) and the **number die** (1–6). Move = position + (±n).
 - After the roll, the player makes the move: **one tap per hop** (tap anywhere on the play area, press Space, or tap **Hop!**). A bubble over the character shows the direction and a counter (2 / 5). The computer hops on its own. No equations are shown on screen; the roll is shown on the dice and the round chip on the tray.
-- Ladders add (+), snakes subtract (−). Values are on the tags.
+- Ladders add (+), snakes subtract (−). Values are on the tags. The big python at +43 slides you all the way down to −40.
 - Reach or pass +50 to win. You can't go below −50.
 - Student vs computer; the computer rolls automatically.
 

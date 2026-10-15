@@ -1,5 +1,7 @@
 /* Board geometry + rendering.
-   Internal board space: 1000 x 1000 units, 10 x 10 cells of 100 units.
+   Internal board space: W x 1000 units (W = 1000 x the board's aspect), 10 x 10 cells.
+   Cells are 100 units tall and W/10 wide: landscape uses a wider board to fill the screen,
+   portrait a square one. Sprites (tokens, heads, tags) are sized in units and never stretch.
    Rows 0-4 (land, top half)  hold +41..+50 down to +1..+10.
    Rows 5-9 (sea, bottom half) hold −1..−10 down to −41..−50.
    Zero is the jetty sitting on the shoreline just left of the board.
@@ -7,7 +9,9 @@
 (function (ISL) {
   'use strict';
   const A = ISL.assets;
-  const CELL = 100;
+  const CELL = 100;                 // cell height (and width on a square board)
+  let BW = 1000, CW = CELL;         // board width and cell width in units — set from the layout's aspect
+  function setAspect(r) { BW = Math.round(1000 * r); CW = BW / 10; }
   const MIN = -50, MAX = 50;
 
   // Ladders go up (bottom -> top). Snakes go down (head -> tail).
@@ -20,12 +24,14 @@
     { from: 27,  to: 47 }
   ];
   const SNAKES = [
-    { from: 43,  to: 21,  kind: 'python',     bend: 1 },
+    // the big one: from the summit side all the way to the deep, winding down the left edge
+    // (via = waypoints in cell coordinates [col, row], centre of a cell = +0.5)
+    { from: 43,  to: -40, kind: 'python', tagAt: 0.47,
+      via: [[1.75, 1.25], [0.85, 1.95], [0.42, 2.9], [0.8, 3.85], [0.38, 4.8], [0.8, 5.75], [0.38, 6.7], [0.72, 7.6]] },
     { from: 35,  to: 15,  kind: 'tree-snake', bend: -1 },
     { from: 13,  to: -7,  kind: 'tree-snake', bend: 1 },
     { from: -5,  to: -26, kind: 'sea-krait',  bend: -1 },
-    { from: -29, to: -49, kind: 'sea-krait',  bend: 1 },
-    { from: -19, to: -40, kind: 'sea-krait',  bend: -1 }
+    { from: -29, to: -49, kind: 'sea-krait',  bend: 1 }
   ];
   const SNAKE_STYLE = {
     'python':     { w: 42, base: '#5fae2e', dark: '#25591a', belly: '#f4e3a0', line: '#14240c', head: 84 },
@@ -47,7 +53,7 @@
   function center(n) {
     if (n === 0) return { x: JETTY.x, y: JETTY.y };
     const c = cellOf(n);
-    return { x: c.col * CELL + CELL / 2, y: c.row * CELL + CELL / 2 };
+    return { x: c.col * CW + CW / 2, y: c.row * CELL + CELL / 2 };
   }
   /** Where a token's feet stand for number n. `slot` -1 / +1 when two tokens share a spot. */
   function anchor(n, slot = 0) {
@@ -66,10 +72,41 @@
       y: u * u * u * p0.y + 3 * u * u * t * p1.y + 3 * u * t * t * p2.y + t * t * t * p3.y
     };
   }
+  /** Catmull-Rom spline through waypoints (used by long winding snakes). */
+  function splinePoints(P, perSeg = 40) {
+    const pts = [];
+    for (let i = 0; i < P.length - 1; i++) {
+      const p0 = P[Math.max(0, i - 1)], p1 = P[i], p2 = P[i + 1], p3 = P[Math.min(P.length - 1, i + 2)];
+      for (let j = 0; j < perSeg; j++) {
+        const t = j / perSeg, t2 = t * t, t3 = t2 * t;
+        pts.push({
+          x: 0.5 * (2 * p1.x + (-p0.x + p2.x) * t + (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * t2 + (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * t3),
+          y: 0.5 * (2 * p1.y + (-p0.y + p2.y) * t + (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * t2 + (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * t3)
+        });
+      }
+    }
+    pts.push({ x: P[P.length - 1].x, y: P[P.length - 1].y });
+    return pts;
+  }
+  /** Arc length + unit normals along a sampled path (in place). */
+  function measure(pts) {
+    let acc = 0;
+    const N = pts.length - 1;
+    pts.forEach((p, i) => {
+      if (i) acc += Math.hypot(p.x - pts[i - 1].x, p.y - pts[i - 1].y);
+      p.s = acc;
+      const a = pts[Math.max(0, i - 1)], b = pts[Math.min(N, i + 1)];
+      const tx = b.x - a.x, ty = b.y - a.y, tl = Math.hypot(tx, ty) || 1;
+      p.tx = tx / tl; p.ty = ty / tl; p.nx = -p.ty; p.ny = p.tx;
+    });
+    pts.total = acc;
+    return pts;
+  }
   function snakeCurve(s) {
     const h = center(s.from), t = center(s.to);
     const p0 = { x: h.x, y: h.y + 8 };             // neck, hidden under the chin
     const p3 = { x: t.x, y: t.y + 6 };
+    if (s.via) return measure(splinePoints([p0, ...s.via.map(([c, r]) => ({ x: c * CW, y: r * CELL })), p3]));
     const dx = p3.x - p0.x, dy = p3.y - p0.y, L = Math.hypot(dx, dy);
     const nx = -dy / L, ny = dx / L;
     const amp = Math.min(L * 0.26, 74) * s.bend;
@@ -108,19 +145,20 @@
   /* ---------- drawing: grid + labels ---------- */
   function drawGrid() {
     const cv = document.getElementById('board-grid'), ctx = cv.getContext('2d');
-    const k = cv.width / 1000;
+    cv.width = Math.round(2 * BW); cv.height = 2000;
+    const k = cv.height / 1000;
     ctx.setTransform(k, 0, 0, k, 0, 0);
-    ctx.clearRect(0, 0, 1000, 1000);
+    ctx.clearRect(0, 0, BW, 1000);
     for (let r = 0; r < 10; r++) for (let c = 0; c < 10; c++) {
-      if ((r + c) % 2 === 0) { ctx.fillStyle = r < 5 ? 'rgba(255,250,230,0.10)' : 'rgba(200,240,255,0.08)'; ctx.fillRect(c * CELL, r * CELL, CELL, CELL); }
+      if ((r + c) % 2 === 0) { ctx.fillStyle = r < 5 ? 'rgba(255,250,230,0.10)' : 'rgba(200,240,255,0.08)'; ctx.fillRect(c * CW, r * CELL, CW, CELL); }
     }
     ctx.strokeStyle = 'rgba(24,42,86,0.32)'; ctx.lineWidth = 1.6;
     ctx.beginPath();
-    for (let i = 0; i <= 10; i++) { ctx.moveTo(i * CELL, 0); ctx.lineTo(i * CELL, 1000); ctx.moveTo(0, i * CELL); ctx.lineTo(1000, i * CELL); }
+    for (let i = 0; i <= 10; i++) { ctx.moveTo(i * CW, 0); ctx.lineTo(i * CW, 1000); ctx.moveTo(0, i * CELL); ctx.lineTo(BW, i * CELL); }
     ctx.stroke();
     // shoreline accent (zero line)
     ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.lineWidth = 3; ctx.setLineDash([10, 8]);
-    ctx.beginPath(); ctx.moveTo(0, 500); ctx.lineTo(1000, 500); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(0, 500); ctx.lineTo(BW, 500); ctx.stroke(); ctx.setLineDash([]);
   }
   function buildLabels() {
     const box = document.getElementById('board-labels');
@@ -131,7 +169,7 @@
       const el = document.createElement('span');
       el.className = 'cell-label ' + (n > 0 ? 'pos' : 'neg');
       el.textContent = label(n);
-      el.style.left = (c.col * CELL + 6) + 'px';
+      el.style.left = (c.col * CW + 6) + 'px';
       el.style.top = (c.row * CELL + 5) + 'px';
       el.dataset.n = n;
       box.appendChild(el);
@@ -350,7 +388,7 @@
       // value tag on the body
       const tk = `snakes/${s.kind}/value-tag`;
       const tw = 84, th = A.hForW(tk, tw);
-      const p = along(s.pts, 0.5);
+      const p = along(s.pts, s.tagAt || 0.5);
       const tag = document.createElement('div');
       tag.className = 'value-tag snake-tag';
       place(tag, p.x - tw / 2, p.y - th / 2, tw, th);
@@ -372,9 +410,10 @@
 
   function drawPieces() {
     const cv = document.getElementById('board-pieces'), ctx = cv.getContext('2d');
-    const k = cv.width / 1000;
+    cv.width = Math.round(2.4 * BW); cv.height = 2400;
+    const k = cv.height / 1000;
     ctx.setTransform(k, 0, 0, k, 0, 0);
-    ctx.clearRect(0, 0, 1000, 1000);
+    ctx.clearRect(0, 0, BW, 1000);
     LADDERS.forEach(l => drawLadder(ctx, l));
     SNAKES.forEach(s => drawSnake(ctx, s));
   }
@@ -419,7 +458,13 @@
       const key = `snakes/${s.kind}/head-${state}`;
       s.headImg.src = A.url(key);
     },
+    get W() { return BW; },
+    setAspect,
     build() {
+      const r = ISL.layout.rect('board-wrap');
+      setAspect(r.w / r.h);
+      const board = document.getElementById('board');
+      [board, ...board.children].forEach(el => { el.style.width = BW + 'px'; });
       SNAKES.forEach(s => { s.pts = snakeCurve(s); });
       drawGrid();
       buildLabels();

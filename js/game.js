@@ -71,16 +71,22 @@
   function hop(t, n, prev, step, dir, slow) {
     const a = t.xy(), b = B.anchor(n, 0);
     const tl = gsap.timeline();
-    const D = slow ? 0.36 : 0.3, H = slow ? 50 : 34;
+    // the token's spot glides square to square while its body (not its shadow or ring) arcs up:
+    // the ground shadow shrinks under the jump, so every hop reads clearly
+    const D = slow ? 0.4 : 0.3, H = slow ? 72 : 42;
+    const shadow = t.el.querySelector('.token-shadow');
     tl.call(() => { t.setPose('hop'); AU.play('hop', { step, dir }); });
-    tl.to(t.el, { x: b.x, duration: D, ease: 'none' }, 0);
-    tl.to(t.el, { y: Math.min(a.y, b.y) - H, duration: D * 0.5, ease: 'power2.out' }, 0);
-    tl.to(t.el, { y: b.y, duration: D * 0.5, ease: 'power2.in' }, D * 0.5);
+    tl.to(t.el, { x: b.x, y: b.y, duration: D, ease: 'none' }, 0);
+    tl.fromTo(t.inner, { y: 0, scaleY: 1.16, scaleX: 0.88 }, { y: -H - Math.max(0, a.y - b.y) * 0.25, scaleY: 1, scaleX: 1, duration: D * 0.5, ease: 'power2.out', transformOrigin: '50% 100%' }, 0);
+    tl.to(t.inner, { y: 0, duration: D * 0.5, ease: 'power2.in' }, D * 0.5);
+    tl.to(shadow, { scale: 0.5, opacity: 0.22, duration: D * 0.5, ease: 'power2.out' }, 0);
+    tl.to(shadow, { scale: 1, opacity: 0.55, duration: D * 0.5, ease: 'power2.in' }, D * 0.5);
     tl.call(() => { t.el.style.zIndex = Math.round(b.y + 101); }, null, D * 0.5);
-    tl.fromTo(t.inner, { scaleY: 1, scaleX: 1 }, { scaleY: 0.84, scaleX: 1.12, duration: 0.07, yoyo: true, repeat: 1, ease: 'sine.out', transformOrigin: '50% 100%' }, D);
+    tl.fromTo(t.inner, { scaleY: 1, scaleX: 1 }, { scaleY: slow ? 0.72 : 0.84, scaleX: slow ? 1.25 : 1.12, duration: 0.08, yoyo: true, repeat: 1, ease: 'sine.out', transformOrigin: '50% 100%' }, D);
     tl.call(() => {
       AU.play(n < 0 ? 'plip' : 'land');
       FX.stepCount(b.x, b.y - 96, step * dir);
+      if (slow && n !== 0) FX.cellFlash(B.center(n), dir);
       if (n < 0 && prev >= 0) FX.splash(b.x, b.y);
       else if (n < 0) { FX.ripple(b.x, b.y - 4); FX.bubbles(b.x, b.y - 30, 2); }
       else if (n > 0) FX.sandPuff(b.x, b.y);
@@ -112,7 +118,10 @@
     const VO = ISL.voice;
     let done = 0, queued = 0, wake = null;
     // the bubble rides along with each hop (same duration) and counts the tap as soon as it lands
-    const prompt = (n = t.pos, dur = 0) => { const a = B.anchor(n, 0); UI.hopPrompt(a.x, a.y - IDLE_H[t.who] - 46, dir, done, total, dur); };
+    const prompt = (n = t.pos, dur = 0) => {
+      const a = B.anchor(n, 0); UI.hopPrompt(a.x, a.y - IDLE_H[t.who] - 46, dir, done, total, dur, t.el);
+      UI.nextSquare(n + dir === 0 ? B.anchor(0, 0) : B.center(n + dir), dur);   // where the next tap lands
+    };
     G.hopResolver = () => { if (done + queued < total) { queued++; UI.poke(); if (wake) { const w = wake; wake = null; w(); } } };
     UI.enable($('btn-roll'), true);
     UI.rollReady(true, n => { if (narrate && n === 1) VO.say('tap_hop'); }, 'hop');
@@ -125,13 +134,13 @@
       if (done === 0) VO.stop();
       const prev = t.pos, n = t.pos + dir;
       const h = hop(t, n, prev, ++done, dir, true);
-      if (done < total) prompt(n, h.duration()); else UI.hideHopPrompt();
+      if (done < total) prompt(n, h.duration()); else { UI.hideHopPrompt(); UI.nextSquare(null); }
       await guard(tlPromise(h));
       if (n !== 0) { const c = B.center(n); dots.push(FX.pathDot(c.x, c.y + 4, dir)); }
     }
     G.hopResolver = null;
     UI.rollReady(false); UI.enable($('btn-roll'), false);
-    UI.hideHopPrompt();
+    UI.hideHopPrompt(); UI.nextSquare(null);
     gsap.to(dots, { opacity: 0, duration: 0.6, delay: 0.8, stagger: 0.05, onComplete: () => dots.forEach(d => d.remove()) });
   }
 
@@ -146,7 +155,7 @@
     const prog = { f: 0 };
     let wasLand = t.pos >= 0;
     await guard(new Promise(res => gsap.to(prog, {
-      f: 1, duration: Math.min(2.2, 0.9 + s.pts.total / 500), ease: 'power1.inOut',
+      f: 1, duration: Math.min(3.4, 0.9 + s.pts.total / 450), ease: 'power1.inOut',
       onUpdate() {
         const p = B.along(s.pts, prog.f);
         const y = p.y + 20 + 8 * prog.f;
@@ -307,7 +316,7 @@
       // while hopping, a tap anywhere on the play area (not on a button) makes one hop
       $('screen-game').addEventListener('pointerdown', e => {
         if (!G.hopResolver || e.target.closest('button') || document.body.hasAttribute('data-paused')) return;
-        AU.unlock(); G.hopResolver();
+        AU.unlock(); FX.tapRipple(e.clientX, e.clientY); G.hopResolver();
       });
       window.addEventListener('keydown', e => {
         if (e.code !== 'Space' && e.code !== 'Enter') return;
@@ -321,8 +330,13 @@
     reset() {
       G.sid++; G.over = false; G.rollResolver = null; G.hopResolver = null;
       ISL.voice.stop();
-      CINE.cam.reset(); UI.hideHopPrompt();
-      ['student', 'computer'].forEach(w => { const t = G.tokens[w]; gsap.killTweensOf([t.el, t.inner]); t.el.classList.remove('is-turn', 'awaiting'); t.pos = 0; t.rest(); UI.setCardPos(w, 0); });
+      CINE.cam.reset(); UI.hideHopPrompt(); UI.nextSquare(null);
+      ['student', 'computer'].forEach(w => {
+        const t = G.tokens[w], sh = t.el.querySelector('.token-shadow');
+        gsap.killTweensOf([t.el, t.inner, sh]);
+        gsap.set(t.inner, { y: 0, scaleX: 1, scaleY: 1 }); gsap.set(sh, { scale: 1, opacity: 0.55 });
+        t.el.classList.remove('is-turn', 'awaiting'); t.pos = 0; t.rest(); UI.setCardPos(w, 0);
+      });
       G.turn = 'student';
       UI.rollReady(false);
       arrange(0);

@@ -34,7 +34,7 @@
 
   /* ---------- spotlight targets in stage pixels ---------- */
   function boardRect(x0, y0, x1, y1, pad = 12) {
-    const r = ISL.layout.rect('board-wrap'), k = r.w / 1000;
+    const r = ISL.layout.rect('board-wrap'), k = r.h / 1000;
     return { x: r.x + x0 * k - pad, y: r.y + y0 * k - pad, w: (x1 - x0) * k + pad * 2, h: (y1 - y0) * k + pad * 2 };
   }
   function union(...ids) {
@@ -48,9 +48,9 @@
     return boardRect(Math.min(ca.x, cb.x) - 60, Math.min(ca.y, cb.y) - 60, Math.max(ca.x, cb.x) + 60, Math.max(ca.y, cb.y) + 60, 4);
   }
   const SPOTS = {
-    board: () => boardRect(0, 0, 1000, 1000, 20),
+    board: () => boardRect(0, 0, B.W, 1000, 20),
     dice: () => union('tray', 'btn-roll'),
-    shore: () => boardRect(-110, 300, 1000, 700, 8),
+    shore: () => boardRect(-110, 300, B.W, 700, 8),
     ladder: () => cellsRect(-3, 19),
     snake: () => cellsRect(13, -7),
     summit: () => cellsRect(50, 50)

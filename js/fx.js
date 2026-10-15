@@ -62,6 +62,22 @@
       gsap.fromTo(el, { scale: 0 }, { scale: 1, duration: 0.2, ease: 'back.out(3)' });
       return el;
     },
+    /** A square lights up as the token lands on it. */
+    cellFlash(c, dir) {
+      const w = ISL.board.W / 10, h = ISL.board.CELL;
+      const el = document.createElement('i');
+      el.className = 'fx cell-flash ' + (dir > 0 ? 'plus' : 'minus');
+      Object.assign(el.style, { width: w + 'px', height: h + 'px' });
+      boardFx().appendChild(el); at(el, c.x, c.y);
+      gsap.fromTo(el, { opacity: 0.95, scale: 0.85 }, { opacity: 0, scale: 1.08, duration: 0.6, ease: 'power2.out', onComplete: () => el.remove() });
+    },
+    /** Ripple where the player tapped (viewport coords), on the stage so it isn't affected by the camera. */
+    tapRipple(cx, cy) {
+      const st = document.getElementById('stage'), r = st.getBoundingClientRect(), k = ISL.layout.scale;
+      const el = document.createElement('i'); el.className = 'fx tap-ripple';
+      st.appendChild(el); at(el, (cx - r.left) / k, (cy - r.top) / k);
+      gsap.fromTo(el, { scale: 0.3, opacity: 0.9 }, { scale: 1.4, opacity: 0, duration: 0.45, ease: 'power2.out', onComplete: () => el.remove() });
+    },
     /** Running step count (+1, +2, …) popping over the token on each hop. */
     stepCount(x, y, v) {
       const el = document.createElement('span');
