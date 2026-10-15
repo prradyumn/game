@@ -11,7 +11,7 @@
   const A = ISL.assets;
   const CELL = 100;                 // cell height (and width on a square board)
   let BW = 1000, CW = CELL;         // board width and cell width in units — set from the layout's aspect
-  function setAspect(r) { BW = Math.round(1000 * r); CW = BW / 10; JETTY.x = CW * 0.5; JETTY.w = Math.min(100, CW * 0.86); }
+  function setAspect(r) { BW = Math.round(1000 * r); CW = BW / 10; JETTY.x = CW * 0.6; JETTY.w = Math.min(80, CW * 0.62); }   // right part of column 0, clear of the 1 / −1 numbers
   const MIN = -50, MAX = 50;
 
   // Ladders go up (bottom -> top). Snakes go down (head -> tail).
@@ -27,7 +27,8 @@
     // the big one: from the summit side all the way to the deep, winding down the left edge
     // (via = waypoints in cell coordinates [col, row], centre of a cell = +0.5)
     { from: 43,  to: -40, kind: 'python',
-      via: [[1.75, 1.25], [0.85, 1.95], [0.45, 2.85], [0.95, 3.75], [1.3, 4.6], [1.25, 5.45], [0.7, 6.35], [0.4, 7.3], [0.6, 8.05]] },
+      // threads between the jetty / 0 badge, the −2 number and the −3 ladder without touching them
+      via: [[1.75, 1.25], [0.85, 1.95], [0.45, 2.85], [0.55, 3.6], [0.72, 4.32], [1.25, 4.58], [1.72, 4.98], [1.72, 5.6], [0.95, 6.1], [0.42, 6.8], [0.48, 7.6], [0.6, 8.1]] },
     { from: 35,  to: 15,  kind: 'tree-snake', bend: -1 },
     { from: 13,  to: -7,  kind: 'tree-snake', bend: 1 },
     { from: -5,  to: -26, kind: 'sea-krait',  bend: -1 },
@@ -58,7 +59,7 @@
   /** Where a token's feet stand for number n. `slot` -1 / +1 when two tokens share a spot. */
   function anchor(n, slot = 0) {
     const c = center(n);
-    if (n === 0) return { x: c.x + slot * 22, y: c.y + 8 };
+    if (n === 0) return { x: c.x + 6 + slot * 18, y: c.y - 6 };   // on the deck, nudged clear of the −1 number
     return { x: c.x + slot * 20, y: c.y + 34 };
   }
   const fmt = n => n > 0 ? '+' + n : n < 0 ? '−' + Math.abs(n) : '0';
@@ -169,8 +170,8 @@
       const el = document.createElement('span');
       el.className = 'cell-label ' + (n > 0 ? 'pos' : 'neg') + (n % 10 === 0 ? ' mark' : '');
       el.textContent = label(n);
-      el.style.left = (n === -1 ? c.col * CW + CW - 50 : c.col * CW + 4) + 'px';
-      el.style.top = (n === -1 ? c.row * CELL + CELL - 42 : c.row * CELL + 4) + 'px';
+      el.style.left = (c.col * CW + 4) + 'px';
+      el.style.top = (c.row * CELL + 4) + 'px';
       el.dataset.n = n;
       box.appendChild(el);
     }
@@ -332,7 +333,7 @@
     place(glow, JETTY.x - jw * 0.65, JETTY.y - 34, jw * 1.3, 68);
     decor.insertBefore(glow, jetty);
     const zero = document.createElement('div'); zero.className = 'decor zero-badge'; zero.textContent = '0';
-    place(zero, JETTY.x - 24, JETTY.y + 24, 48, 48);
+    place(zero, JETTY.x - 22, JETTY.y + 26, 44, 44);
     decor.appendChild(zero);
     // Summit flag at +50
     const c50 = center(MAX);
@@ -379,7 +380,7 @@
   function labelBox(n) {
     const c = cellOf(n), big = n % 10 === 0;
     const w = (label(n).length * (big ? 25 : 22)) + 16, h = big ? 50 : 44;
-    return { x: n === -1 ? c.col * CW + CW - 52 : c.col * CW + 2, y: n === -1 ? c.row * CELL + CELL - 44 : c.row * CELL + 2, w, h };
+    return { x: c.col * CW + 2, y: c.row * CELL + 2, w, h };
   }
   const hit = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
   /** First spot along `pointAt(d)` (d = distance from the start, in units) that is free. */
