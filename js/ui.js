@@ -217,16 +217,16 @@
     if (done) gsap.fromTo(c, { scale: 1.5 }, { scale: 1, duration: 0.3, ease: 'back.out(3)' });
   }
   /** Pulsing ring on the square the next tap will hop to (null hides it). */
-  function nextSquare(c, dur = 0) {
-    let el = $('next-square');
-    if (!c) { if (el) gsap.to(el, { opacity: 0, duration: 0.2, onComplete: () => el.remove() }); if (el) el.id = ''; return; }
-    if (!el) {
-      el = document.createElement('i'); el.id = 'next-square';
-      $('board-ui').appendChild(el);
-      gsap.set(el, { xPercent: -50, yPercent: -50, x: c.x, y: c.y + 8 });
-      gsap.fromTo(el, { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(2)' });
-    }
-    gsap.to(el, { x: c.x, y: c.y + 8, duration: dur, ease: 'power1.inOut', overwrite: 'auto' });
+  /** A still ring on the square the next tap hops to (null removes it). It never glides or pulses:
+      it simply fades out as a hop starts and fades in on the next square once the character lands. */
+  function nextSquare(c) {
+    const old = $('next-square');
+    if (old) { old.id = ''; gsap.to(old, { opacity: 0, duration: 0.12, onComplete: () => old.remove() }); }
+    if (!c) return;
+    const el = document.createElement('i'); el.id = 'next-square';
+    $('board-ui').appendChild(el);
+    gsap.set(el, { xPercent: -50, yPercent: -50, x: c.x, y: c.y + 8 });
+    gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.18 });
   }
   function hideHopPrompt() {
     const p = $('hop-prompt'); if (!p) return;

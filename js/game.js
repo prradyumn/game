@@ -128,15 +128,13 @@
     if (!total) return;
     const VO = ISL.voice;
     let done = 0, queued = 0, wake = null;
-    // the bubble rides along with each hop (same duration) and counts the tap as soon as it lands
-    const prompt = (n = t.pos, dur = 0) => {
-      const a = B.anchor(n, 0); UI.hopPrompt(a.x, a.y - IDLE_H[t.who] - 46, dir, done, total, dur, t.el);
-      UI.nextSquare(n + dir === 0 ? B.anchor(0, 0) : B.center(n + dir), dur);   // where the next tap lands
-    };
+    // the counter updates as each hop starts; the still ring marks only the square the next tap lands on
+    const prompt = (n = t.pos) => { const a = B.anchor(n, 0); UI.hopPrompt(a.x, a.y - IDLE_H[t.who] - 46, dir, done, total, 0, t.el); };
+    const markNext = () => UI.nextSquare(t.pos + dir === 0 ? B.anchor(0, 0) : B.center(t.pos + dir));
     G.hopResolver = () => { if (done + queued < total) { queued++; UI.poke(); if (wake) { const w = wake; wake = null; w(); } } };
     UI.enable($('btn-roll'), true);
     UI.rollReady(true, n => { if (narrate && n === 1) VO.say('tap_hop'); }, 'hop');
-    prompt();
+    prompt(); markNext();
     if (narrate && !G.hopTold) { G.hopTold = true; VO.say('tap_hop'); }
     const dots = [];
     while (done < total) {
@@ -144,10 +142,12 @@
       queued--;
       if (done === 0) VO.stop();
       const prev = t.pos, n = t.pos + dir;
+      UI.nextSquare(null);                       // ring leaves while the character is in the air
       const h = hop(t, n, prev, ++done, dir, true);
-      if (done < total) prompt(n, h.duration()); else { UI.hideHopPrompt(); UI.nextSquare(null); }
+      if (done < total) prompt(n); else UI.hideHopPrompt();
       await guard(tlPromise(h));
       if (n !== 0) { const c = B.center(n); dots.push(FX.pathDot(c.x, c.y + 4, dir)); }
+      if (done < total) markNext();              // …and appears on the next square once it has landed
     }
     G.hopResolver = null;
     UI.rollReady(false); UI.enable($('btn-roll'), false);
@@ -254,7 +254,7 @@
     const start = t.pos;
     const target = start + roll;
     const dest = Math.max(B.MIN, Math.min(B.MAX, target));
-    FX.target(who, B.center(dest).x - 32, B.center(dest).y - 32 + (dest === 0 ? 0 : 6));
+    if (who === 'computer') FX.target(who, B.center(dest).x - 32, B.center(dest).y - 32 + (dest === 0 ? 0 : 6));
     if (narrate) VO.number(roll);
 
     // camera swoops in so the character fills the view, then the hops happen
