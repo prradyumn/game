@@ -26,10 +26,10 @@ window.ISL = window.ISL || {};
       let done = 0;
       return Promise.all(keys.map(k => new Promise(res => {
         const img = new Image();
-        img.onload = img.onerror = () => {
-          done++; onProgress && onProgress(done / keys.length);
-          A.images[k] = img; res();
-        };
+        const fin = () => { done++; onProgress && onProgress(done / keys.length); A.images[k] = img; res(); };
+        // decode up front so no image has to be decoded mid-animation later
+        img.onload = () => (img.decode ? img.decode().catch(() => {}) : Promise.resolve()).then(fin);
+        img.onerror = fin;
         img.src = A.url(k);
       })));
     },

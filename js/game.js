@@ -16,25 +16,33 @@
       this.scale = IDLE_H[who] / idle[1];
       const el = document.createElement('div');
       el.className = 'token ' + who; el.id = 'token-' + who;
-      el.innerHTML = `<i class="token-ring"></i><img class="token-shadow" src="${A.url('dice/sign-kit/shadow')}" alt=""><img class="token-img" alt="">` +
+      el.innerHTML = `<i class="token-ring"></i><img class="token-shadow" src="${A.url('dice/sign-kit/shadow')}" alt="">` +
         `<svg class="token-marker" viewBox="0 0 60 70" style="top:${-IDLE_H[who] - 66}px"><path d="M19 5h22v27h13L30 64 6 32h13z" stroke-width="6" stroke-linejoin="round"/></svg>`;
       $('board-tokens').appendChild(el);
-      this.el = el; this.img = el.querySelector('.token-img');
+      this.el = el;
       const sh = el.querySelector('.token-shadow');
       const sw = 54; Object.assign(sh.style, { width: sw + 'px', height: A.hForW('dice/sign-kit/shadow', sw) + 'px', left: -sw / 2 + 'px', top: -A.hForW('dice/sign-kit/shadow', sw) / 2 + 'px' });
       this.inner = document.createElement('div'); // squash/stretch wrapper
       this.inner.className = 'token-body';
-      this.inner.appendChild(this.img); el.appendChild(this.inner);
+      el.appendChild(this.inner);
+      // Every pose is a pre-sized, pre-decoded image stacked in the body; changing pose only flips
+      // which one is visible, so the character never blanks or stretches while a new image decodes.
+      this.imgs = {};
+      Object.keys(window.ASSET_SIZES).filter(k => k.startsWith(`tokens/${who}-poses/`)).forEach(key => {
+        const [w, h] = A.size(key), W = w * this.scale, H = h * this.scale;
+        const im = document.createElement('img');
+        im.className = 'token-img'; im.alt = ''; im.decoding = 'sync'; im.src = A.url(key);
+        Object.assign(im.style, { width: W + 'px', height: H + 'px', left: -W / 2 + 'px', top: -H + 'px' });
+        this.inner.appendChild(im);
+        this.imgs[key.split('/').pop()] = im;
+      });
       this.setPose('idle');
     }
     setPose(p) {
-      if (this.pose === p) return;
+      if (this.pose === p || !this.imgs[p]) return;
+      if (this.pose) this.imgs[this.pose].classList.remove('on');
+      this.imgs[p].classList.add('on');
       this.pose = p;
-      const key = `tokens/${this.who}-poses/${p}`;
-      const [w, h] = A.size(key);
-      const W = w * this.scale, H = h * this.scale;
-      this.img.src = A.url(key);
-      Object.assign(this.img.style, { width: W + 'px', height: H + 'px', left: -W / 2 + 'px', top: -H + 'px' });
       this.el.dataset.pose = p;
     }
     rest() { this.setPose(this.pos < 0 ? 'underwater' : 'idle'); }
@@ -77,12 +85,15 @@
     const shadow = t.el.querySelector('.token-shadow');
     tl.call(() => { t.setPose('hop'); AU.play('hop', { step, dir }); });
     tl.to(t.el, { x: b.x, y: b.y, duration: D, ease: 'none' }, 0);
-    tl.fromTo(t.inner, { y: 0, scaleY: 1.16, scaleX: 0.88 }, { y: -H - Math.max(0, a.y - b.y) * 0.25, scaleY: 1, scaleX: 1, duration: D * 0.5, ease: 'power2.out', transformOrigin: '50% 100%' }, 0);
+    // body: ease into a quick stretch (never snap), rise, fall; then a squash on landing
+    tl.to(t.inner, { scaleY: 1.12, scaleX: 0.9, duration: 0.06, ease: 'power1.out', transformOrigin: '50% 100%' }, 0);
+    tl.to(t.inner, { scaleY: 1, scaleX: 1, duration: D * 0.5 - 0.06, ease: 'power1.inOut' }, 0.06);
+    tl.to(t.inner, { y: -H - Math.max(0, a.y - b.y) * 0.25, duration: D * 0.5, ease: 'power2.out' }, 0);
     tl.to(t.inner, { y: 0, duration: D * 0.5, ease: 'power2.in' }, D * 0.5);
     tl.to(shadow, { scale: 0.5, opacity: 0.22, duration: D * 0.5, ease: 'power2.out' }, 0);
     tl.to(shadow, { scale: 1, opacity: 0.55, duration: D * 0.5, ease: 'power2.in' }, D * 0.5);
     tl.call(() => { t.el.style.zIndex = Math.round(b.y + 101); }, null, D * 0.5);
-    tl.fromTo(t.inner, { scaleY: 1, scaleX: 1 }, { scaleY: slow ? 0.72 : 0.84, scaleX: slow ? 1.25 : 1.12, duration: 0.08, yoyo: true, repeat: 1, ease: 'sine.out', transformOrigin: '50% 100%' }, D);
+    tl.to(t.inner, { scaleY: slow ? 0.76 : 0.86, scaleX: slow ? 1.2 : 1.1, duration: 0.08, yoyo: true, repeat: 1, ease: 'sine.out', transformOrigin: '50% 100%' }, D);
     tl.call(() => {
       AU.play(n < 0 ? 'plip' : 'land');
       FX.stepCount(b.x, b.y - 96, step * dir);

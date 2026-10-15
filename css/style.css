@@ -178,7 +178,8 @@ body.no-fade .overlay-screen, body.no-fade .modal, body.no-fade #coach { transit
 
 .token { position: absolute; left: 0; top: 0; width: 0; height: 0; }
 .token-body { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-origin: 0 0; }
-.token-img { position: absolute; filter: drop-shadow(0 2px 0 rgba(0,0,0,.15)); }
+.token-img { position: absolute; filter: drop-shadow(0 2px 0 rgba(0,0,0,.15)); visibility: hidden; }
+.token-img.on { visibility: visible; }
 .token-shadow { position: absolute; opacity: .55; }
 .token[data-pose="underwater"] .token-shadow { opacity: .25; }
 .token-ring {

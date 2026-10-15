@@ -25,7 +25,18 @@
     } else {           // pulled back past 1:1 — shrink around the stage centre
       x = st.w / 2 * (1 - s); y = st.h / 2 * (1 - s);
     }
-    gsap.set(scene(), { x, y, scale: s, transformOrigin: '0 0', force3D: false });
+    gsap.set(scene(), { x, y, scale: s, transformOrigin: '0 0', force3D: true });
+  }
+  /* GPU layer: while the camera is active the game screen is its own compositor layer, so zooming
+     and following only re-composite pixels already drawn (no full repaint every frame). Chrome
+     keeps such a layer at the resolution it was drawn at, so once a zoom settles the layer is
+     dropped and re-created for one frame — it is redrawn sharp at the new scale. */
+  function layerOn() { scene().style.willChange = 'transform'; }
+  function layerOff() { scene().style.willChange = ''; }
+  function resharpen() {
+    if (!cam.on) return;
+    layerOff();
+    requestAnimationFrame(() => { if (cam.on) layerOn(); });
   }
   gsap.ticker.add((time, dt) => {
     if (!cam.on) return;
@@ -42,10 +53,11 @@
     /** Zoom to scale z and keep following the token element. */
     focus(el, z, dur = 0.8) {
       if (reduced) return Promise.resolve();
-      if (!cam.on) { const p = tokenPoint(el); cam.fx = p.x; cam.fy = p.y; cam.on = true; }
+      if (!cam.on) { const p = tokenPoint(el); cam.fx = p.x; cam.fy = p.y; cam.on = true; render(); layerOn(); }
       cam.follow = el;
+      if (Math.abs(z - cam.s) < 0.01) return Promise.resolve();
       AU.play('whoosh', { up: z > cam.s });
-      return new Promise(r => gsap.to(cam, { s: z, duration: dur, ease: 'power2.inOut', overwrite: 'auto', onComplete: r }));
+      return new Promise(r => gsap.to(cam, { s: z, duration: dur, ease: 'power2.inOut', overwrite: 'auto', onComplete: () => { resharpen(); r(); } }));
     },
     release(dur = 0.6) {
       if (!cam.on) return Promise.resolve();
@@ -55,6 +67,7 @@
     reset() {
       gsap.killTweensOf(cam);
       cam.on = false; cam.follow = null; cam.s = 1;
+      layerOff();
       gsap.set(scene(), { clearProps: 'transform' });
     }
   };
