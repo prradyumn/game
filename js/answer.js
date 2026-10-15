@@ -62,9 +62,10 @@
   function select(n, snap = true) {
     if (n === null || n === undefined) return;
     if (S.sel !== n) AU.play('land');
+    const same = S.sel === n && S.timer;
     S.sel = n;
     highlight(n);
-    cancelTimer(); dirArrow(null);
+    if (!same) { cancelTimer(); dirArrow(null); }
     const g = ghost(), a = spot(n);
     // the explorer "lands" on the picked square (its old spot stays faintly visible)
     if (snap) gsap.to(g, { x: a.x, y: a.y, opacity: 1, duration: 0.22, ease: 'power2.out', overwrite: 'auto' });
@@ -77,7 +78,8 @@
   /** Judge the current pick once it has stayed WAIT seconds (right or wrong alike). */
   function evaluate(n) {
     if (!S.resolve) return;
-    cancelTimer();
+    if (S.timer && S.timing === n) return;      // same square tapped again: keep the countdown going
+    cancelTimer(); S.timing = n;
     setPrompt(`You landed on ${P(n)} <small>Checking… change your mind? Tap another square</small><i class="pp-bar"></i>`, 'ask');
     gsap.fromTo('#pick-prompt .pp-bar', { scaleX: 1 }, { scaleX: 0, duration: WAIT, ease: 'none' });
     S.timer = gsap.delayedCall(WAIT, () => { S.timer = null; if (S.sel === n) settle(n); });
