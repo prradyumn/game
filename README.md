@@ -6,8 +6,8 @@ Open `index.html` in Chrome/Edge/Safari (double-click works; no server needed).
 - Board runs from **−50** (seafloor) to **+50** (summit). **0** is the jetty on the shoreline inside the board, between +1 and −1; both explorers start there.
 - Each turn: roll the **sign die** (4 plus faces, 2 minus faces) and the **number die** (1–6). Move = position + (±n).
 - After the roll, the player **picks the square** where the explorer will land: tap any square (or drag the explorer onto one, or use the arrow keys) — picking is the answer, there is no Go button. Nothing is restricted; they work out the sum themselves.
-  - Right: marked right at once (green square, chime, praise), then the explorer hops there square by square.
-  - A wrong pick stays for 3 seconds so the player can change their mind; if it's still there, it counts as a try.
+  - Every pick stays for 3 seconds first (a countdown bar shows it), so a slip or an overshoot can be fixed by tapping another square.
+  - Then it's judged. Right: green square, chime, praise, and the explorer hops there square by square. Wrong: counts as a try.
   - Wrong: gentle feedback and a hint aimed at the specific mistake (`js/answer.js` → `diagnose`): wrong direction, didn't move, counted the starting square, skipped 0, close, far off, or past ±50. The 2nd wrong answer also lights up the path; the 3rd switches to **counting together** (tap to hop, one tap per square).
   - Stars: 3 for the first try, 2 for the second, 1 for the third — shown on the player card and the win screen.
   - The computer still moves on its own. No equations are shown on screen; the roll is shown on the dice and the round chip on the tray.

@@ -1,7 +1,7 @@
 /* "Pick the square": after rolling, the student decides where the explorer lands.
    They tap any square (or drag the explorer onto one) — picking IS the answer, no Go button.
-   A right pick is marked right at once. A wrong pick stays for 3 s (time to change their mind);
-   if it's still there, it counts as a try and a hint plus a higher/lower arrow appear.
+   Every pick stays for 3 s first (a countdown bar shows it), so a slip or an overshoot can be fixed.
+   Then it is judged: right → marked right; wrong → counts as a try, with a hint and a higher/lower arrow.
    A wrong pick gets feedback aimed at the specific mistake, with support that builds up:
      1st wrong — a hint about that mistake      2nd wrong — the path lights up as well
      3rd wrong — count it together (tap to hop)
@@ -74,12 +74,12 @@
     evaluate(n);
   }
   function settle(n) { if (!S.resolve) return; const r = S.resolve; S.resolve = null; S.judged = n; r(n); }
-  /** Judge the current pick: right → at once; wrong → only if it is still there after WAIT seconds. */
+  /** Judge the current pick once it has stayed WAIT seconds (right or wrong alike). */
   function evaluate(n) {
     if (!S.resolve) return;
     cancelTimer();
-    if (n === S.dest) { S.timer = gsap.delayedCall(0.25, () => { S.timer = null; settle(n); }); return; }
-    setPrompt(`You landed on ${P(n)}… <small>Not sure? Tap another square</small>`, 'ask');
+    setPrompt(`You landed on ${P(n)} <small>Checking… change your mind? Tap another square</small><i class="pp-bar"></i>`, 'ask');
+    gsap.fromTo('#pick-prompt .pp-bar', { scaleX: 1 }, { scaleX: 0, duration: WAIT, ease: 'none' });
     S.timer = gsap.delayedCall(WAIT, () => { S.timer = null; if (S.sel === n) settle(n); });
   }
   /** Floating arrow over the explorer's ghost: which way the right square is. */

@@ -169,7 +169,7 @@
       const el = document.createElement('span');
       el.className = 'cell-label ' + (n > 0 ? 'pos' : 'neg') + (n % 10 === 0 ? ' mark' : '');
       el.textContent = label(n);
-      el.style.left = (c.col * CW + 4) + 'px';
+      el.style.left = (n === -1 ? c.col * CW + CW - 50 : c.col * CW + 4) + 'px';
       el.style.top = (n === -1 ? c.row * CELL + CELL - 42 : c.row * CELL + 4) + 'px';
       el.dataset.n = n;
       box.appendChild(el);
@@ -326,10 +326,14 @@
     const jetty = sizedImg('board-pieces/zero-jetty', jw, 'decor jetty');
     place(jetty, JETTY.x - jw / 2, JETTY.y - jh * 0.42, jw, jh);
     decor.appendChild(jetty);
-    const chipW = 36, chipH = A.hForW('board-pieces/zero-chip', chipW);
-    const chip = sizedImg('board-pieces/zero-chip', chipW, 'decor zero-chip');
-    place(chip, JETTY.x + jw / 2 - chipW * 0.35, JETTY.y - chipH / 2 + 4, chipW, chipH);
-    decor.appendChild(chip);
+    // a soft glow behind the jetty and a big gold 0 just below its deck (explorers stand on the
+    // deck, so the badge below it always stays visible)
+    const glow = document.createElement('i'); glow.className = 'decor jetty-glow';
+    place(glow, JETTY.x - jw * 0.65, JETTY.y - 34, jw * 1.3, 68);
+    decor.insertBefore(glow, jetty);
+    const zero = document.createElement('div'); zero.className = 'decor zero-badge'; zero.textContent = '0';
+    place(zero, JETTY.x - 24, JETTY.y + 24, 48, 48);
+    decor.appendChild(zero);
     // Summit flag at +50
     const c50 = center(MAX);
     const poleH = 92, poleW = A.wForH('board-pieces/summit-pole', poleH);
@@ -375,7 +379,7 @@
   function labelBox(n) {
     const c = cellOf(n), big = n % 10 === 0;
     const w = (label(n).length * (big ? 25 : 22)) + 16, h = big ? 50 : 44;
-    return { x: c.col * CW + 2, y: n === -1 ? c.row * CELL + CELL - 44 : c.row * CELL + 2, w, h };
+    return { x: n === -1 ? c.col * CW + CW - 52 : c.col * CW + 2, y: n === -1 ? c.row * CELL + CELL - 44 : c.row * CELL + 2, w, h };
   }
   const hit = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
   /** First spot along `pointAt(d)` (d = distance from the start, in units) that is free. */
