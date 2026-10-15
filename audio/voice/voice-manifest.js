@@ -4,6 +4,8 @@ window.VOICE_CLIPS = {
  "nudge": "nudge.ogg",
  "tap_hop": "tap_hop.ogg",
  "pick_square": "pick_square.ogg",
+ "go_higher": "go_higher.ogg",
+ "go_lower": "go_lower.ogg",
  "hint_stay": "hint_stay.ogg",
  "hint_up": "hint_up.ogg",
  "hint_down": "hint_down.ogg",

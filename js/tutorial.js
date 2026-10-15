@@ -13,7 +13,7 @@
     { id: 't_welcome', pose: 'wave', spot: 'board', next: 'Next',
       html: `This board is a <b>number line</b>! Land squares are ${P(1)} <b>positive</b>, sea squares are ${P(-1)} <b>negative</b>. <b>0</b> is the jetty on the shoreline.` },
     { id: 't_dice', pose: 'thinking', spot: 'dice', roll: true,
-      html: `Roll two dice: the <b>sign die</b> says <b class="plus">+</b> or <b class="minus">−</b>, the <b>number die</b> says how many. Then work out where you'll land: <b>tap that square</b> (or drag your explorer there) and press <b>Go!</b>` },
+      html: `Roll two dice: the <b>sign die</b> says <b class="plus">+</b> or <b class="minus">−</b>, the <b>number die</b> says how many. Then work out where you'll land and <b>tap that square</b> (or drag your explorer there).` },
     { id: 't_up', pose: 'happy', spot: 'shore', next: 'Next',
       html: `You rolled ${P(4)} and hopped <b>4 squares up</b>. Positive numbers move you <b>up</b>, toward the summit.` },
     { id: 't_neg', pose: 'thinking', spot: 'dice', roll: true,
@@ -50,7 +50,7 @@
   const SPOTS = {
     board: () => boardRect(0, 0, B.W, 1000, 20),
     dice: () => union('tray', 'btn-roll'),
-    shore: () => boardRect(-110, 300, B.W, 700, 8),
+    shore: () => boardRect(0, 300, B.W, 700, 8),
     ladder: () => cellsRect(-3, 19),
     snake: () => cellsRect(13, -7),
     summit: () => cellsRect(50, 50)

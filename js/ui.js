@@ -156,13 +156,14 @@
     const btn = $('btn-roll');
     mode = on ? m : null; nudgeCb = onNudge || null;
     btn.classList.toggle('ready', on);
+    btn.classList.toggle('small-label', on && m === 'pick');
     $('tray').classList.toggle('ready', on && m === 'roll');
     $('roll-nudge').classList.remove('on');
     gsap.killTweensOf(btn, 'scale,rotation');
     gsap.killTweensOf(['#die-sign', '#die-num'], 'y');
     gsap.set(btn, { scale: 1, rotation: 0 });
     gsap.set(['#die-sign', '#die-num'], { y: 0 });
-    btn.querySelector('.btn-label').textContent = on ? ({ hop: 'Hop!', go: 'Go!' }[m] || 'Roll!') : (ISL.game.G.turn === 'student' ? 'Roll!' : 'Wait…');
+    btn.querySelector('.btn-label').textContent = on ? ({ hop: 'Hop!', go: 'Go!', pick: 'Tap a square' }[m] || 'Roll!') : (ISL.game.G.turn === 'student' ? 'Roll!' : 'Wait…');
     btn.setAttribute('aria-label', on ? ({ hop: 'Hop', go: 'Go — land on the picked square' }[m] || 'Roll the dice') : 'Roll the dice');
     if (!on) { if (nudgeCall) { nudgeCall.kill(); nudgeCall = null; } return; }
     gsap.to(btn, { scale: 1.05, duration: 0.6, yoyo: true, repeat: -1, ease: 'sine.inOut' });
@@ -179,8 +180,8 @@
   function nudge() {
     const btn = $('btn-roll');
     gsap.fromTo(btn, { rotation: 0 }, { keyframes: { rotation: [0, -7, 7, -5, 4, -2, 0] }, duration: 0.6, ease: 'none' });
-    if (mode === 'hop' || mode === 'go') {
-      const p = $(mode === 'go' ? 'pick-prompt' : 'hop-prompt');
+    if (mode === 'hop' || mode === 'go' || mode === 'pick') {
+      const p = $(mode === 'hop' ? 'hop-prompt' : 'pick-prompt');
       if (p) { p.classList.remove('bounce'); void p.offsetWidth; p.classList.add('bounce'); }
     } else {
       gsap.fromTo(['#die-sign', '#die-num'], { y: 0 }, { y: -20, duration: 0.16, yoyo: true, repeat: 1, stagger: 0.08, ease: 'power2.out' });

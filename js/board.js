@@ -4,14 +4,14 @@
    portrait a square one. Sprites (tokens, heads, tags) are sized in units and never stretch.
    Rows 0-4 (land, top half)  hold +41..+50 down to +1..+10.
    Rows 5-9 (sea, bottom half) hold −1..−10 down to −41..−50.
-   Zero is the jetty sitting on the shoreline just left of the board.
+   Zero is the jetty on the shoreline, in the first column between +1 and −1.
    Numbering snakes back and forth (boustrophedon) away from the shoreline in both directions. */
 (function (ISL) {
   'use strict';
   const A = ISL.assets;
   const CELL = 100;                 // cell height (and width on a square board)
   let BW = 1000, CW = CELL;         // board width and cell width in units — set from the layout's aspect
-  function setAspect(r) { BW = Math.round(1000 * r); CW = BW / 10; }
+  function setAspect(r) { BW = Math.round(1000 * r); CW = BW / 10; JETTY.x = CW * 0.5; JETTY.w = Math.min(100, CW * 0.86); }
   const MIN = -50, MAX = 50;
 
   // Ladders go up (bottom -> top). Snakes go down (head -> tail).
@@ -27,7 +27,7 @@
     // the big one: from the summit side all the way to the deep, winding down the left edge
     // (via = waypoints in cell coordinates [col, row], centre of a cell = +0.5)
     { from: 43,  to: -40, kind: 'python',
-      via: [[1.75, 1.25], [0.85, 1.95], [0.42, 2.9], [0.8, 3.85], [0.38, 4.8], [0.8, 5.75], [0.38, 6.7], [0.72, 7.6]] },
+      via: [[1.75, 1.25], [0.85, 1.95], [0.45, 2.85], [0.95, 3.75], [1.3, 4.6], [1.25, 5.45], [0.7, 6.35], [0.4, 7.3], [0.6, 8.05]] },
     { from: 35,  to: 15,  kind: 'tree-snake', bend: -1 },
     { from: 13,  to: -7,  kind: 'tree-snake', bend: 1 },
     { from: -5,  to: -26, kind: 'sea-krait',  bend: -1 },
@@ -49,7 +49,7 @@
     const row = n > 0 ? 4 - r : 5 + r;
     return { col, row };
   }
-  const JETTY = { x: -46, y: 500, w: 104 };      // jetty centre (board units); deck height ≈ y+8
+  const JETTY = { x: 50, y: 500, w: 86 };        // jetty centre (board units), on the shoreline in column 0; set by setAspect
   function center(n) {
     if (n === 0) return { x: JETTY.x, y: JETTY.y };
     const c = cellOf(n);
@@ -170,7 +170,7 @@
       el.className = 'cell-label ' + (n > 0 ? 'pos' : 'neg') + (n % 10 === 0 ? ' mark' : '');
       el.textContent = label(n);
       el.style.left = (c.col * CW + 4) + 'px';
-      el.style.top = (c.row * CELL + 4) + 'px';
+      el.style.top = (n === -1 ? c.row * CELL + CELL - 42 : c.row * CELL + 4) + 'px';
       el.dataset.n = n;
       box.appendChild(el);
     }
@@ -326,9 +326,9 @@
     const jetty = sizedImg('board-pieces/zero-jetty', jw, 'decor jetty');
     place(jetty, JETTY.x - jw / 2, JETTY.y - jh * 0.42, jw, jh);
     decor.appendChild(jetty);
-    const chipW = 40;
+    const chipW = 36, chipH = A.hForW('board-pieces/zero-chip', chipW);
     const chip = sizedImg('board-pieces/zero-chip', chipW, 'decor zero-chip');
-    place(chip, JETTY.x - chipW / 2, JETTY.y - jh * 0.42 + jh + 2, chipW, A.hForW('board-pieces/zero-chip', chipW));
+    place(chip, JETTY.x + jw / 2 - chipW * 0.35, JETTY.y - chipH / 2 + 4, chipW, chipH);
     decor.appendChild(chip);
     // Summit flag at +50
     const c50 = center(MAX);
@@ -375,7 +375,7 @@
   function labelBox(n) {
     const c = cellOf(n), big = n % 10 === 0;
     const w = (label(n).length * (big ? 25 : 22)) + 16, h = big ? 50 : 44;
-    return { x: c.col * CW + 2, y: c.row * CELL + 2, w, h };
+    return { x: c.col * CW + 2, y: n === -1 ? c.row * CELL + CELL - 44 : c.row * CELL + 2, w, h };
   }
   const hit = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
   /** First spot along `pointAt(d)` (d = distance from the start, in units) that is free. */
@@ -475,7 +475,8 @@
     CELL, MIN, MAX, LADDERS, SNAKES, cellOf, center, anchor, fmt, label, along, paintLadder,
     /** Square number under board point (u, v) in board units; 0 for the jetty; null if off the board. */
     numberAt(u, v) {
-      if (u < 0) return (u > JETTY.x - JETTY.w * 0.75 && Math.abs(v - JETTY.y) < 80) ? 0 : null;
+      if (Math.abs(u - JETTY.x) < JETTY.w / 2 + 6 && Math.abs(v - JETTY.y) < 28) return 0;   // the jetty
+      if (u < 0) return null;
       if (u >= BW || v < 0 || v >= 1000) return null;
       const col = Math.floor(u / CW), row = Math.floor(v / CELL);
       const band = row <= 4 ? 4 - row : row - 5;

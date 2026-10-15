@@ -1,5 +1,7 @@
 /* "Pick the square": after rolling, the student decides where the explorer lands.
-   They tap any square (or drag a ghost of the explorer onto one) and press Go!.
+   They tap any square (or drag the explorer onto one) — picking IS the answer, no Go button.
+   A right pick is marked right at once. A wrong pick stays for 3 s (time to change their mind);
+   if it's still there, it counts as a try and a hint plus a higher/lower arrow appear.
    A wrong pick gets feedback aimed at the specific mistake, with support that builds up:
      1st wrong — a hint about that mistake      2nd wrong — the path lights up as well
      3rd wrong — count it together (tap to hop)
@@ -29,7 +31,9 @@
   }
 
   /* ---------- picking UI ---------- */
-  const S = { active: false, sel: null, start: 0, dragging: false, resolve: null, token: null };
+  const WAIT = 3;   // seconds a wrong pick stays before the hint
+  const S = { active: false, sel: null, start: 0, dest: 0, dragging: false, resolve: null, token: null, timer: null };
+  function cancelTimer() { if (S.timer) { S.timer.kill(); S.timer = null; } }
   function boardPoint(cx, cy) {
     const r = $('board').getBoundingClientRect(), k = r.height / 1000;
     return { u: (cx - r.left) / k, v: (cy - r.top) / k };
@@ -57,20 +61,42 @@
   }
   function select(n, snap = true) {
     if (n === null || n === undefined) return;
-    if (S.sel !== n) AU.play('click');
+    if (S.sel !== n) AU.play('land');
     S.sel = n;
     highlight(n);
+    cancelTimer(); dirArrow(null);
     const g = ghost(), a = spot(n);
-    if (snap) gsap.to(g, { x: a.x, y: a.y, opacity: 0.85, duration: 0.18, ease: 'power2.out', overwrite: 'auto' });
+    // the explorer "lands" on the picked square (its old spot stays faintly visible)
+    if (snap) gsap.to(g, { x: a.x, y: a.y, opacity: 1, duration: 0.22, ease: 'power2.out', overwrite: 'auto' });
     g.classList.add('on');
-    ISL.ui.enable($('btn-roll'), true);
-    ISL.ui.rollReady(true, onNudge, 'go');
-    setPrompt(`Land on ${P(n)}? Press <b>Go!</b>`, 'ask');
+    gsap.to(S.token.el, { opacity: 0.35, duration: 0.2 });
+    ISL.ui.poke();
+    evaluate(n);
+  }
+  function settle(n) { if (!S.resolve) return; const r = S.resolve; S.resolve = null; S.judged = n; r(n); }
+  /** Judge the current pick: right → at once; wrong → only if it is still there after WAIT seconds. */
+  function evaluate(n) {
+    if (!S.resolve) return;
+    cancelTimer();
+    if (n === S.dest) { S.timer = gsap.delayedCall(0.25, () => { S.timer = null; settle(n); }); return; }
+    setPrompt(`You landed on ${P(n)}… <small>Not sure? Tap another square</small>`, 'ask');
+    S.timer = gsap.delayedCall(WAIT, () => { S.timer = null; if (S.sel === n) settle(n); });
+  }
+  /** Floating arrow over the explorer's ghost: which way the right square is. */
+  function dirArrow(dir) {
+    const old = $('pick-dir'); if (old) old.remove();
+    if (!dir) return;
+    const g = ghost(), img = g.querySelector('img');
+    const el = document.createElement('b'); el.id = 'pick-dir'; el.className = dir > 0 ? 'up' : 'down';
+    el.innerHTML = dir > 0 ? '▲ <span>higher</span>' : '▼ <span>lower</span>';
+    el.style.top = (parseFloat(img.style.top) - 30) + 'px';
+    g.appendChild(el);
+    gsap.fromTo(el, { scale: 0.3, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: 'back.out(3)' });
   }
   function clearPick() {
-    S.sel = null; highlight(null);
+    S.sel = null; highlight(null); cancelTimer(); dirArrow(null);
     const g = $('pick-ghost'); if (g) { g.classList.remove('on'); gsap.to(g, { opacity: 0, duration: 0.2 }); }
-    ISL.ui.enable($('btn-roll'), false);
+    if (S.token) gsap.to(S.token.el, { opacity: 1, duration: 0.2 });
   }
 
   /* prompt pill over the board (moves to the bottom edge when the explorer is up top) */
@@ -113,10 +139,11 @@
     if (!S.active || e.button > 0 || document.body.hasAttribute('data-paused')) return;
     if (e.target.closest('button')) return;
     const { u, v } = boardPoint(e.clientX, e.clientY);
-    const a = B.anchor(S.start, 0);
-    const onExplorer = Math.abs(u - a.x) < 55 && v > a.y - 110 && v < a.y + 20;
+    const near = n => { const a = B.anchor(n, 0); return Math.abs(u - a.x) < 55 && v > a.y - 110 && v < a.y + 20; };
+    const onExplorer = near(S.start) || (S.sel !== null && near(S.sel));
     if (onExplorer) {
-      S.dragging = true;
+      S.dragging = true; cancelTimer(); dirArrow(null);
+      gsap.to(S.token.el, { opacity: 0.35, duration: 0.2 });
       const g = ghost(); g.classList.add('on', 'drag');
       gsap.set(g, { x: u, y: v + 40, opacity: 0.9 });
       $('board-wrap').setPointerCapture && $('board-wrap').setPointerCapture(e.pointerId);
@@ -144,14 +171,14 @@
   }
   const FX = ISL.fx;
 
-  /** Wait for one confirmed pick (Go!, Enter or Space). */
+  /** Wait for a pick to settle: right at once, wrong after WAIT seconds unchanged. */
   function waitPick() {
-    return new Promise(res => { S.resolve = res; });
+    return new Promise(res => {
+      S.resolve = res;
+      if (S.sel !== null && S.sel !== S.judged) evaluate(S.sel);   // picked again during the hint
+    });
   }
-  function confirm() {
-    if (!S.active || S.sel === null || !S.resolve) return false;
-    const r = S.resolve; S.resolve = null; r(S.sel); return true;
-  }
+  function confirm() { return false; }   // no Go button any more; kept so callers stay simple
   function nudgeKeys(delta) {
     if (!S.active) return;
     const base = S.sel === null ? S.start : S.sel;
@@ -161,13 +188,13 @@
   /* ---------- the flow for one move ---------- */
   async function ask({ token, start, roll, dest, guard, narrate }) {
     const VO = ISL.voice;
-    S.token = token; S.start = start; S.active = true; S.sel = null;
+    S.token = token; S.start = start; S.dest = dest; S.active = true; S.sel = null; S.judged = null;
     document.body.setAttribute('data-picking', '');
     ISL.game.G.pickDest = dest;                       // QA helpers read this
     clearPick();
-    ISL.ui.rollReady(true, onNudge, 'go');
+    ISL.ui.rollReady(true, onNudge, 'pick');
     ISL.ui.enable($('btn-roll'), false);
-    setPrompt(`You rolled ${P(roll)}. Where will you land? <small>Tap a square, or drag your explorer</small>`, 'ask');
+    setPrompt(`You rolled ${P(roll)}. Where will you land? <small>Tap that square, or drag your explorer there</small>`, 'ask');
     nudgeVoice = 'pick_square';
     if (narrate) VO.say('pick_square');
     let tries = 0;
@@ -177,9 +204,14 @@
         VO.stop();
         if (n === dest) {
           ISL.ui.rollReady(false); ISL.ui.enable($('btn-roll'), false);
-          setPrompt(`${['Brilliant!', 'Well done!', 'You got it!'][tries]} ${P(start)} ${roll > 0 ? '+' : '−'} ${Math.abs(roll)} lands on ${P(dest)}`, 'good');
+          setPrompt(`✔ ${['Brilliant!', 'Well done!', 'You got it!'][tries]} ${P(start)} ${roll > 0 ? '+' : '−'} ${Math.abs(roll)} lands on ${P(dest)}`, 'good');
           AU.play('correct');
-          const g = $('pick-ghost'); if (g) gsap.to(g, { opacity: 0, scale: 1.3, duration: 0.3 });
+          const h = $('pick-cell'); if (h) h.classList.add('right');
+          const c = dest === 0 ? B.anchor(0, 0) : B.center(dest);
+          ISL.fx.sparkles(c.x, c.y - 30, 10, undefined, 70);
+          await guard(ISL.ui.wait(0.5));
+          const g = $('pick-ghost'); if (g) gsap.to(g, { opacity: 0, duration: 0.25 });
+          gsap.to(token.el, { opacity: 1, duration: 0.25 });
           highlight(null); clearPath();
           if (narrate) VO.say([['correct_1', 'correct_2', 'correct_3'][tries], window.VOICE_NUM.numId(dest)]);
           await guard(ISL.ui.wait(0.6));
@@ -187,40 +219,42 @@
         }
         tries++;
         const d = diagnose(start, roll, dest, n);
+        const way = Math.sign(dest - n);          // which way the right square is from the pick
         AU.play('wrong');
         token.setPose('worried');
-        // the ghost wobbles and bounces back to the explorer
-        const g = ghost(), a = spot(start);
-        gsap.timeline()
-          .to(g, { keyframes: { x: ['+=10', '-=20', '+=16', '-=10', '+=4'] }, duration: 0.35, ease: 'none' })
-          .to(g, { x: a.x, y: a.y, opacity: 0, duration: 0.45, ease: 'power2.in' });
-        highlight(null); S.sel = null;
-        ISL.ui.enable($('btn-roll'), false);
+        // the explorer stays on the wrong square, wobbles, and an arrow points the right way
+        const g = ghost();
+        gsap.to(g, { keyframes: { x: ['+=10', '-=20', '+=16', '-=10', '+=4'] }, duration: 0.35, ease: 'none' });
+        const h = $('pick-cell'); if (h) h.classList.add('wrong');
         if (tries >= 3) {
           setPrompt(`Let's count together! Tap to hop.`, 'hint');
           if (narrate) VO.say('count_together');
           await guard(ISL.ui.wait(0.9));
           return { tries: 3, together: true };
         }
-        setPrompt(`${d.html}${tries === 2 ? ' <small>Follow the glowing path.</small>' : ''} <small>Try ${tries + 1} of 3</small>`, 'hint');
+        dirArrow(way);
+        const dirText = way > 0 ? 'Try a <b>higher</b> number ▲' : 'Try a <b>lower</b> number ▼';
+        const generic = ['hint_close', 'hint_far', 'hint_zero', 'hint_next'].includes(d.id);
+        setPrompt(`${d.html}${generic ? ' ' + dirText : ''}${tries === 2 ? ' <small>Follow the glowing path.</small>' : ''} <small>Try ${tries + 1} of 3</small>`, 'hint');
         nudgeVoice = d.id;
-        if (narrate) VO.say(tries === 2 ? [d.id, 'hint_path'] : d.id);
+        if (narrate) VO.say([d.id, ...(generic ? [way > 0 ? 'go_higher' : 'go_lower'] : []), ...(tries === 2 ? ['hint_path'] : [])]);
         if (tries === 2) showPath(start, dest);
         await guard(ISL.ui.wait(0.5));
         token.rest();
-        ISL.ui.rollReady(true, onNudge, 'go');
+        ISL.ui.rollReady(true, onNudge, 'pick');
         ISL.ui.enable($('btn-roll'), false);
       }
     } finally {
       S.active = false; S.resolve = null; S.dragging = false;
       document.body.removeAttribute('data-picking');
       clearPick(); clearPath(); hidePrompt();
+      gsap.to(token.el, { opacity: 1, duration: 0.2 });
       const g = $('pick-ghost'); if (g) g.remove();
     }
   }
 
   function reset() {
-    S.active = false; S.resolve = null; S.dragging = false; S.sel = null;
+    S.active = false; S.resolve = null; S.dragging = false; S.sel = null; cancelTimer();
     document.body.removeAttribute('data-picking');
     highlight(null); clearPath(); hidePrompt();
     const g = $('pick-ghost'); if (g) g.remove();
@@ -235,5 +269,5 @@
 
   ISL.answer = { ask, confirm, reset, init, diagnose, nudgeKeys, get active() { return S.active; }, get selected() { return S.sel; },
     /** QA helper: pick square n and confirm it. */
-    pick(n) { if (!S.active) return false; select(n); return confirm(); } };
+    pick(n) { if (!S.active) return false; select(n); return true; } };
 })(window.ISL);
