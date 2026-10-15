@@ -52,7 +52,7 @@
 
   /* ---------- game state ---------- */
   const G = {
-    sid: 0, tokens: {}, turn: 'student', over: false, forced: [], rollResolver: null, hopResolver: null, hopTold: false,
+    sid: 0, tokens: {}, turn: 'student', over: false, forced: [], rollResolver: null, hopResolver: null, hopTold: false, stars: 0, pickDest: null,
     positions() { return { student: this.tokens.student.pos, computer: this.tokens.computer.pos }; },
     slotFor(who) {
       const p = this.positions();
@@ -257,10 +257,20 @@
     if (who === 'computer') FX.target(who, B.center(dest).x - 32, B.center(dest).y - 32 + (dest === 0 ? 0 : 6));
     if (narrate) VO.number(roll);
 
-    // camera swoops in so the character fills the view, then the hops happen
-    await guard(CINE.cam.focus(t.el, ZOOM.move, 0.8));
-    if (who === 'student') await hopByTap(t, dest, guard, narrate);
-    else await moveSteps(t, dest, guard, false);
+    if (who === 'student') {
+      // the student decides where the explorer lands (whole board in view), with hints if wrong
+      const res = await ISL.answer.ask({ token: t, start, roll, dest, guard, narrate });
+      G.stars += 4 - res.tries;
+      UI.setStars(G.stars, 4 - res.tries);
+      // then the camera swoops in and the explorer hops there — or they count it together
+      await guard(CINE.cam.focus(t.el, ZOOM.move, 0.8));
+      if (res.together) await hopByTap(t, dest, guard, narrate);
+      else await moveSteps(t, dest, guard, true);
+    } else {
+      // camera swoops in so the character fills the view, then the hops happen
+      await guard(CINE.cam.focus(t.el, ZOOM.move, 0.8));
+      await moveSteps(t, dest, guard, false);
+    }
     FX.hideTarget(who);
     UI.setCardPos(who, t.pos);
     t.setPose(roll > 0 ? 'happy' : (t.pos < 0 ? 'underwater' : 'worried'));
@@ -321,6 +331,7 @@
       const act = () => {
         if ($('btn-roll').disabled) return;
         if (G.rollResolver) { const r = G.rollResolver; G.rollResolver = null; r(); }
+        else if (ISL.answer.active) ISL.answer.confirm();
         else if (G.hopResolver) G.hopResolver();
       };
       $('btn-roll').addEventListener('click', act);
@@ -330,8 +341,12 @@
         AU.unlock(); FX.tapRipple(e.clientX, e.clientY); G.hopResolver();
       });
       window.addEventListener('keydown', e => {
+        // picking: arrow keys step the selection up/down the number line
+        if (ISL.answer.active && !document.body.hasAttribute('data-paused') && /^Arrow(Up|Down|Left|Right)$/.test(e.code)) {
+          e.preventDefault(); ISL.answer.nudgeKeys(e.code === 'ArrowUp' || e.code === 'ArrowRight' ? 1 : -1); return;
+        }
         if (e.code !== 'Space' && e.code !== 'Enter') return;
-        if (!(G.rollResolver || G.hopResolver) || $('btn-roll').disabled || document.body.dataset.screen !== 'game' || document.body.hasAttribute('data-paused')) return;
+        if (!(G.rollResolver || G.hopResolver || ISL.answer.active) || $('btn-roll').disabled || document.body.dataset.screen !== 'game' || document.body.hasAttribute('data-paused')) return;
         const f = document.activeElement;
         if (e.code === 'Enter' && f && f.tagName === 'BUTTON' && f.id !== 'btn-roll') return;   // Enter activates the focused button
         if (f && f !== document.body) f.blur();
@@ -341,7 +356,8 @@
     reset() {
       G.sid++; G.over = false; G.rollResolver = null; G.hopResolver = null;
       ISL.voice.stop();
-      CINE.cam.reset(); UI.hideHopPrompt(); UI.nextSquare(null);
+      CINE.cam.reset(); UI.hideHopPrompt(); UI.nextSquare(null); ISL.answer.reset();
+      G.stars = 0; UI.setStars(0, 0);
       ['student', 'computer'].forEach(w => {
         const t = G.tokens[w], sh = t.el.querySelector('.token-shadow');
         gsap.killTweensOf([t.el, t.inner, sh]);
@@ -365,6 +381,8 @@
     },
     /** QA helpers: queue dice results, e.g. ISL.game.force([1,6],[-1,3]) */
     force(...rolls) { G.forced.push(...rolls); },
+    /** QA helper: answer the current pick with square n (default: the right answer). */
+    pick(n = G.pickDest) { return ISL.answer.pick(n); },
     teleport(who, n) { G.tokens[who].pos = n; arrange(0); G.tokens[who].rest(); UI.setCardPos(who, n); }
   };
 })(window.ISL);

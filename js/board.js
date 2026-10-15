@@ -473,6 +473,16 @@
 
   const Board = {
     CELL, MIN, MAX, LADDERS, SNAKES, cellOf, center, anchor, fmt, label, along, paintLadder,
+    /** Square number under board point (u, v) in board units; 0 for the jetty; null if off the board. */
+    numberAt(u, v) {
+      if (u < 0) return (u > JETTY.x - JETTY.w * 0.75 && Math.abs(v - JETTY.y) < 80) ? 0 : null;
+      if (u >= BW || v < 0 || v >= 1000) return null;
+      const col = Math.floor(u / CW), row = Math.floor(v / CELL);
+      const band = row <= 4 ? 4 - row : row - 5;
+      const idx = band % 2 === 0 ? col : 9 - col;
+      const k = band * 10 + idx + 1;
+      return row <= 4 ? k : -k;
+    },
     snakeAt: n => SNAKES.find(s => s.from === n),
     ladderAt: n => LADDERS.find(l => l.from === n),
     ladderPath(l) {

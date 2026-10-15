@@ -27,6 +27,8 @@
         'toast':         { x: 120,  y: 60,  w: 1220, h: 90 },
         'hop-hud':       { x: 510,  y: 30,  w: 440, h: 92 },
         'hop-hud-low':   { x: 510,  y: 958, w: 440, h: 92 },
+        'pick-hud':      { x: 1366, y: 16,  w: 440, h: 126 },     // above the cards, never over the board
+        'pick-hud-low':  { x: 1366, y: 16,  w: 440, h: 126 },
         'coach':         { x: 1366, y: 24,  w: 440, h: 372 }        // above the dice tray, beside Pause
       },
       port: {
@@ -41,6 +43,8 @@
         'toast':         { x: 112,  y: 392, w: 930, h: 90 },
         'hop-hud':       { x: 357,  y: 368, w: 440, h: 92 },
         'hop-hud-low':   { x: 357,  y: 1172, w: 440, h: 92 },
+        'pick-hud':      { x: 24,   y: 20,  w: 926, h: 116 },     // strip above the cards
+        'pick-hud-low':  { x: 24,   y: 20,  w: 926, h: 116 },
         'coach':         { x: 20,   y: 140, w: 1040, h: 200 }
       }
     };

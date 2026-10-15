@@ -21,7 +21,8 @@
     splash: [['splash', 0.8, true]], whoosh: [['whoosh', 0.35]], nudge: [['nudge', 0.6]],
     ladder: [['ladder', 0.7], ['intro_shimmer', 0.35]], snake: [['intro_hiss', 0.7], ['slide', 0.8, true]],
     turn: [['turn', 0.45]], win: [['win', 0.9, true]], lose: [['lose', 0.8, true]],
-    wave: [['intro_wave', 0.85, true]]
+    wave: [['intro_wave', 0.85, true]],
+    correct: [['intro_ding', 0.55], ['intro_shimmer', 0.3]]
   };
   const MUSIC_VOL = { intro: 1, loop: 0.32 };
 
@@ -69,7 +70,8 @@
     click: () => tone(660, 0.07, 'triangle', 0.12), hop: o => { const f = hopNote(o); tone(f * 0.8, 0.13, 'sine', 0.12, 0, f * 1.18); },
     land: () => tone(150, 0.08, 'sine', 0.1, 0, 85), plip: () => tone(1250, 0.1, 'sine', 0.07, 0, 480),
     nudge: () => { tone(988, 0.1, 'sine', 0.06); tone(1319, 0.14, 'sine', 0.06, 0.1); }, turn: () => tone(880, 0.12, 'sine', 0.08),
-    tick: o => tone(700 + (o && o.i || 0) * 45, 0.05, 'triangle', 0.05)
+    tick: o => tone(700 + (o && o.i || 0) * 45, 0.05, 'triangle', 0.05),
+    wrong: () => { tone(392, 0.16, 'triangle', 0.09); tone(311, 0.24, 'triangle', 0.09, 0.14); }   // soft "uh-oh", never harsh
   };
 
   // Hop pitch climbs a major pentatonic for + moves and falls for − moves, so counting is audible.

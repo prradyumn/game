@@ -102,7 +102,9 @@
     setScreen('win');
     $('win-art').src = A.url(who === 'student' ? 'ui/screens/student-win' : 'ui/screens/computer-win');
     $('win-title').textContent = who === 'student' ? 'You reached +50!' : 'Computer reached +50!';
-    $('win-sub').textContent = who === 'student' ? 'You planted the flag on the summit. Integer champion!' : 'So close! Roll again and beat the computer.';
+    const stars = ISL.game.G.stars;
+    $('win-sub').innerHTML = (who === 'student' ? 'You planted the flag on the summit. Integer champion!' : 'So close! Roll again and beat the computer.') +
+      (stars ? ` <span class="win-stars">You earned <b>${stars} ★</b></span>` : '');
     AU.play(who === 'student' ? 'win' : 'lose');
     $('screen-win').classList.add('open');
     gsap.fromTo('#win-art', { scale: 0.5, opacity: 0, y: 40 }, { scale: 1, opacity: 1, y: 0, duration: 0.7, ease: 'back.out(1.7)' });
@@ -172,6 +174,7 @@
     ISL.voice.init();
     UI.buildDice();
     ISL.game.init();
+    ISL.answer.init();
     ISL.tutorial.init();
     UI.initButtons();
     ISL.game.reset();

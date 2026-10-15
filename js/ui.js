@@ -162,8 +162,8 @@
     gsap.killTweensOf(['#die-sign', '#die-num'], 'y');
     gsap.set(btn, { scale: 1, rotation: 0 });
     gsap.set(['#die-sign', '#die-num'], { y: 0 });
-    btn.querySelector('.btn-label').textContent = on ? (m === 'hop' ? 'Hop!' : 'Roll!') : (ISL.game.G.turn === 'student' ? 'Roll!' : 'Wait…');
-    btn.setAttribute('aria-label', on && m === 'hop' ? 'Hop' : 'Roll the dice');
+    btn.querySelector('.btn-label').textContent = on ? ({ hop: 'Hop!', go: 'Go!' }[m] || 'Roll!') : (ISL.game.G.turn === 'student' ? 'Roll!' : 'Wait…');
+    btn.setAttribute('aria-label', on ? ({ hop: 'Hop', go: 'Go — land on the picked square' }[m] || 'Roll the dice') : 'Roll the dice');
     if (!on) { if (nudgeCall) { nudgeCall.kill(); nudgeCall = null; } return; }
     gsap.to(btn, { scale: 1.05, duration: 0.6, yoyo: true, repeat: -1, ease: 'sine.inOut' });
     poke();
@@ -179,8 +179,8 @@
   function nudge() {
     const btn = $('btn-roll');
     gsap.fromTo(btn, { rotation: 0 }, { keyframes: { rotation: [0, -7, 7, -5, 4, -2, 0] }, duration: 0.6, ease: 'none' });
-    if (mode === 'hop') {
-      const p = $('hop-prompt');
+    if (mode === 'hop' || mode === 'go') {
+      const p = $(mode === 'go' ? 'pick-prompt' : 'hop-prompt');
       if (p) { p.classList.remove('bounce'); void p.offsetWidth; p.classList.add('bounce'); }
     } else {
       gsap.fromTo(['#die-sign', '#die-num'], { y: 0 }, { y: -20, duration: 0.16, yoyo: true, repeat: 1, stagger: 0.08, ease: 'power2.out' });
@@ -234,6 +234,20 @@
     gsap.to(p, { scale: 0.4, opacity: 0, duration: 0.25, onComplete: () => p.remove() });
   }
 
+  /* ---------- stars (3 / 2 / 1 per move) ---------- */
+  function setStars(total, gained) {
+    const el = $('card-stars'); if (!el) return;
+    el.querySelector('span').textContent = total;
+    if (gained > 0) {
+      gsap.fromTo(el, { scale: 1.6 }, { scale: 1, duration: 0.5, ease: 'back.out(3)' });
+      const r = el.getBoundingClientRect(), st = $('stage').getBoundingClientRect(), k = ISL.layout.scale;
+      ISL.fx.sparkles((r.left + r.width / 2 - st.left) / k, (r.top + r.height / 2 - st.top) / k, 4 + gained * 3, $('stage'), 60);
+      const pop = document.createElement('b'); pop.className = 'star-pop'; pop.textContent = '+' + '★'.repeat(gained);
+      el.appendChild(pop);
+      gsap.fromTo(pop, { y: 0, opacity: 1 }, { y: -46, opacity: 0, duration: 1.1, ease: 'power1.out', onComplete: () => pop.remove() });
+    }
+  }
+
   /* ---------- toast ---------- */
   function toast(html, kind = '') {
     const t = $('toast');
@@ -247,7 +261,7 @@
 
   ISL.ui = {
     initButtons, enable, setBtnState, setTurn, setCardPos,
-    buildDice, sizeDice, rollDice, setFace, toast, wait, rollReady, poke,
+    buildDice, sizeDice, rollDice, setFace, toast, wait, rollReady, poke, setStars,
     hopPrompt, hideHopPrompt, nextSquare
   };
 })(window.ISL);
