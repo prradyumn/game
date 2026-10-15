@@ -169,7 +169,7 @@ body.no-fade .overlay-screen, body.no-fade .modal, body.no-fade #coach { transit
 #board-wrap { z-index: 2; }
 #board { position: absolute; left: 0; top: 0; width: 1000px; height: 1000px; transform-origin: 0 0; z-index: 1; }
 #board > * { position: absolute; left: 0; top: 0; width: 1000px; height: 1000px; }
-#board-world { border-radius: 14px; display: block; filter: saturate(.76) contrast(.84) brightness(1.05); }
+#board-world { border-radius: 14px; display: block; filter: saturate(.9) contrast(.92) brightness(1.03); }
 #board-grid, #board-pieces { width: 1000px; height: 1000px; pointer-events: none; border-radius: 14px; }
 #board-labels, #board-decor, #board-tags, #board-tokens, #board-fx { pointer-events: none; overflow: visible; }
 #board-frame {
