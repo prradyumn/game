@@ -150,7 +150,7 @@
     ctx.setTransform(k, 0, 0, k, 0, 0);
     ctx.clearRect(0, 0, BW, 1000);
     for (let r = 0; r < 10; r++) for (let c = 0; c < 10; c++) {
-      if ((r + c) % 2 === 0) { ctx.fillStyle = r < 5 ? 'rgba(255,250,230,0.10)' : 'rgba(200,240,255,0.08)'; ctx.fillRect(c * CW, r * CELL, CW, CELL); }
+      // (no alternating square shading — the grid lines alone mark the squares)
     }
     ctx.strokeStyle = 'rgba(24,42,86,0.18)'; ctx.lineWidth = 1.2;
     ctx.beginPath();
@@ -374,7 +374,7 @@
      and is nudged along the piece until it covers no square number, snake head or other tag. */
   function labelBox(n) {
     const c = cellOf(n), big = n % 10 === 0;
-    const w = (label(n).length * (big ? 21 : 18)) + 14, h = big ? 44 : 38;
+    const w = (label(n).length * (big ? 25 : 22)) + 16, h = big ? 50 : 44;
     return { x: c.col * CW + 2, y: c.row * CELL + 2, w, h };
   }
   const hit = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;

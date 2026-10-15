@@ -134,7 +134,7 @@
         const dist = vw() + w + 40 - startX;
         gsap.to(el, { x: vw() + 40, duration: dist / rnd(12, 22), ease: 'none', onComplete: () => { el.remove(); spawnCloud(false); } });
       };
-      for (let i = 0; i < 3; i++) spawnCloud(true);
+      // clouds and birds are off: they drifted behind the HUD panels and added clutter
       // birds crossing occasionally
       const spawnBird = () => {
         if (!alive()) return;
@@ -149,7 +149,6 @@
         gsap.to(el, { scaleY: 0.82, duration: 0.28, repeat: -1, yoyo: true, ease: 'sine.inOut' });
         gsap.delayedCall(rnd(16, 28), spawnBird);
       };
-      gsap.delayedCall(2, spawnBird);
       // fish in the sea (bottom half)
       const spawnFish = (first) => {
         if (!alive()) return;
