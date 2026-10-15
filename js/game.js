@@ -44,7 +44,7 @@
 
   /* ---------- game state ---------- */
   const G = {
-    sid: 0, tokens: {}, turn: 'student', over: false, forced: [], rollResolver: null,
+    sid: 0, tokens: {}, turn: 'student', over: false, forced: [], rollResolver: null, hopResolver: null, hopTold: false,
     positions() { return { student: this.tokens.student.pos, computer: this.tokens.computer.pos }; },
     slotFor(who) {
       const p = this.positions();
@@ -71,7 +71,7 @@
   function hop(t, n, prev, step, dir, slow) {
     const a = t.xy(), b = B.anchor(n, 0);
     const tl = gsap.timeline();
-    const D = slow ? 0.42 : 0.3, H = slow ? 48 : 34;
+    const D = slow ? 0.36 : 0.3, H = slow ? 50 : 34;
     tl.call(() => { t.setPose('hop'); AU.play('hop', { step, dir }); });
     tl.to(t.el, { x: b.x, duration: D, ease: 'none' }, 0);
     tl.to(t.el, { y: Math.min(a.y, b.y) - H, duration: D * 0.5, ease: 'power2.out' }, 0);
@@ -85,8 +85,8 @@
       else if (n < 0) { FX.ripple(b.x, b.y - 4); FX.bubbles(b.x, b.y - 30, 2); }
       else if (n > 0) FX.sandPuff(b.x, b.y);
       else FX.ripple(b.x, b.y);
-      UI.nlStep(t.who, n);
       t.pos = n;
+      UI.setCardPos(t.who, n, false);
     }, null, D);
     return tl;
   }
@@ -101,6 +101,37 @@
       if (n !== 0) { const c = B.center(n); dots.push(FX.pathDot(c.x, c.y + 4, dir)); }
       if (slow) await guard(UI.wait(0.07));
     }
+    gsap.to(dots, { opacity: 0, duration: 0.6, delay: 0.8, stagger: 0.05, onComplete: () => dots.forEach(d => d.remove()) });
+  }
+
+  /** The player's move: one tap (or Space / the Hop! button) per hop. Taps queue up, so quick
+      tapping never loses a hop, and extra taps past the landing square are ignored. */
+  async function hopByTap(t, to, guard, narrate) {
+    const dir = Math.sign(to - t.pos), total = Math.abs(to - t.pos);
+    if (!total) return;
+    const VO = ISL.voice;
+    let done = 0, queued = 0, wake = null;
+    // the bubble rides along with each hop (same duration) and counts the tap as soon as it lands
+    const prompt = (n = t.pos, dur = 0) => { const a = B.anchor(n, 0); UI.hopPrompt(a.x, a.y - IDLE_H[t.who] - 46, dir, done, total, dur); };
+    G.hopResolver = () => { if (done + queued < total) { queued++; UI.poke(); if (wake) { const w = wake; wake = null; w(); } } };
+    UI.enable($('btn-roll'), true);
+    UI.rollReady(true, n => { if (narrate && n === 1) VO.say('tap_hop'); }, 'hop');
+    prompt();
+    if (narrate && !G.hopTold) { G.hopTold = true; VO.say('tap_hop'); }
+    const dots = [];
+    while (done < total) {
+      if (!queued) await guard(new Promise(r => { wake = r; }));
+      queued--;
+      if (done === 0) VO.stop();
+      const prev = t.pos, n = t.pos + dir;
+      const h = hop(t, n, prev, ++done, dir, true);
+      if (done < total) prompt(n, h.duration()); else UI.hideHopPrompt();
+      await guard(tlPromise(h));
+      if (n !== 0) { const c = B.center(n); dots.push(FX.pathDot(c.x, c.y + 4, dir)); }
+    }
+    G.hopResolver = null;
+    UI.rollReady(false); UI.enable($('btn-roll'), false);
+    UI.hideHopPrompt();
     gsap.to(dots, { opacity: 0, duration: 0.6, delay: 0.8, stagger: 0.05, onComplete: () => dots.forEach(d => d.remove()) });
   }
 
@@ -173,14 +204,11 @@
     const t = G.tokens[who], other = G.tokens[who === 'student' ? 'computer' : 'student'];
     G.turn = who;
     UI.setTurn(who); AU.play('turn');
-    UI.nlShow(G.positions(), who);
     t.rest(); other.rest();
     t.el.classList.add('is-turn'); other.el.classList.remove('is-turn', 'awaiting');
     arrange(0.2);
-    const name = who === 'student' ? 'You' : 'Computer';
 
     if (who === 'student') {
-      UI.eqMessage(opts.prompt || 'Your turn!', 'Tap <b>Roll!</b> to throw both dice.');
       if (narrate) VO.say('your_turn');
       UI.enable($('btn-roll'), true);
       UI.rollReady(true, n => { if (narrate && n === 2) VO.say('nudge'); });
@@ -192,7 +220,6 @@
       VO.stop();
     } else {
       UI.rollReady(false);
-      UI.eqMessage('Computer is thinking…', '');
       t.setPose('thinking');
       if (narrate) VO.say('computer_turn');
       await guard(UI.wait(1.0));
@@ -209,57 +236,33 @@
     const dest = Math.max(B.MIN, Math.min(B.MAX, target));
     FX.target(who, B.center(dest).x - 32, B.center(dest).y - 32 + (dest === 0 ? 0 : 6));
     if (narrate) VO.number(roll);
-    await guard(UI.showEquation(who, start, roll, target, { hideResult: true }));
-    UI.nlArc(start, dest, roll > 0 ? 'plus' : 'minus');
 
-    // camera swoops in on the token and follows every hop
+    // camera swoops in so the character fills the view, then the hops happen
     await guard(CINE.cam.focus(t.el, ZOOM.move, 0.8));
-    await moveSteps(t, dest, guard, who === 'student');
+    if (who === 'student') await hopByTap(t, dest, guard, narrate);
+    else await moveSteps(t, dest, guard, false);
     FX.hideTarget(who);
-    const steps = Math.abs(dest - start);
-    let sub = `${steps} step${steps === 1 ? '' : 's'} ${roll > 0 ? 'up ⬆' : 'down ⬇'}`;
-    if (target > B.MAX) sub = `Past +50 — that’s the summit!`;
-    if (target < B.MIN) sub = `Can’t sink below −50 — you rest on the seafloor.`;
     UI.setCardPos(who, t.pos);
     t.setPose(roll > 0 ? 'happy' : (t.pos < 0 ? 'underwater' : 'worried'));
-
-    // dolly-zoom equation reveal, then it docks into the panel
-    await guard(CINE.hero.show({
-      guard, a: start, b: roll, c: target, sub, kind: roll > 0 ? 'plus' : 'minus',
-      caption: `${name} rolled <b class="${roll > 0 ? 'plus' : 'minus'}">${B.fmt(roll)}</b>`,
-      hold: who === 'student' ? 1.1 : 0.7,
-      speak: narrate ? () => VO.equation(start, roll, target) : null
-    }));
-    UI.revealResult(target, sub);
-    UI.flashPanel();
+    if (target > B.MAX) UI.toast('Summit! <b class="plus">+50</b>', 'good');
+    if (target < B.MIN) UI.toast('Seafloor! <b class="minus">−50</b>', 'bad');
     if (narrate) {
       if (target > B.MAX) await guard(VO.say('summit_past'));
       if (target < B.MIN) await guard(VO.say('seafloor'));
     }
-    await guard(UI.wait(0.3));
+    await guard(UI.wait(0.45));
 
-    if (t.pos === B.MAX) return 'win';
+    if (t.pos === B.MAX) { await guard(CINE.cam.release(0.6)); return 'win'; }
 
     const s = B.snakeAt(t.pos), l = B.ladderAt(t.pos);
     if (s || l) {
-      const from = t.pos, delta = (s || l).to - from;
-      const caption = s ? `Oh no, a snake! It adds <b class="minus">${B.fmt(delta)}</b>` : `A ladder! It adds <b class="plus">${B.fmt(delta)}</b>`;
-      await guard(UI.showEquation(who, from, delta, from + delta, { hideResult: true, panel: s ? 'bad' : 'good', caption }));
       if (narrate) VO.say(s ? 'snake' : 'ladder');
       await guard(CINE.cam.focus(t.el, ZOOM.ride, 0.6));
       if (s) await rideSnake(t, s, guard); else await climbLadder(t, l, guard);
       UI.setCardPos(who, t.pos);
-      UI.nlShow(G.positions(), who);
-      await guard(CINE.hero.show({
-        guard, a: from, b: delta, c: from + delta, kind: s ? 'snake' : 'ladder', caption,
-        sub: s ? 'Slid down the snake.' : 'Climbed the ladder!',
-        hold: 0.9,
-        speak: narrate ? () => VO.equation(from, delta, from + delta) : null
-      }));
-      UI.revealResult(t.pos, s ? 'Slid down the snake.' : 'Climbed the ladder!');
-      UI.flashPanel();
-      await guard(UI.wait(0.4));
+      await guard(UI.wait(0.35));
     }
+    await guard(CINE.cam.release(0.6));
     t.rest();
     arrange();
     return t.pos === B.MAX ? 'win' : 'done';
@@ -282,7 +285,7 @@
     t.setPose('cheer'); other.setPose(who === 'student' ? 'worried' : 'happy');
     gsap.to('.flag-cloth', { scale: 1.25, duration: 0.3, yoyo: true, repeat: 3, transformOrigin: '0% 50%' });
     FX.sparkles(B.anchor(B.MAX).x, B.anchor(B.MAX).y - 50, 14, undefined, 90);
-    UI.eqMessage(who === 'student' ? 'You planted the flag!' : 'The computer planted the flag!', 'First to <b class="plus">+50</b> wins.', 'gold');
+    UI.toast(who === 'student' ? 'You planted the flag!' : 'Computer planted the flag!', 'good');
     await guard(UI.wait(1.2));
     ISL.main.showWin(who);
     ISL.voice.say(who === 'student' ? 'win_student' : 'win_computer');
@@ -295,20 +298,30 @@
       $('board-tokens').innerHTML = '';
       G.tokens.student = new Token('student');
       G.tokens.computer = new Token('computer');
-      $('btn-roll').addEventListener('click', () => { if (G.rollResolver && !$('btn-roll').disabled) { const r = G.rollResolver; G.rollResolver = null; r(); } });
+      const act = () => {
+        if ($('btn-roll').disabled) return;
+        if (G.rollResolver) { const r = G.rollResolver; G.rollResolver = null; r(); }
+        else if (G.hopResolver) G.hopResolver();
+      };
+      $('btn-roll').addEventListener('click', act);
+      // while hopping, a tap anywhere on the play area (not on a button) makes one hop
+      $('screen-game').addEventListener('pointerdown', e => {
+        if (!G.hopResolver || e.target.closest('button') || document.body.hasAttribute('data-paused')) return;
+        AU.unlock(); G.hopResolver();
+      });
       window.addEventListener('keydown', e => {
         if (e.code !== 'Space' && e.code !== 'Enter') return;
-        if (!G.rollResolver || $('btn-roll').disabled || document.body.dataset.screen !== 'game' || document.body.hasAttribute('data-paused')) return;
+        if (!(G.rollResolver || G.hopResolver) || $('btn-roll').disabled || document.body.dataset.screen !== 'game' || document.body.hasAttribute('data-paused')) return;
         const f = document.activeElement;
         if (e.code === 'Enter' && f && f.tagName === 'BUTTON' && f.id !== 'btn-roll') return;   // Enter activates the focused button
         if (f && f !== document.body) f.blur();
-        e.preventDefault(); $('btn-roll').click();
+        e.preventDefault(); act();
       });
     },
     reset() {
-      G.sid++; G.over = false; G.rollResolver = null;
+      G.sid++; G.over = false; G.rollResolver = null; G.hopResolver = null;
       ISL.voice.stop();
-      CINE.cam.reset(); CINE.hero.hide();
+      CINE.cam.reset(); UI.hideHopPrompt();
       ['student', 'computer'].forEach(w => { const t = G.tokens[w]; gsap.killTweensOf([t.el, t.inner]); t.el.classList.remove('is-turn', 'awaiting'); t.pos = 0; t.rest(); UI.setCardPos(w, 0); });
       G.turn = 'student';
       UI.rollReady(false);
@@ -320,7 +333,6 @@
       UI.setFace('sign', 1); UI.setFace('num', 1);
       gsap.set('#roll-chip', { scale: 0, opacity: 0 });
       UI.enable($('btn-roll'), false);
-      UI.nlShow(G.positions(), 'student');
     },
     start() {
       this.reset();
@@ -328,6 +340,6 @@
     },
     /** QA helpers: queue dice results, e.g. ISL.game.force([1,6],[-1,3]) */
     force(...rolls) { G.forced.push(...rolls); },
-    teleport(who, n) { G.tokens[who].pos = n; arrange(0); G.tokens[who].rest(); UI.setCardPos(who, n); UI.nlShow(G.positions(), G.turn); }
+    teleport(who, n) { G.tokens[who].pos = n; arrange(0); G.tokens[who].rest(); UI.setCardPos(who, n); }
   };
 })(window.ISL);

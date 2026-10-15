@@ -18,6 +18,7 @@
     // gameplay
     your_turn: 'Your turn, explorer! Tap Roll.',
     nudge: 'Go on, tap the Roll button to throw the dice!',
+    tap_hop: 'Now tap to hop! One tap for every square.',
     computer_turn: "Computer's turn. Let's see what it rolls!",
     plus: 'plus',
     equals: 'equals',
@@ -29,14 +30,14 @@
     win_computer: 'The computer reached positive fifty first. So close! Play again and beat it.',
     // live tutorial
     t_welcome: 'Welcome, explorer! This whole board is a number line. Land squares are positive numbers, sea squares are negative numbers, and zero is the jetty right on the shoreline.',
-    t_dice: 'Every turn, you roll two dice. The sign die says plus or minus. The number die says how many. Tap Roll to try it!',
-    t_up: 'Zero plus positive four equals positive four. Adding a positive number moves you up, toward the summit.',
-    t_neg: "Now let's add a negative number. Tap Roll!",
-    t_down: 'Positive four plus negative six equals negative two. Adding a negative number moves you down. You crossed zero and dived into the sea!',
+    t_dice: 'Every turn, you roll two dice. The sign die says plus or minus, and the number die says how many. Then tap to make your explorer hop, one tap for every square. Tap Roll to try it!',
+    t_up: 'You rolled positive four, so you hopped four squares up. Positive numbers move you up, toward the summit!',
+    t_neg: "Now let's roll a negative number. Roll, then tap to hop!",
+    t_down: 'Negative six took you six squares down. You crossed zero and dived into the sea! Negative numbers move you down.',
     t_ladder: 'See this ladder? Land at its bottom and it adds a positive number, so you climb up. Tap Roll!',
-    t_ladder_done: 'Negative three plus positive twenty-two equals positive nineteen. What a climb!',
+    t_ladder_done: 'The ladder added positive twenty-two and lifted you all the way to positive nineteen. What a climb!',
     t_snake: "Watch out for snakes! A snake's head adds a negative number and slides you down. Tap Roll!",
-    t_snake_done: 'Positive thirteen plus negative twenty equals negative seven. Snakes pull you down.',
+    t_snake_done: 'The snake added negative twenty and slid you down to negative seven. Snakes pull you down!',
     t_finish: "The first explorer to reach positive fifty plants the flag and wins. You're ready. Let's play!"
   };
   for (let n = -56; n <= 56; n++) LINES[numId(n)] = numText(n);

@@ -23,8 +23,6 @@
         <img id="logo-small" class="abs" src="assets/ui/logo/wordmark-dark.webp" alt="Integer Snakes & Ladders">
 
         <div id="topbar" class="abs">
-          <button class="icon-btn" id="btn-help" aria-label="How to play"><img src="assets/ui/icons/help.webp" alt=""></button>
-          <button class="icon-btn" id="btn-sound" aria-label="Sound on/off"><img src="assets/ui/icons/sound-on.webp" alt=""></button>
           <button class="icon-btn" id="btn-pause" aria-label="Pause"><img src="assets/ui/icons/pause.webp" alt=""></button>
         </div>
 
@@ -59,47 +57,22 @@
             <div id="board-labels"></div>
             <div id="board-tokens"></div>
             <div id="board-fx"></div>
+            <div id="board-ui"></div>
           </div>
           <div id="board-frame"></div>
-        </div>
-
-        <!-- Number line -->
-        <div id="numberline" class="abs">
-          <div id="nl-track">
-            <img id="nl-plank" class="fill" src="assets/number-line/pieces/panel.webp" alt="">
-            <div id="nl-ticks"></div>
-            <div id="nl-arcs"></div>
-            <div id="nl-markers"></div>
-          </div>
-          <div id="nl-title">Number line</div>
-        </div>
-
-        <!-- Equation panel -->
-        <div id="equation" class="abs">
-          <img id="eq-panel" class="fill" src="assets/ui/panels/answer-waiting.webp" alt="">
-          <div id="eq-inner">
-            <div id="eq-caption">Roll the dice to start!</div>
-            <div id="eq-line"></div>
-            <div id="eq-sub"></div>
-          </div>
         </div>
 
         <!-- Dice tray -->
         <div id="tray" class="abs">
           <img id="tray-img" class="fill" src="assets/dice/sign-kit/tray.webp" alt="">
+          <!-- 3D dice: cubes are built in js/ui.js from the face art -->
           <div class="die-slot" id="slot-sign">
             <img class="die-shadow" src="assets/dice/sign-kit/shadow.webp" alt="">
-            <div class="die" id="die-sign">
-              <img class="die-face" src="assets/dice/sign-kit/plus-face.webp" alt="plus">
-              <img class="die-shine" src="assets/dice/sign-kit/shine.webp" alt="">
-            </div>
+            <div class="die" id="die-sign" role="img" aria-label="sign die"></div>
           </div>
           <div class="die-slot" id="slot-num">
             <img class="die-shadow" src="assets/dice/sign-kit/shadow.webp" alt="">
-            <div class="die" id="die-num">
-              <img class="die-face" src="assets/dice/digits/digit-01.webp" alt="1">
-              <img class="die-shine" src="assets/dice/sign-kit/shine.webp" alt="">
-            </div>
+            <div class="die" id="die-num" role="img" aria-label="number die"></div>
           </div>
           <div id="roll-chip" class="abs">
             <img class="fill" id="roll-chip-img" src="assets/ui/panels/result-plus.webp" alt="">
@@ -120,16 +93,6 @@
 
       <!-- ============ STAGE OVERLAYS (stay fixed while the game camera zooms) ============ -->
       <div id="toast" class="abs" aria-live="polite"></div>
-
-      <!-- Big equation reveal: dolly-zooms in over the board, then docks into the equation panel -->
-      <div id="eq-hero" class="fill" aria-live="polite">
-        <div id="hero-scrim" class="fill"></div>
-        <div id="hero-card">
-          <div id="hero-cap"></div>
-          <div id="hero-line"></div>
-          <div id="hero-sub"></div>
-        </div>
-      </div>
 
       <!-- Live tutorial coach -->
       <div id="spotlight" class="abs" aria-hidden="true"></div>
@@ -170,7 +133,7 @@
           <div id="howto-slides">
             <div class="howto-slide">
               <img src="assets/ui/screens/how-to-roll.webp" alt="">
-              <p>Roll the <b class="plus">sign die</b> and the <b>number die</b>. Together they make an integer like <b class="plus">+4</b> or <b class="minus">−3</b>.</p>
+              <p>Roll the <b class="plus">sign die</b> and the <b>number die</b>. Together they make an integer like <b class="plus">+4</b> or <b class="minus">−3</b>. Then <b>tap to hop</b> that many squares!</p>
             </div>
             <div class="howto-slide">
               <img src="assets/ui/screens/how-to-think.webp" alt="">
@@ -201,6 +164,10 @@
           <button class="mid-btn" id="btn-resume"><img class="fill btn-bg" src="assets/ui/buttons/medium-idle.webp" alt=""><span class="btn-label">Resume</span></button>
           <button class="mid-btn" id="btn-restart"><img class="fill btn-bg" src="assets/ui/buttons/medium-idle.webp" alt=""><span class="btn-label">Restart</span></button>
           <button class="mid-btn" id="btn-home"><img class="fill btn-bg" src="assets/ui/buttons/medium-idle.webp" alt=""><span class="btn-label">Home</span></button>
+          <div id="pause-extras">
+            <button class="icon-btn" id="btn-sound" aria-label="Sound on/off" data-cap="Sound"><img src="assets/ui/icons/sound-on.webp" alt=""></button>
+            <button class="icon-btn" id="btn-help" aria-label="How to play" data-cap="How to play"><img src="assets/ui/icons/help.webp" alt=""></button>
+          </div>
         </div>
       </section>
 

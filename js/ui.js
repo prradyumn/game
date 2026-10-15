@@ -1,4 +1,4 @@
-/* HUD widgets: buttons, turn banner, player cards, number line, equation panel, dice, toast. */
+/* HUD widgets: buttons, turn banner, player cards, 3D dice, action button, hop prompt, toast. */
 (function (ISL) {
   'use strict';
   const A = ISL.assets, B = ISL.board;
@@ -46,137 +46,71 @@
       if (active) gsap.fromTo(card, { scale: 1 }, { scale: 1.05, duration: 0.18, yoyo: true, repeat: 1, ease: 'sine.inOut' });
     });
   }
-  function setCardPos(who, n) {
+  function setCardPos(who, n, pop = true) {
     const v = $('card-' + who).querySelector('.card-pos-val');
     v.textContent = fmt(n);
     v.classList.toggle('neg', n < 0); v.classList.toggle('pos', n > 0);
-    gsap.fromTo(v, { scale: 1.5 }, { scale: 1, duration: 0.4, ease: 'back.out(3)' });
+    if (pop) gsap.fromTo(v, { scale: 1.5 }, { scale: 1, duration: 0.4, ease: 'back.out(3)' });
   }
 
-  /* ---------- number line ---------- */
-  const NL = { start: -6, count: 13, focus: 'student' };
-  function nlGeom() {
-    const track = $('nl-track');
-    const w = track.clientWidth, pad = w * 0.085;
-    return { w, pad, step: (w - pad * 2) / (NL.count - 1) };
-  }
-  function tickX(n) { const g = nlGeom(); return g.pad + (n - NL.start) * g.step; }
-  function nlBuild(center) {
-    NL.start = Math.max(B.MIN, Math.min(B.MAX - NL.count + 1, center - 6));
-    const track = $('nl-track');
-    track.style.setProperty('--plank-h', A.hForW('number-line/pieces/panel', track.clientWidth) + 'px');
-    const box = $('nl-ticks'); box.innerHTML = '';
-    for (let i = 0; i < NL.count; i++) {
-      const n = NL.start + i;
-      const t = document.createElement('div');
-      t.className = 'nl-tick' + (n === 0 ? ' zero' : n > 0 ? ' pos' : ' neg');
-      t.style.left = tickX(n) + 'px';
-      t.innerHTML = `<i></i><span>${B.label(n)}</span>`;
-      box.appendChild(t);
-    }
-  }
-  function nlMarker(who) {
-    let m = $('nl-marker-' + who);
-    if (!m) {
-      m = document.createElement('img');
-      m.id = 'nl-marker-' + who; m.className = 'nl-marker ' + who; m.alt = '';
-      m.src = A.url(`tokens/${who}-parts/mini-head`);
-      $('nl-markers').appendChild(m);
-    }
-    return m;
-  }
-  function nlShow(positions, focusWho) {
-    NL.focus = focusWho;
-    nlBuild(positions[focusWho]);
-    ['student', 'computer'].forEach(who => {
-      const m = nlMarker(who), n = positions[who];
-      const inside = n >= NL.start && n <= NL.start + NL.count - 1;
-      const slot = positions.student === positions.computer ? (who === 'student' ? -0.22 : 0.22) : 0;
-      gsap.set(m, { x: tickX(Math.max(NL.start, Math.min(NL.start + NL.count - 1, n))) + slot * nlGeom().step, xPercent: -50, opacity: inside ? 1 : 0 });
-      m.style.zIndex = who === focusWho ? 3 : 2;
-    });
-    $('nl-arcs').innerHTML = '';
-  }
-  function nlArc(from, to, kind) {
-    const box = $('nl-arcs'); box.innerHTML = '';
-    const x1 = tickX(from), x2 = tickX(to);
-    const key = kind === 'plus' ? 'number-line/pieces/plus-arc' : 'number-line/pieces/minus-arc';
-    const w = Math.abs(x2 - x1);
-    const h = Math.max(16, Math.min(46, A.hForW(key, w)));
-    const el = document.createElement('img');
-    el.src = A.url(key); el.className = 'nl-arc'; el.alt = '';
-    Object.assign(el.style, { left: Math.min(x1, x2) + 'px', width: w + 'px', height: h + 'px' });
-    if (from > to) el.style.transform = 'scaleX(-1)';
-    box.appendChild(el);
-    gsap.fromTo(el, { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 0.45, ease: 'power1.inOut' });
-    // little count bubbles over each hop
-    const sign = Math.sign(to - from);
-    for (let i = 1; i <= Math.abs(to - from); i++) {
-      const c = document.createElement('span');
-      c.className = 'nl-count ' + (sign > 0 ? 'plus' : 'minus');
-      c.textContent = (sign > 0 ? '+' : '−') + '1';
-      c.style.left = tickX(from + sign * (i - 0.5)) + 'px';
-      box.appendChild(c);
-      gsap.fromTo(c, { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.2, delay: 0.1 + i * 0.07 });
-    }
-  }
-  function nlStep(who, n) {
-    const m = nlMarker(who);
-    if (n < NL.start || n > NL.start + NL.count - 1) return;
-    gsap.to(m, { x: tickX(n), duration: 0.22, ease: 'power1.inOut', opacity: 1 });
-    gsap.fromTo(m, { y: 0 }, { y: -14, duration: 0.11, yoyo: true, repeat: 1, ease: 'sine.out' });
-  }
-
-  /* ---------- equation panel ---------- */
-  const PANEL = { waiting: 'answer-waiting', active: 'answer-typing', good: 'answer-correct', bad: 'answer-retry', gold: 'answer-revealed' };
-  function eqPanel(state) { $('eq-panel').src = A.url('ui/panels/' + PANEL[state]); }
-  function numSpan(n, cls = '') { return `<span class="eq-n ${n > 0 ? 'pos' : n < 0 ? 'neg' : 'zero'} ${cls}">${fmt(n)}</span>`; }
-  async function showEquation(who, pos, roll, result, opts = {}) {
-    const name = who === 'student' ? 'You' : 'Computer';
-    eqPanel(opts.panel || 'active');
-    $('eq-caption').innerHTML = opts.caption || `${name} rolled ${numSpan(roll, 'roll')}`;
-    const line = $('eq-line');
-    line.innerHTML =
-      `${numSpan(pos)}<span class="eq-op">+</span><span class="eq-paren">(</span>${numSpan(roll, 'roll')}<span class="eq-paren">)</span>` +
-      `<span class="eq-op">=</span><span class="eq-result">${opts.hideResult ? '?' : fmt(result)}</span>`;
-    $('eq-sub').innerHTML = opts.sub || '';
-    fitText(line);
-    const parts = line.children;
-    gsap.fromTo(parts, { opacity: 0, y: 12, scale: 0.6 }, { opacity: 1, y: 0, scale: 1, duration: 0.28, stagger: 0.07, ease: 'back.out(2.5)' });
-    gsap.fromTo($('eq-caption'), { opacity: 0 }, { opacity: 1, duration: 0.25 });
-    await wait(0.6);
-  }
-  function revealResult(result, sub) {
-    const r = $('eq-line').querySelector('.eq-result');
-    if (r) {
-      r.textContent = fmt(result);
-      r.className = 'eq-result ' + (result > 0 ? 'pos' : result < 0 ? 'neg' : 'zero');
-      gsap.fromTo(r, { scale: 1.8 }, { scale: 1, duration: 0.45, ease: 'back.out(3)' });
-    }
-    if (sub !== undefined) { $('eq-sub').innerHTML = sub; gsap.fromTo($('eq-sub'), { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.3 }); }
-  }
-  function eqMessage(caption, sub, panel = 'waiting') {
-    eqPanel(panel);
-    $('eq-caption').innerHTML = caption; $('eq-line').innerHTML = ''; $('eq-sub').innerHTML = sub || '';
-  }
-  /** Shrink the equation font if it would overflow its box (keeps it inside the paper). */
-  function fitText(el) {
-    el.style.fontSize = '';
-    const max = el.parentElement.clientWidth;
-    let fs = parseFloat(getComputedStyle(el).fontSize);
-    let guard = 20;
-    while (el.scrollWidth > max && fs > 14 && guard--) { fs -= 2; el.style.fontSize = fs + 'px'; }
-  }
-
-  /* ---------- dice ---------- */
-  const faceKey = {
-    sign: s => s > 0 ? 'dice/sign-kit/plus-face' : 'dice/sign-kit/minus-face',
-    num: n => 'dice/digits/digit-0' + n
+  /* ---------- 3D dice ----------
+     Each die is a CSS 3D cube: six faces from the face art plus three core planes that fill the
+     rounded corners, so the edges read as a solid rounded cube. The cube sits in a fixed tilt
+     (top and right faces visible) and a roll tumbles it through several turns to the result face.
+     Rotation order matches GSAP's transform: rotateY(ry) rotateX(rx). */
+  const FACES = [                       // where each face sits, and the cube rotation that brings it to the front
+    { tf: '',                show: [0, 0] },     // front
+    { tf: 'rotateY(180deg)', show: [0, 180] },   // back
+    { tf: 'rotateY(90deg)',  show: [0, -90] },   // right
+    { tf: 'rotateY(-90deg)', show: [0, 90] },    // left
+    { tf: 'rotateX(90deg)',  show: [-90, 0] },   // top
+    { tf: 'rotateX(-90deg)', show: [90, 0] }     // bottom
+  ];
+  const DIE = {
+    sign: { values: [1, 1, 1, 1, -1, -1], art: v => v > 0 ? 'dice/sign-kit/plus-face' : 'dice/sign-kit/minus-face' },
+    num:  { values: [1, 6, 3, 4, 2, 5],   art: v => 'dice/digits/digit-0' + v }     // opposite faces add to 7
   };
-  function setFace(which, v) {
-    const img = $('die-' + which).querySelector('.die-face');
-    img.src = A.url(faceKey[which](v));
+  const cubeState = { sign: { rx: 0, ry: 0 }, num: { rx: 0, ry: 0 } };
+
+  function buildDice() {
+    ['sign', 'num'].forEach(which => {
+      const die = $('die-' + which);
+      die.innerHTML = '';
+      const tilt = document.createElement('div'); tilt.className = 'die-tilt';
+      const cube = document.createElement('div'); cube.className = 'cube'; cube.id = 'cube-' + which;
+      ['core-x', 'core-y', 'core-z'].forEach(c => { const el = document.createElement('i'); el.className = 'core ' + c; cube.appendChild(el); });
+      FACES.forEach((f, i) => {
+        const face = document.createElement('i');
+        face.className = 'face ' + (which === 'sign' && DIE.sign.values[i] < 0 ? 'minus' : 'plus');
+        face.style.backgroundImage = `url(${A.url(DIE[which].art(DIE[which].values[i]))})`;
+        face.dataset.tf = f.tf;
+        cube.appendChild(face);
+      });
+      tilt.appendChild(cube); die.appendChild(tilt);
+    });
+    sizeDice();
   }
+  /** Cube edge = 84% of its slot; called on build and whenever the layout changes. */
+  function sizeDice() {
+    ['sign', 'num'].forEach(which => {
+      const slot = $("slot-" + which), s = Math.round(slot.clientWidth * 0.84);
+      const cube = $('cube-' + which); if (!cube) return;
+      cube.style.setProperty('--s', s + 'px');
+      cube.querySelectorAll('.face').forEach(f => { f.style.transform = `${f.dataset.tf} translateZ(${s / 2}px)`; });
+    });
+  }
+  function faceFor(which, v) {
+    const idx = DIE[which].values.map((x, i) => x === v ? i : -1).filter(i => i >= 0);
+    return idx[Math.floor(Math.random() * idx.length)];
+  }
+  function setFace(which, v) {
+    const [rx, ry] = FACES[faceFor(which, v)].show;
+    cubeState[which] = { rx, ry };
+    gsap.set('#cube-' + which, { rotationX: rx, rotationY: ry });
+  }
+  /** Smallest rotation ≥ `from + min` that lands on the same orientation as `to`. */
+  const spinTo = (from, to, min) => to + 360 * Math.ceil((from + min - to) / 360);
+
   function rollDice(sign, num) {
     ISL.audio.play('dice');
     const chip = $('roll-chip');
@@ -185,17 +119,18 @@
       const tl = gsap.timeline({ onComplete: resolve });
       [['sign', sign, -1], ['num', num, 1]].forEach(([which, val, dir], i) => {
         const die = $('die-' + which), shadow = die.parentElement.querySelector('.die-shadow');
-        const spins = dir * (360 * 2);
-        tl.to(die, { y: -95 - i * 10, x: dir * 8, rotation: spins / 2, scale: 1.08, duration: 0.38, ease: 'power2.out' }, i * 0.06)
-          .to(shadow, { scale: 0.55, opacity: 0.35, duration: 0.38, ease: 'power2.out' }, i * 0.06)
-          .to(die, { y: 0, x: 0, rotation: spins, scale: 1, duration: 0.6, ease: 'bounce.out' }, 0.38 + i * 0.06)
-          .to(shadow, { scale: 1, opacity: 0.8, duration: 0.6, ease: 'bounce.out' }, 0.38 + i * 0.06)
-          .set(die, { rotation: 0 });
-        // face flicker while airborne
-        for (let k = 0; k < 11; k++) {
-          tl.call(() => setFace(which, which === 'sign' ? (Math.random() < 0.5 ? 1 : -1) : 1 + Math.floor(Math.random() * 6)), null, i * 0.06 + k * 0.075);
-        }
-        tl.call(() => setFace(which, val), null, 0.86 + i * 0.06);
+        const cube = $('cube-' + which), cur = cubeState[which];
+        const [tx, ty] = FACES[faceFor(which, val)].show;
+        const endX = spinTo(cur.rx, tx, 540 + i * 180), endY = spinTo(cur.ry, ty, 360 + (1 - i) * 180);
+        const t0 = i * 0.06;
+        // toss up and bounce down in the tray…
+        tl.to(die, { y: -95 - i * 10, x: dir * 8, scale: 1.1, duration: 0.38, ease: 'power2.out' }, t0)
+          .to(shadow, { scale: 0.55, opacity: 0.35, duration: 0.38, ease: 'power2.out' }, t0)
+          .to(die, { y: 0, x: 0, scale: 1, duration: 0.6, ease: 'bounce.out' }, 0.38 + t0)
+          .to(shadow, { scale: 1, opacity: 0.8, duration: 0.6, ease: 'bounce.out' }, 0.38 + t0)
+          // …while the cube tumbles in 3D and settles on the result face
+          .to(cube, { rotationX: endX, rotationY: endY, duration: 0.98, ease: 'power3.out' }, t0)
+          .call(() => { cubeState[which] = { rx: endX % 360, ry: endY % 360 }; gsap.set(cube, { rotationX: endX % 360, rotationY: endY % 360 }); }, null, 1.0 + t0);
       });
       tl.call(() => ISL.audio.play('diceLand'), null, 0.5);
       tl.call(() => {
@@ -207,40 +142,73 @@
     });
   }
 
-  /* ---------- roll affordance ----------
-     While the student is due to roll: Roll glows + breathes and the dice sit up.
-     If nothing happens for a few seconds, escalate to a nudge (wiggle, dice hop, bouncing
-     arrow, soft chime) and repeat every few seconds until they roll. */
-  let nudgeCall = null;
-  function rollReady(on, onNudge) {
+  /* ---------- action button (Roll! / Hop!) ----------
+     While the student must act, the big button glows and breathes. If nothing happens for a
+     few seconds it escalates to a nudge, repeating until they act:
+       roll mode — button wiggle, the dice hop, a bouncing arrow at the button, a chime
+       hop mode  — button wiggle and the "tap to hop" prompt over the character bounces */
+  let nudgeCall = null, nudgeCb = null, mode = null;
+  function rollReady(on, onNudge, m = 'roll') {
     const btn = $('btn-roll');
+    mode = on ? m : null; nudgeCb = onNudge || null;
     btn.classList.toggle('ready', on);
-    $('tray').classList.toggle('ready', on);
+    $('tray').classList.toggle('ready', on && m === 'roll');
     $('roll-nudge').classList.remove('on');
-    if (nudgeCall) { nudgeCall.kill(); nudgeCall = null; }
     gsap.killTweensOf(btn, 'scale,rotation');
     gsap.killTweensOf(['#die-sign', '#die-num'], 'y');
     gsap.set(btn, { scale: 1, rotation: 0 });
     gsap.set(['#die-sign', '#die-num'], { y: 0 });
-    btn.querySelector('.btn-label').textContent = on || ISL.game.G.turn === 'student' ? 'Roll!' : 'Wait…';
-    if (!on) return;
+    btn.querySelector('.btn-label').textContent = on ? (m === 'hop' ? 'Hop!' : 'Roll!') : (ISL.game.G.turn === 'student' ? 'Roll!' : 'Wait…');
+    btn.setAttribute('aria-label', on && m === 'hop' ? 'Hop' : 'Roll the dice');
+    if (!on) { if (nudgeCall) { nudgeCall.kill(); nudgeCall = null; } return; }
     gsap.to(btn, { scale: 1.05, duration: 0.6, yoyo: true, repeat: -1, ease: 'sine.inOut' });
+    poke();
+  }
+  /** Restart the idle timer (called on every hop so the nudge only fires when the player stalls). */
+  function poke() {
+    if (nudgeCall) nudgeCall.kill();
+    if (!mode) return;
     let count = 0;
-    const schedule = d => { nudgeCall = gsap.delayedCall(d, () => { count++; nudge(); onNudge && onNudge(count); schedule(5); }); };
-    schedule(3.5);
+    const schedule = d => { nudgeCall = gsap.delayedCall(d, () => { count++; nudge(); nudgeCb && nudgeCb(count); schedule(5); }); };
+    schedule(mode === 'hop' ? 3 : 3.5);
   }
   function nudge() {
     const btn = $('btn-roll');
     gsap.fromTo(btn, { rotation: 0 }, { keyframes: { rotation: [0, -7, 7, -5, 4, -2, 0] }, duration: 0.6, ease: 'none' });
-    gsap.fromTo(['#die-sign', '#die-num'], { y: 0 }, { y: -20, duration: 0.16, yoyo: true, repeat: 1, stagger: 0.08, ease: 'power2.out' });
-    const arrow = $('roll-nudge');
-    arrow.classList.remove('on'); void arrow.offsetWidth; arrow.classList.add('on');
+    if (mode === 'hop') {
+      const p = $('hop-prompt');
+      if (p) { p.classList.remove('bounce'); void p.offsetWidth; p.classList.add('bounce'); }
+    } else {
+      gsap.fromTo(['#die-sign', '#die-num'], { y: 0 }, { y: -20, duration: 0.16, yoyo: true, repeat: 1, stagger: 0.08, ease: 'power2.out' });
+      const arrow = $('roll-nudge');
+      arrow.classList.remove('on'); void arrow.offsetWidth; arrow.classList.add('on');
+    }
     ISL.audio.play('nudge');
   }
-  /** Brief gold glow on the equation panel when its answer lands. */
-  function flashPanel() {
-    const el = $('equation');
-    el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+
+  /* ---------- hop prompt ----------
+     A bubble over the character while the player taps it along: direction arrow, "Tap to hop!"
+     and a counter (2 / 5). Lives in board space, so the camera zoom keeps it next to the token. */
+  function hopPrompt(x, y, dir, done, total, dur = 0) {
+    let p = $('hop-prompt');
+    if (!p) {
+      p = document.createElement('div'); p.id = 'hop-prompt';
+      p.innerHTML = '<b class="hp-arrow"></b><span class="hp-text">Tap to hop!</span><span class="hp-count"></span>';
+      $('board-ui').appendChild(p);
+      // centre the bubble's bottom tip on (x, y) — via GSAP, which owns this element's transform
+      gsap.set(p, { xPercent: -50, yPercent: -100, transformOrigin: '50% 100%' });
+      gsap.fromTo(p, { scale: 0.3, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: 'back.out(2.5)' });
+    }
+    p.className = dir > 0 ? 'up' : 'down';
+    p.querySelector('.hp-arrow').textContent = dir > 0 ? '▲' : '▼';
+    p.querySelector('.hp-text').textContent = done ? (dir > 0 ? 'Keep hopping up!' : 'Keep hopping down!') : 'Tap to hop!';
+    p.querySelector('.hp-count').innerHTML = `<b>${done}</b> / ${total}`;
+    gsap.to(p, { x, y, duration: dur, ease: 'power1.inOut', overwrite: 'auto' });
+  }
+  function hideHopPrompt() {
+    const p = $('hop-prompt'); if (!p) return;
+    p.id = '';
+    gsap.to(p, { scale: 0.4, opacity: 0, duration: 0.25, onComplete: () => p.remove() });
   }
 
   /* ---------- toast ---------- */
@@ -256,8 +224,7 @@
 
   ISL.ui = {
     initButtons, enable, setBtnState, setTurn, setCardPos,
-    nlShow, nlArc, nlStep, nlBuild,
-    showEquation, revealResult, eqMessage, eqPanel, flashPanel,
-    rollDice, setFace, toast, wait, rollReady
+    buildDice, sizeDice, rollDice, setFace, toast, wait, rollReady, poke,
+    hopPrompt, hideHopPrompt
   };
 })(window.ISL);

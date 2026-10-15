@@ -73,8 +73,14 @@
     $('howto-next').querySelector('.btn-label').textContent = slide === 2 ? "Let's go!" : 'Next';
     $('howto-prev').style.visibility = slide === 0 ? 'hidden' : 'visible';
   }
-  function openHowto() { if (busy) return; setSlide(0); show('screen-howto', true); pauseGame(true, false); }
-  function closeHowto() { show('screen-howto', false); pauseGame(false, false); }
+  // How to play opens from the pause menu: it swaps with the menu and closing it returns there.
+  function openHowto() {
+    if (busy) return;
+    setSlide(0);
+    show('screen-pause', false); show('screen-howto', true);
+    if (!paused) pauseGame(true, false);
+  }
+  function closeHowto() { show('screen-howto', false); if (paused) show('screen-pause', true); }
   const howtoOpen = () => $('screen-howto').classList.contains('open');
 
   /* ---------- pause ---------- */
@@ -133,13 +139,13 @@
     await A.preloadAll(p => { $('loader-bar').firstElementChild.style.width = Math.round(p * 100) + '%'; });
     if (document.fonts && document.fonts.ready) { try { await Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]); } catch (e) {} }
     ISL.board.build();
-    ISL.layout.onChange.push(() => { UI.nlShow(ISL.game.G.positions(), ISL.game.G.turn); if (params.has('debug')) debugOverlay(); });
+    ISL.layout.onChange.push(() => { UI.sizeDice(); if (params.has('debug')) debugOverlay(); });
     ISL.voice.init();
+    UI.buildDice();
     ISL.game.init();
     ISL.tutorial.init();
     UI.initButtons();
     ISL.game.reset();
-    UI.nlShow({ student: 0, computer: 0 }, 'student');
     FX.ambient();
     let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => FX.ambient(), 300); });
 

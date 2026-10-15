@@ -2,6 +2,7 @@
 window.VOICE_CLIPS = {
  "your_turn": "your_turn.ogg",
  "nudge": "nudge.ogg",
+ "tap_hop": "tap_hop.ogg",
  "computer_turn": "computer_turn.ogg",
  "plus": "plus.ogg",
  "equals": "equals.ogg",
