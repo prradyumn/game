@@ -27,7 +27,7 @@
     hint_down: 'A minus number moves you down, toward the sea!',
     hint_top: "You can't go past positive fifty. Stop at the flag!",
     hint_bottom: 'Negative fifty is the seafloor. Stop there!',
-    hint_zero: "Don't forget zero! The jetty counts as a step.",
+    hint_zero: "Don't forget zero! The boardwalk counts as a step.",
     hint_next: 'Start counting from the next square, not your own.',
     hint_close: 'So close! Count again.',
     hint_far: 'Count carefully, one square for each step.',
@@ -46,7 +46,7 @@
     win_student: 'You reached positive fifty and planted the flag! You are an integer champion!',
     win_computer: 'The computer reached positive fifty first. So close! Play again and beat it.',
     // live tutorial
-    t_welcome: 'Welcome, explorer! This whole board is a number line. Land squares are positive numbers, sea squares are negative numbers, and zero is the jetty right on the shoreline.',
+    t_welcome: 'Welcome, explorer! This whole board is a number line. Land squares are positive numbers, sea squares are negative numbers, and zero is the boardwalk right on the shoreline.',
     t_dice: 'Every turn, you roll two dice. The sign die says plus or minus, and the number die says how many. Then work out where you will land, and tap that square, or drag your explorer there. Tap Roll to try it!',
     t_up: 'You rolled positive four, so you hopped four squares up. Positive numbers move you up, toward the summit!',
     t_neg: "Now let's roll a negative number. Roll, then pick the square where you will land!",

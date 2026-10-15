@@ -75,6 +75,8 @@
     num:  { values: [1, 6, 3, 4, 2, 5],   art: v => 'dice/digits/digit-0' + v }     // opposite faces add to 7
   };
   const cubeState = { sign: { rx: 0, ry: 0 }, num: { rx: 0, ry: 0 } };
+  // at rest the dice face the player (only the result face reads); while rolling they tilt into full 3D
+  const TILT = { rest: { rotationX: -7, rotationY: -9 }, roll: { rotationX: -24, rotationY: -30 } };
 
   function buildDice() {
     ['sign', 'num'].forEach(which => {
@@ -91,6 +93,7 @@
         cube.appendChild(face);
       });
       tilt.appendChild(cube); die.appendChild(tilt);
+      gsap.set(tilt, TILT.rest);
     });
     sizeDice();
   }
@@ -126,7 +129,10 @@
         const cube = $('cube-' + which), cur = cubeState[which];
         const [tx, ty] = FACES[faceFor(which, val)].show;
         const endX = spinTo(cur.rx, tx, 540 + i * 180), endY = spinTo(cur.ry, ty, 360 + (1 - i) * 180);
-        const t0 = i * 0.06;
+        const t0 = i * 0.06, tilt = die.querySelector('.die-tilt');
+        tl.to(tilt, Object.assign({ duration: 0.25, ease: 'power2.out' }, TILT.roll), t0)
+          .to(tilt, Object.assign({ duration: 0.4, ease: 'back.out(1.6)' }, TILT.rest), 0.98 + t0)
+          .call(() => { die.classList.remove('glow'); void die.offsetWidth; die.classList.add('glow'); }, null, 1.02 + t0);
         // toss up and bounce down in the tray…
         tl.to(die, { y: -95 - i * 10, x: dir * 8, scale: 1.1, duration: 0.38, ease: 'power2.out' }, t0)
           .to(shadow, { scale: 0.55, opacity: 0.35, duration: 0.38, ease: 'power2.out' }, t0)

@@ -24,7 +24,7 @@
       : { id: 'hint_down', html: `${P(roll)} means <b>down</b>! Move toward the sea.` };
     if (start + roll > B.MAX) return { id: 'hint_top', html: `You can't go past ${P(50)}. Stop at the flag!` };
     if (start + roll < B.MIN) return { id: 'hint_bottom', html: `${P(-50)} is the seafloor. Stop there!` };
-    if (crossesZero && m === k + 1) return { id: 'hint_zero', html: `Don't forget <b>0</b>! The jetty counts as a step.` };
+    if (crossesZero && m === k + 1) return { id: 'hint_zero', html: `Don't forget <b>0</b>! The boardwalk counts as a step.` };
     if (m === k - 1 && k > 1) return { id: 'hint_next', html: `Start counting from the <b>next</b> square, not your own.` };
     if (Math.abs(m - k) <= 2) return { id: 'hint_close', html: `So close! You moved <b>${m}</b>, you need <b>${k}</b>.` };
     return { id: 'hint_far', html: `Count carefully: one square for each step of ${P(roll)}.` };
@@ -54,9 +54,9 @@
     let h = $('pick-cell');
     if (n === null) { if (h) h.remove(); return; }
     if (!h) { h = document.createElement('i'); h.id = 'pick-cell'; $('board-ui').appendChild(h); }
-    const c = n === 0 ? B.anchor(0, 0) : B.center(n), w = n === 0 ? 96 : B.W / 10, hh = n === 0 ? 60 : B.CELL;
+    const c = B.center(n), w = n === 0 ? 80 : B.W / 10, hh = n === 0 ? 76 : B.CELL;
     Object.assign(h.style, { width: w + 'px', height: hh + 'px' });
-    gsap.set(h, { x: c.x, y: n === 0 ? c.y - 6 : c.y, xPercent: -50, yPercent: -50 });
+    gsap.set(h, { x: c.x, y: c.y, xPercent: -50, yPercent: -50 });
     h.classList.toggle('zero', n === 0);
   }
   function select(n, snap = true) {
@@ -122,11 +122,11 @@
   function showPath(start, dest) {
     const box = $('board-ui'), dir = Math.sign(dest - start);
     for (let n = start + dir, i = 0; ; n += dir, i++) {
-      const c = n === 0 ? B.anchor(0, 0) : B.center(n);
+      const c = B.center(n);
       const el = document.createElement('i'); el.className = 'path-glow' + (n === 0 ? ' zero' : '');
-      Object.assign(el.style, { width: (n === 0 ? 96 : B.W / 10) + 'px', height: (n === 0 ? 60 : B.CELL) + 'px' });
+      Object.assign(el.style, { width: (n === 0 ? 80 : B.W / 10) + 'px', height: (n === 0 ? 76 : B.CELL) + 'px' });
       box.appendChild(el);
-      gsap.set(el, { x: c.x, y: n === 0 ? c.y - 6 : c.y, xPercent: -50, yPercent: -50 });
+      gsap.set(el, { x: c.x, y: c.y, xPercent: -50, yPercent: -50 });
       gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.25, delay: i * 0.08 });
       if (n === dest) break;
     }

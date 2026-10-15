@@ -4,14 +4,14 @@
    portrait a square one. Sprites (tokens, heads, tags) are sized in units and never stretch.
    Rows 0-4 (land, top half)  hold +41..+50 down to +1..+10.
    Rows 5-9 (sea, bottom half) hold −1..−10 down to −41..−50.
-   Zero is the jetty on the shoreline, in the first column between +1 and −1.
+   Zero is the boardwalk along the shoreline, with its gold 0 tile in the first column between +1 and −1.
    Numbering snakes back and forth (boustrophedon) away from the shoreline in both directions. */
 (function (ISL) {
   'use strict';
   const A = ISL.assets;
   const CELL = 100;                 // cell height (and width on a square board)
   let BW = 1000, CW = CELL;         // board width and cell width in units — set from the layout's aspect
-  function setAspect(r) { BW = Math.round(1000 * r); CW = BW / 10; JETTY.x = CW * 0.6; JETTY.w = Math.min(80, CW * 0.62); }   // right part of column 0, clear of the 1 / −1 numbers
+  function setAspect(r) { BW = Math.round(1000 * r); CW = BW / 10; JETTY.x = CW * 0.5; }   // the 0 tile sits mid column 0, at the left end of the boardwalk
   const MIN = -50, MAX = 50;
 
   // Ladders go up (bottom -> top). Snakes go down (head -> tail).
@@ -27,7 +27,7 @@
     // the big one: from the summit side all the way to the deep, winding down the left edge
     // (via = waypoints in cell coordinates [col, row], centre of a cell = +0.5)
     { from: 43,  to: -40, kind: 'python',
-      // threads between the jetty / 0 badge, the −2 number and the −3 ladder without touching them
+      // threads between the 0 tile, the −2 number and the −3 ladder without touching them
       via: [[1.75, 1.25], [0.85, 1.95], [0.45, 2.85], [0.55, 3.6], [0.72, 4.32], [1.25, 4.58], [1.72, 4.98], [1.72, 5.6], [0.95, 6.1], [0.42, 6.8], [0.48, 7.6], [0.6, 8.1]] },
     { from: 35,  to: 15,  kind: 'tree-snake', bend: -1 },
     { from: 13,  to: -7,  kind: 'tree-snake', bend: 1 },
@@ -50,7 +50,9 @@
     const row = n > 0 ? 4 - r : 5 + r;
     return { col, row };
   }
-  const JETTY = { x: 50, y: 500, w: 86 };        // jetty centre (board units), on the shoreline in column 0; set by setAspect
+  const JETTY = { x: 50, y: 500, w: 64, h: 54 };  // 0 tile centre (board units), on the shoreline boardwalk in column 0; x set by setAspect
+  const WALK = { y: 480, h: 40 };                 // the boardwalk band along the shoreline (the 0 line)
+  const SEA_LABEL_DROP = 24;                      // first sea row's numbers sit just below the boardwalk
   function center(n) {
     if (n === 0) return { x: JETTY.x, y: JETTY.y };
     const c = cellOf(n);
@@ -59,7 +61,7 @@
   /** Where a token's feet stand for number n. `slot` -1 / +1 when two tokens share a spot. */
   function anchor(n, slot = 0) {
     const c = center(n);
-    if (n === 0) return { x: c.x + 6 + slot * 18, y: c.y - 6 };   // on the deck, nudged clear of the −1 number
+    if (n === 0) return { x: c.x + 16 + slot * 20, y: c.y - 22 };     // standing on top of the 0 tile, which stays visible
     return { x: c.x + slot * 20, y: c.y + 34 };
   }
   const fmt = n => n > 0 ? '+' + n : n < 0 ? '−' + Math.abs(n) : '0';
@@ -157,9 +159,18 @@
     ctx.beginPath();
     for (let i = 0; i <= 10; i++) { ctx.moveTo(i * CW, 0); ctx.lineTo(i * CW, 1000); ctx.moveTo(0, i * CELL); ctx.lineTo(BW, i * CELL); }
     ctx.stroke();
-    // shoreline accent (zero line)
-    ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.lineWidth = 3; ctx.setLineDash([10, 8]);
-    ctx.beginPath(); ctx.moveTo(0, 500); ctx.lineTo(BW, 500); ctx.stroke(); ctx.setLineDash([]);
+    // the boardwalk along the shoreline (the 0 line); drawn here so snakes and ladders pass over it
+    const y0 = WALK.y, h = WALK.h;
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 6;
+    ctx.fillStyle = '#b9824a'; ctx.beginPath(); ctx.roundRect(0, y0, BW, h, 6); ctx.fill();
+    ctx.restore();
+    ctx.save(); ctx.beginPath(); ctx.roundRect(0, y0, BW, h, 6); ctx.clip();
+    ctx.fillStyle = '#a06c3a';
+    for (let x = 34; x < BW; x += 36) ctx.fillRect(x, y0, 2, h);          // plank seams
+    ctx.fillStyle = '#d9a76a'; ctx.fillRect(0, y0, BW, 4);                // sunlit top edge
+    ctx.fillStyle = '#7a4a22'; ctx.fillRect(0, y0 + h - 6, BW, 6);        // shaded front edge
+    ctx.restore();
   }
   function buildLabels() {
     const box = document.getElementById('board-labels');
@@ -171,7 +182,7 @@
       el.className = 'cell-label ' + (n > 0 ? 'pos' : 'neg') + (n % 10 === 0 ? ' mark' : '');
       el.textContent = label(n);
       el.style.left = (c.col * CW + 4) + 'px';
-      el.style.top = (c.row * CELL + 4) + 'px';
+      el.style.top = (c.row * CELL + 4 + (c.row === 5 ? SEA_LABEL_DROP : 0)) + 'px';
       el.dataset.n = n;
       box.appendChild(el);
     }
@@ -322,18 +333,9 @@
   function buildDecor() {
     const decor = document.getElementById('board-decor');
     decor.innerHTML = '';
-    // Jetty (zero)
-    const jw = JETTY.w, jh = A.hForW('board-pieces/zero-jetty', jw);
-    const jetty = sizedImg('board-pieces/zero-jetty', jw, 'decor jetty');
-    place(jetty, JETTY.x - jw / 2, JETTY.y - jh * 0.42, jw, jh);
-    decor.appendChild(jetty);
-    // a soft glow behind the jetty and a big gold 0 just below its deck (explorers stand on the
-    // deck, so the badge below it always stays visible)
-    const glow = document.createElement('i'); glow.className = 'decor jetty-glow';
-    place(glow, JETTY.x - jw * 0.65, JETTY.y - 34, jw * 1.3, 68);
-    decor.insertBefore(glow, jetty);
-    const zero = document.createElement('div'); zero.className = 'decor zero-badge'; zero.textContent = '0';
-    place(zero, JETTY.x - 22, JETTY.y + 26, 44, 44);
+    // Zero: a gold 0 tile at the left end of the boardwalk (explorers stand on top of it)
+    const zero = document.createElement('div'); zero.className = 'decor zero-tile'; zero.textContent = '0';
+    place(zero, JETTY.x - JETTY.w / 2, JETTY.y - JETTY.h / 2, JETTY.w, JETTY.h);
     decor.appendChild(zero);
     // Summit flag at +50
     const c50 = center(MAX);
@@ -380,7 +382,7 @@
   function labelBox(n) {
     const c = cellOf(n), big = n % 10 === 0;
     const w = (label(n).length * (big ? 25 : 22)) + 16, h = big ? 50 : 44;
-    return { x: c.col * CW + 2, y: c.row * CELL + 2, w, h };
+    return { x: c.col * CW + 2, y: c.row * CELL + 2 + (c.row === 5 ? SEA_LABEL_DROP : 0), w, h };
   }
   const hit = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
   /** First spot along `pointAt(d)` (d = distance from the start, in units) that is free. */
@@ -478,9 +480,10 @@
 
   const Board = {
     CELL, MIN, MAX, LADDERS, SNAKES, cellOf, center, anchor, fmt, label, along, paintLadder,
-    /** Square number under board point (u, v) in board units; 0 for the jetty; null if off the board. */
+    /** Square number under board point (u, v) in board units; 0 for the 0 tile or the boardwalk; null if off the board. */
     numberAt(u, v) {
-      if (Math.abs(u - JETTY.x) < JETTY.w / 2 + 6 && Math.abs(v - JETTY.y) < 28) return 0;   // the jetty
+      if (Math.abs(u - JETTY.x) < JETTY.w / 2 + 6 && Math.abs(v - JETTY.y) < JETTY.h / 2 + 4) return 0;   // the 0 tile
+      if (v >= WALK.y + 4 && v <= WALK.y + WALK.h - 4) return 0;                                   // anywhere on the boardwalk
       if (u < 0) return null;
       if (u >= BW || v < 0 || v >= 1000) return null;
       const col = Math.floor(u / CW), row = Math.floor(v / CELL);

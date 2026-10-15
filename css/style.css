@@ -262,7 +262,9 @@ body.no-fade .overlay-screen, body.no-fade .modal, body.no-fade #coach { transit
 .die { position: absolute; inset: 0; perspective: 620px; }
 /* 3D cube: faces are the die art; three core planes fill the rounded corners so edges read solid */
 .die-tilt, .cube { position: absolute; left: 53%; top: 50%; width: 0; height: 0; transform-style: preserve-3d; }
-.die-tilt { transform: rotateX(-24deg) rotateY(-30deg); }
+/* tilt is driven by GSAP (face-on at rest, 3D while tumbling); brief gold glow when the result lands */
+.die.glow { animation: die-glow 1.1s ease-out; }
+@keyframes die-glow { 0% { filter: drop-shadow(0 0 0 rgba(255, 214, 90, 0)); } 25% { filter: drop-shadow(0 0 14px rgba(255, 214, 90, 1)) drop-shadow(0 0 4px #fff); } 100% { filter: drop-shadow(0 0 0 rgba(255, 214, 90, 0)); } }
 .cube .face, .cube .core {
   position: absolute; width: var(--s); height: var(--s); left: calc(var(--s) / -2); top: calc(var(--s) / -2);
   backface-visibility: hidden;
@@ -545,12 +547,10 @@ body[data-picking] #board-wrap { cursor: pointer; touch-action: none; }
 .port .card-stars { font-size: 22px; }
 .win-stars { display: block; margin-top: 6px; color: #ffd34d; }
 
-/* zero: glow behind the jetty + gold badge under its deck */
-.jetty-glow { border-radius: 50%; pointer-events: none;
-  background: radial-gradient(closest-side, rgba(255, 224, 120, .75), rgba(255, 200, 60, .3) 60%, transparent); }
-.zero-badge { display: flex; align-items: center; justify-content: center; border-radius: 50%; z-index: 2;
+/* zero: the gold 0 tile at the left end of the shoreline boardwalk */
+.zero-tile { display: flex; align-items: center; justify-content: center; border-radius: 14px; z-index: 2;
   background: radial-gradient(circle at 35% 30%, #fff3b0, #ffc531 55%, #e09a10); color: #3a1f05;
-  font: 700 32px/1 var(--font); box-shadow: 0 0 0 4px #fff, 0 0 0 7px #3a1f05, 0 4px 10px rgba(0, 0, 0, .4), 0 0 18px 6px rgba(255, 214, 90, .7); }
+  font: 700 46px/1 var(--font); box-shadow: 0 0 0 4px #fff, 0 0 0 7px #3a1f05, 0 6px 12px rgba(0, 0, 0, .4); }
 /* pick countdown bar */
 #pick-prompt { position: absolute; overflow: hidden; }
 #pick-prompt .pp-bar { position: absolute; left: 8%; right: 8%; bottom: 7px; height: 6px; border-radius: 3px;

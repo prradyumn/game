@@ -9,13 +9,13 @@
   const STAGES = { land: { w: 1920, h: 1080 }, port: { w: 1080, h: 1920 } };
 
   // Landscape: the board runs nearly the full stage height and starts at the left edge (leaving just
-  // room for the zero jetty outside it); the logo, turn banner, cards, dice and Roll/Hop sit on the right.
+  // room for the zero boardwalk); the logo, turn banner, cards, dice and Roll/Hop sit on the right.
   // Portrait: board fills the width; dice and the action button sit bottom-centre, under the thumb.
   function tables() {
     return {
       land: {
-        // board on the left (the zero jetty pokes out past its left edge); every HUD piece on the right
-        'board-wrap':    { x: 24,   y: 20,  w: 1316, h: 1040 },      // wide board (aspect ~1.27); the jetty is inside it now
+        // board on the left (0 is the boardwalk along its shoreline); every HUD piece on the right
+        'board-wrap':    { x: 24,   y: 20,  w: 1316, h: 1040 },      // wide board (aspect ~1.27); 0 is the shoreline boardwalk
         // right column, evenly spaced: Pause pinned top-right; cards (+ turn ribbon), dice tray, Roll
         'topbar':        { x: 1816, y: 24,  w: 84,  h: 84 },
         'turn-banner':   { x: 1471, y: 156, w: 330, h: ar('ui/panels/turn-student', 330) },   // hidden (ribbon on the card)

@@ -11,7 +11,7 @@
   const P = n => `<b class="${n > 0 ? 'plus' : n < 0 ? 'minus' : ''}">${B.fmt(n)}</b>`;
   const STEPS = [
     { id: 't_welcome', pose: 'wave', spot: 'board', next: 'Next',
-      html: `This board is a <b>number line</b>! Land squares are ${P(1)} <b>positive</b>, sea squares are ${P(-1)} <b>negative</b>. <b>0</b> is the jetty on the shoreline.` },
+      html: `This board is a <b>number line</b>! Land squares are ${P(1)} <b>positive</b>, sea squares are ${P(-1)} <b>negative</b>. <b>0</b> is the boardwalk on the shoreline.` },
     { id: 't_dice', pose: 'thinking', spot: 'dice', roll: true,
       html: `Roll two dice: the <b>sign die</b> says <b class="plus">+</b> or <b class="minus">−</b>, the <b>number die</b> says how many. Then work out where you'll land and <b>tap that square</b> (or drag your explorer there).` },
     { id: 't_up', pose: 'happy', spot: 'shore', next: 'Next',

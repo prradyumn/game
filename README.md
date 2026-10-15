@@ -3,7 +3,7 @@
 Open `index.html` in Chrome/Edge/Safari (double-click works; no server needed).
 
 ## Rules in this draft
-- Board runs from **−50** (seafloor) to **+50** (summit). **0** is the jetty on the shoreline inside the board, between +1 and −1; both explorers start there.
+- Board runs from **−50** (seafloor) to **+50** (summit). **0** is the wooden boardwalk along the shoreline, with a gold 0 tile in the first column between +1 and −1; both explorers start there.
 - Each turn: roll the **sign die** (4 plus faces, 2 minus faces) and the **number die** (1–6). Move = position + (±n).
 - After the roll, the player **picks the square** where the explorer will land: tap any square (or drag the explorer onto one, or use the arrow keys) — picking is the answer, there is no Go button. Nothing is restricted; they work out the sum themselves.
   - Every pick stays for 3 seconds first (a countdown bar shows it), so a slip or an overshoot can be fixed by tapping another square.
