@@ -21,6 +21,7 @@
     ISL.voice.stop();
     paused = false; document.body.removeAttribute('data-paused');
     gsap.globalTimeline.resume();                  // the wave itself runs on GSAP
+    AU.resume();
     ISL.intro.wipe(() => {
       // screens swap instantly under the wave (no half-faded modal peeking out as it lifts)
       document.body.classList.add('no-fade');
@@ -41,12 +42,13 @@
       .fromTo('#start-computer', { x: 120, opacity: 0 }, { x: 0, opacity: 1, duration: 0.6, ease: 'power3.out' }, 0.4)
       .fromTo('#start-tagline', { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.4 }, 0.6)
       .fromTo(['#btn-play', '#btn-howto'], { scale: 0.4, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, stagger: 0.1, ease: 'back.out(2.2)' }, 0.7);
+    AU.music('loop', 3);   // the intro cue hands over to the calm island loop
     gsap.to('#start-student', { y: -10, duration: 1.4, yoyo: true, repeat: -1, ease: 'sine.inOut', delay: delay + 1 });
     gsap.to('#start-computer', { y: -10, duration: 1.6, yoyo: true, repeat: -1, ease: 'sine.inOut', delay: delay + 1.2 });
   }
   /** Swap to the game screen (called under the wave). */
   function enterGame(tutorial) {
-    AU.startMusic();
+    AU.music('loop', 2);
     hideWin();
     show('screen-start', false); show('screen-howto', false); show('screen-pause', false);
     setScreen('game');
@@ -90,6 +92,7 @@
     paused = on;
     on ? gsap.globalTimeline.pause() : gsap.globalTimeline.resume();
     on ? ISL.voice.pause() : ISL.voice.resume();
+    on ? AU.pause() : AU.resume();
     document.body.toggleAttribute('data-paused', on);
     if (showMenu) show('screen-pause', on);
   }
@@ -194,6 +197,9 @@
     $('btn-home').addEventListener('click', goHome);
     $('btn-again').addEventListener('click', () => transition(() => enterGame(false)));
     $('btn-win-home').addEventListener('click', goHome);
+    const musicIcon = () => { $('btn-music').classList.toggle('off', !AU.musicOn); };
+    musicIcon();
+    $('btn-music').addEventListener('click', () => { AU.toggleMusic(); musicIcon(); });
     $('btn-sound').addEventListener('click', () => {
       const on = AU.toggle();
       ISL.voice.setEnabled(on);

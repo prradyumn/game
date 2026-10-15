@@ -63,5 +63,11 @@ The first time you press **Play**, a coach walks you through four real scripted 
 - Use a TTS model that follows spoken style direction. `gemini-3.8-flash-tts` reads the direction (and `[tags]`) aloud, so it isn't suitable.
 - Browser alternative: open `tools/voice-generator.html` in Chrome or Edge, paste your key, press **Choose the game folder & generate**, then pick this `game` folder.
 
-## Sound effects to add later
-`audio/` names expected (Ogg, e.g. Opus): click, dice-roll, dice-land, hop, land, whoosh, reveal, splash, ladder, snake, win, lose, turn, music-loop. List each added name in `AVAILABLE` in `js/audio.js`.
+## Sound and music
+- **Tap to start:** browsers keep audio locked until the first tap, so the game opens on a short *Tap to start* screen; that tap unlocks sound and the intro plays with full audio.
+- **Sound effects** (`audio/sfx/*.ogg`): generated with ElevenLabs Sound Effects (`eleven_text_to_sound_v2`). Each was picked from 2–4 variations, trimmed, level-matched and encoded as Ogg Opus 64 kbps. `intro_*` files are the intro's cue sheet (deep-sea bed, bubbles, surface splash, water burst, ladder creak, hiss, whoosh, title boom, shimmer, dice pops, dock landings, +50 bell, the wave); the rest are gameplay (dice, dice landing, hop boing, sand step, water plip, splash, camera whoosh, nudge, ladder climb, snake slide, turn, win, lose, click).
+- **Music** (`audio/music/`): made with Gemini Lyria 3. `intro.ogg` is a 12 s cue whose big hit is lined up with the title slam (2.75 s into the intro); `loop.ogg` is a calm 3-minute island loop, crossfaded end-to-start so it loops seamlessly. The loop starts on the start screen and plays through the game.
+- **Mixing** (`js/audio.js`): effects and music run on separate Web Audio buses; big effects and the voiceover briefly lower the music. Pause suspends all audio. The pause menu has **Sound** (everything) and **Music** (music only, remembered) switches.
+- Hop pitch rises for + moves and falls for − moves (the boing sample is re-pitched per hop).
+- Over http(s) every file is decoded up front for instant, overlapping playback; opened from `file://` it falls back to `<audio>` elements. A missing file falls back to a small synth sound.
+- Intro timing lives in `js/intro.js` (search for "sound design"); per-event volumes are `EVENTS` in `js/audio.js`.

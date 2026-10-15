@@ -349,8 +349,11 @@ body.no-fade .overlay-screen, body.no-fade .modal, body.no-fade #coach { transit
 #btn-home { top: 388px; }
 #pause-panel .mid-btn .btn-label { font-size: 28px; -webkit-text-stroke-width: 5px; }
 #pause-extras .icon-btn { position: absolute; top: 280px; width: 82px; height: 80px; }
-#pause-extras #btn-sound { left: 52px; }
+#pause-extras #btn-sound { left: 52px; top: 232px; }
+#pause-extras #btn-music { left: 52px; top: 356px; }
 #pause-extras #btn-help { right: 52px; }
+#btn-music.off > img:not(.btn-bg) { opacity: .4; filter: grayscale(1); }
+#btn-music.off::before { content: ''; position: absolute; left: 18%; right: 18%; top: 48%; height: 6px; border-radius: 3px; background: #e0383a; rotate: -40deg; z-index: 2; box-shadow: 0 0 0 2px #fff; }
 #pause-extras .icon-btn::after {
   content: attr(data-cap); position: absolute; left: 50%; top: 100%; transform: translateX(-50%); margin-top: 2px;
   font: 700 19px var(--font); color: var(--paper-ink); white-space: nowrap;

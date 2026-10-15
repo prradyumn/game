@@ -78,7 +78,7 @@
         },
         onComplete() { svg.style.display = 'none'; res(); }
       });
-      AU.play('splash');
+      AU.play('wave');
     });
   }
 
@@ -157,6 +157,19 @@
     const tl = gsap.timeline({ paused: true });
     const bg = $('intro-bg'), deep = $('intro-deep'), layer = $('intro-layer');
 
+    // sound design: music cue (its big hit lands on the title slam at 2.75 s) + timed effects
+    tl.call(() => { AU.music('intro', 0.3); AU.play('intro_deep'); }, null, 0)
+      .call(() => AU.play('intro_bubbles'), null, 0.35)
+      .call(() => AU.play('intro_bubbles'), null, 1.1)
+      .call(() => AU.play('intro_whoosh'), null, 1.62)
+      .call(() => AU.play('intro_hiss'), null, 2.05)
+      .call(() => AU.play('intro_boom'), null, 2.75)
+      .call(() => AU.play('intro_pop'), null, 3.05)
+      .call(() => AU.play('intro_pop'), null, 3.17);
+    // integer ticker: rising ticks as it counts, a bell when it lands on +50
+    for (let i = 0; i < 12; i++) tl.call(() => AU.play('tick', { i }), null, 4.05 + i * 0.12);
+    tl.call(() => AU.play('intro_ding'), null, 5.5);
+
     // 1. rise from the deep
     tl.fromTo(bg, { scale: 2.1 }, { scale: 1, duration: 2.3, ease: 'power2.inOut' }, 0)
       .fromTo(deep, { opacity: 0.55 }, { opacity: 0, duration: 2.0, ease: 'power1.in' }, 0);
@@ -182,9 +195,9 @@
 
     // 2. jetty pops out of the water with a splash, ladder bursts upward
     tl.fromTo(E.jetty, { y: P.jetty.cy + 120, opacity: 0 }, { y: P.jetty.cy, opacity: 1, duration: 0.55, ease: 'back.out(2)' }, 1.55)
-      .call(() => { FX.frames(['fx/effects/splash-01', 'fx/effects/splash-02', 'fx/effects/splash-03', 'fx/effects/splash-04'], P.jetty.cx, P.jetty.cy + 40, P.jetty.w * 0.7, 14, layer); AU.play('splash'); }, null, 1.6);
+      .call(() => { FX.frames(['fx/effects/splash-01', 'fx/effects/splash-02', 'fx/effects/splash-03', 'fx/effects/splash-04'], P.jetty.cx, P.jetty.cy + 40, P.jetty.w * 0.7, 14, layer); AU.play('intro_surface'); }, null, 1.6);
     tl.fromTo(E.ladder, { clipPath: 'inset(100% 0 0 0)' }, { clipPath: 'inset(0% 0 0 0)', duration: 0.7, ease: 'power3.out' }, 1.75)
-      .call(() => { FX.frames(['fx/effects/splash-01', 'fx/effects/splash-02', 'fx/effects/splash-03', 'fx/effects/splash-04'], (P.ladder.b.x + P.ladder.t.x) / 2, st.h * 0.5 + 30, 200, 14, layer); AU.play('ladder'); }, null, 1.9);
+      .call(() => { FX.frames(['fx/effects/splash-01', 'fx/effects/splash-02', 'fx/effects/splash-03', 'fx/effects/splash-04'], (P.ladder.b.x + P.ladder.t.x) / 2, st.h * 0.5 + 30, 200, 14, layer); AU.play('intro_burst'); AU.play('intro_creak'); }, null, 1.9);
     tl.fromTo(E.python, { yPercent: 60, opacity: 0, scaleY: 0.4 }, { yPercent: 0, opacity: 1, scaleY: 1, duration: 0.6, ease: 'back.out(2.2)' }, 2.0)
       .to(E.python, { scaleY: 0.94, scaleX: 1.04, duration: 0.5, yoyo: true, repeat: 7, ease: 'sine.inOut' }, 2.6);
 
@@ -192,7 +205,7 @@
     tl.fromTo(E.title, { scale: 2.8, opacity: 0, filter: 'blur(14px)' }, { scale: 1, opacity: 1, filter: 'blur(0px)', duration: 0.5, ease: 'back.out(1.5)' }, 2.35)
       .fromTo('#intro-flash', { opacity: 0.75 }, { opacity: 0, duration: 0.55, ease: 'power2.out', immediateRender: false }, 2.75)
       .fromTo(layer, { x: -14 }, { x: 0, duration: 0.45, ease: 'elastic.out(1.2, 0.2)', immediateRender: false }, 2.75)
-      .call(() => { AU.play('diceLand'); FX.sparkles(P.title.cx, P.title.cy, 18, layer, P.title.w * 0.55); }, null, 2.78)
+      .call(() => { AU.play('intro_shimmer'); FX.sparkles(P.title.cx, P.title.cy, 18, layer, P.title.w * 0.55); }, null, 2.78)
       .fromTo('#intro-shine', { webkitMaskPosition: '150% 0', maskPosition: '150% 0' }, { webkitMaskPosition: '-60% 0', maskPosition: '-60% 0', duration: 1.1, ease: 'power2.inOut', immediateRender: false }, 3.05)
       .to(E.title, { y: '-=10', duration: 1.4, yoyo: true, repeat: 3, ease: 'sine.inOut' }, 3.3);
 
@@ -204,9 +217,10 @@
     [[E.student, -1, 'student'], [E.computer, 1, 'computer']].forEach(([el, side, who], i) => {
       const x0 = side < 0 ? -200 : st.w + 200, x1 = P.chars[who];
       const t0 = 3.25 + i * 0.18;
-      tl.fromTo(el, { x: x0, opacity: 1 }, { x: x1, duration: 0.75, ease: 'power1.out' }, t0)
+      tl.call(() => AU.play('hop', { step: 2 + i * 2, dir: 1 }), null, t0)
+        .fromTo(el, { x: x0, opacity: 1 }, { x: x1, duration: 0.75, ease: 'power1.out' }, t0)
         .fromTo(el, { y: E.feetY - 260 }, { y: E.feetY, duration: 0.75, ease: 'bounce.out' }, t0)
-        .call(() => { el.src = A.url(`tokens/${who}-poses/${who === 'student' ? 'wave' : 'happy'}`); el.style.width = A.wForH(`tokens/${who}-poses/${who === 'student' ? 'wave' : 'happy'}`, P.chars.h * (who === 'computer' ? 1.04 : 1)) + 'px'; el.style.height = P.chars.h * (who === 'computer' ? 1.04 : 1) + 'px'; AU.play('hop'); }, null, t0 + 0.62)
+        .call(() => { el.src = A.url(`tokens/${who}-poses/${who === 'student' ? 'wave' : 'happy'}`); el.style.width = A.wForH(`tokens/${who}-poses/${who === 'student' ? 'wave' : 'happy'}`, P.chars.h * (who === 'computer' ? 1.04 : 1)) + 'px'; el.style.height = P.chars.h * (who === 'computer' ? 1.04 : 1) + 'px'; AU.play('intro_dock'); }, null, t0 + 0.62)
         .fromTo(el, { scaleY: 0.82, scaleX: 1.12 }, { scaleY: 1, scaleX: 1, duration: 0.35, ease: 'back.out(3)', immediateRender: false }, t0 + 0.64);
     });
 
@@ -239,6 +253,7 @@
         const go = () => {
           if (wiping) return; wiping = true;
           tl.pause();
+          if (tl.time() < 6.5) AU.music('loop', 1.6);   // skipped early: hand over to the calm loop
           wipe(() => {
             tl.kill();                          // drop the whole cinematic timeline, not just its element tweens
             gsap.killTweensOf($('screen-intro').querySelectorAll('*'));

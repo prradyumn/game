@@ -27,7 +27,8 @@
       const a = clipEl(id); if (!a) return res();
       current = a;
       let done = false;
-      const fin = () => { if (done) return; done = true; current = null; res(); };
+      ISL.audio.duckForVoice(true);   // music dips while the narrator speaks
+      const fin = () => { if (done) return; done = true; current = null; ISL.audio.duckForVoice(false); res(); };
       a.onended = fin; a.onerror = fin;
       try { a.currentTime = 0; } catch (e) {}
       a.play().catch(fin);
@@ -50,7 +51,8 @@
       if (synthVoice) u.voice = synthVoice;
       u.rate = 0.98; u.pitch = 1.08; u.volume = 1;
       let done = false;
-      const fin = () => { if (!done) { done = true; res(); } };
+      ISL.audio.duckForVoice(true);
+      const fin = () => { if (!done) { done = true; ISL.audio.duckForVoice(false); res(); } };
       u.onend = fin; u.onerror = fin;
       speechSynthesis.speak(u);
       setTimeout(fin, 1500 + text.length * 85);
