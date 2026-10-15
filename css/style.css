@@ -135,9 +135,9 @@ body.no-fade .overlay-screen, body.no-fade .modal, body.no-fade #coach { transit
 .card-pos-val.pos { color: #ffd38a; }
 .card-pos-val.neg { color: #a9dcff; }
 .player-card:not(.active) .card-text { opacity: .78; }
-.land .card-name { font-size: 22px; }
-.land .card-pos { font-size: 20px; }
-.land .card-pos-val { font-size: 33px; }
+.land .card-name { font-size: 20px; }
+.land .card-pos { font-size: 18px; }
+.land .card-pos-val { font-size: 30px; }
 .land #turn-text { font-size: 31px; }
 .land #turn-banner[data-who="computer"] #turn-text { font-size: 24px; }
 .port .card-name { font-size: 24px; }
@@ -158,9 +158,9 @@ body.no-fade .overlay-screen, body.no-fade .modal, body.no-fade #coach { transit
   box-shadow: inset 0 0 0 4px var(--gold), 0 0 0 4px #2a160a, 0 18px 40px rgba(5, 15, 40, .45);
 }
 .cell-label {
-  position: absolute; font-weight: 700; font-size: 27px; line-height: 1; color: #fff;
-  -webkit-text-stroke: 6px #1d2b4f; paint-order: stroke fill; letter-spacing: -.5px;
-  text-shadow: 0 2px 0 rgba(10, 20, 50, .45);
+  position: absolute; font-weight: 700; font-size: 32px; line-height: 1; color: #fff; padding: 2px 7px 3px; border-radius: 10px;
+  background: rgba(16, 28, 62, .38); -webkit-text-stroke: 7px #14224a; paint-order: stroke fill; letter-spacing: -.5px;
+  text-shadow: 0 2px 0 rgba(10, 20, 50, .5);
 }
 .cell-label.neg { color: #d6f1ff; -webkit-text-stroke-color: #0d2350; }
 .decor { position: absolute; }

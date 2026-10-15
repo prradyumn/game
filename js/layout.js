@@ -8,26 +8,26 @@
 
   const STAGES = { land: { w: 1920, h: 1080 }, port: { w: 1080, h: 1920 } };
 
-  // Landscape: the board runs nearly the full stage height; the left column holds the turn
-  // banner and player cards, the right column only the dice and the Roll/Hop button.
-  // (the left gap leaves room for the zero jetty, which sits just outside the board).
+  // Landscape: the board runs nearly the full stage height and starts at the left edge (leaving just
+  // room for the zero jetty outside it); the logo, turn banner, cards, dice and Roll/Hop sit on the right.
   // Portrait: board fills the width; dice and the action button sit bottom-centre, under the thumb.
   function tables() {
     return {
       land: {
-        'logo-small':    { x: 22,   y: 14,  w: 290, h: ar('ui/logo/wordmark-dark', 290) },
+        // board on the left (the zero jetty pokes out past its left edge); every HUD piece on the right
+        'board-wrap':    { x: 120,  y: 20,  w: 1220, h: 1040 },      // wide board (aspect ~1.17)
+        'logo-small':    { x: 1372, y: 14,  w: 300, h: ar('ui/logo/wordmark-dark', 300) },
         'topbar':        { x: 1816, y: 24,  w: 84,  h: 84 },
-        'turn-banner':   { x: 22,   y: 172, w: 290, h: ar('ui/panels/turn-student', 290) },
-        'card-student':  { x: 22,   y: 340, w: 290, h: ar('ui/panels/player-student-active', 290) },
-        'card-computer': { x: 22,   y: 516, w: 290, h: ar('ui/panels/player-computer-active', 290) },
-        'board-wrap':    { x: 426,  y: 20,  w: 1164, h: 1040 },      // wide board (aspect ~1.12)
-        'tray':          { x: 1612, y: 300, w: 290, h: ar('dice/sign-kit/tray', 290) },
-        'btn-roll':      { x: 1622, y: 616, w: 270, h: ar('ui/buttons/large-idle', 270) },
-        'roll-nudge':    { x: 1717, y: 528, w: 80,  h: 94 },
-        'toast':         { x: 426,  y: 60,  w: 1164, h: 90 },
-        'hop-hud':       { x: 788,  y: 30,  w: 440, h: 92 },
-        'hop-hud-low':   { x: 788,  y: 958, w: 440, h: 92 },
-        'coach':         { x: 12,   y: 690, w: 392, h: 372 }
+        'turn-banner':   { x: 1471, y: 156, w: 330, h: ar('ui/panels/turn-student', 330) },
+        'card-student':  { x: 1372, y: 330, w: 258, h: ar('ui/panels/player-student-active', 258) },
+        'card-computer': { x: 1642, y: 330, w: 258, h: ar('ui/panels/player-computer-active', 258) },
+        'tray':          { x: 1471, y: 500, w: 330, h: ar('dice/sign-kit/tray', 330) },
+        'btn-roll':      { x: 1486, y: 820, w: 300, h: ar('ui/buttons/large-idle', 300) },
+        'roll-nudge':    { x: 1596, y: 732, w: 80,  h: 94 },
+        'toast':         { x: 120,  y: 60,  w: 1220, h: 90 },
+        'hop-hud':       { x: 510,  y: 30,  w: 440, h: 92 },
+        'hop-hud-low':   { x: 510,  y: 958, w: 440, h: 92 },
+        'coach':         { x: 1366, y: 150, w: 534, h: 340 }
       },
       port: {
         'logo-small':    { x: 30,   y: 22,  w: 270, h: ar('ui/logo/wordmark-dark', 270) },

@@ -169,8 +169,8 @@
       const el = document.createElement('span');
       el.className = 'cell-label ' + (n > 0 ? 'pos' : 'neg');
       el.textContent = label(n);
-      el.style.left = (c.col * CW + 6) + 'px';
-      el.style.top = (c.row * CELL + 5) + 'px';
+      el.style.left = (c.col * CW + 4) + 'px';
+      el.style.top = (c.row * CELL + 4) + 'px';
       el.dataset.n = n;
       box.appendChild(el);
     }
