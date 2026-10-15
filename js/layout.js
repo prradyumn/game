@@ -27,7 +27,7 @@
         'toast':         { x: 120,  y: 60,  w: 1220, h: 90 },
         'hop-hud':       { x: 510,  y: 30,  w: 440, h: 92 },
         'hop-hud-low':   { x: 510,  y: 958, w: 440, h: 92 },
-        'coach':         { x: 1366, y: 150, w: 534, h: 340 }
+        'coach':         { x: 1366, y: 24,  w: 440, h: 372 }        // above the dice tray, beside Pause
       },
       port: {
         'topbar':        { x: 966,  y: 40,  w: 84,  h: 84 },

@@ -132,6 +132,31 @@
     o.innerHTML = html;
   }
 
+  /* ---------- tap to start ----------
+     Browsers keep audio locked until the first tap or click, and the intro has full sound design,
+     so it waits behind a single tap. That tap unlocks audio, then the intro plays. */
+  function tapToStart(go) {
+    setScreen('tap');
+    const scr = $('screen-tap'); scr.classList.add('open');
+    const bub = $('tap-bubbles');
+    for (let i = 0; i < 18; i++) {
+      const b = document.createElement('i'), sz = 14 + Math.random() * 40;
+      Object.assign(b.style, { left: Math.random() * 100 + '%', width: sz + 'px', height: sz + 'px',
+        animationDuration: 5 + Math.random() * 6 + 's', animationDelay: -Math.random() * 10 + 's' });
+      bub.appendChild(b);
+    }
+    let done = false;
+    const start = e => {
+      if (done) return; done = true;
+      if (e) e.preventDefault();
+      AU.unlock(); AU.play('click');
+      gsap.to(scr, { opacity: 0, duration: 0.35, onComplete: () => { scr.classList.remove('open'); scr.style.opacity = ''; bub.innerHTML = ''; } });
+      go();
+    };
+    scr.addEventListener('pointerdown', start, { once: true });
+    window.addEventListener('keydown', function k(e) { if (e.code === 'Space' || e.code === 'Enter') { window.removeEventListener('keydown', k); start(e); } });
+  }
+
   /* ---------- boot ---------- */
   async function boot() {
     ISL.layout.init();
@@ -186,7 +211,7 @@
     if (params.has('tutorial')) startTutorial();
     else if (params.has('play')) { setScreen('game'); $('screen-start').classList.remove('open'); ISL.game.start(); }
     else if (params.has('nointro')) openStart();
-    else { setScreen('intro'); $('screen-intro').classList.add('open'); gsap.delayedCall(0.45, () => ISL.intro.play(() => openStart(0.35))); }
+    else tapToStart(() => { setScreen('intro'); $('screen-intro').classList.add('open'); gsap.delayedCall(0.15, () => ISL.intro.play(() => openStart(0.35))); });
   }
 
   ISL.main = { showWin, startGame, startTutorial, goHome, debugOverlay, transition, enterGame, get busy() { return busy; } };

@@ -127,7 +127,7 @@ body.no-fade .overlay-screen, body.no-fade .modal, body.no-fade #coach { transit
 /* turn ribbon (replaces the separate turn banner): sits on the active card's top edge */
 #turn-banner { display: none; }
 .card-ribbon {
-  position: absolute; left: 50%; top: -6%; translate: -50% -50%; z-index: 2; white-space: nowrap; pointer-events: none;
+  position: absolute; left: 71%; top: -2%; translate: -50% -50%; z-index: 2; white-space: nowrap; pointer-events: none;
   padding: 5px 16px 6px; border-radius: 999px; font-weight: 700; font-size: 20px; color: #fff; letter-spacing: .3px;
   background: linear-gradient(#ff6f61, #e0383a); border: 3px solid var(--gold);
   box-shadow: 0 0 0 3px #5a1726, 0 6px 10px rgba(0, 0, 0, .3);
@@ -140,16 +140,18 @@ body.no-fade .overlay-screen, body.no-fade .modal, body.no-fade #coach { transit
 .player-card.active { animation: card-glow 1.6s ease-in-out infinite alternate; }
 .player-card:not(.active) { filter: saturate(.75) brightness(.92); }
 @keyframes card-glow { from { filter: drop-shadow(0 0 4px rgba(255, 214, 90, .5)); } to { filter: drop-shadow(0 0 18px rgba(255, 214, 90, .95)); } }
+/* text sits inside the card's panel (right of the portrait ring), dark on the light panel */
 .card-text {
-  position: absolute; left: 50%; right: 8%; top: 22%; bottom: 24%;
-  display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 2px;
-  color: #fff; -webkit-text-stroke: 3.5px var(--ink); paint-order: stroke fill; line-height: 1.05;
+  position: absolute; left: 55%; right: 11%; top: 22%; bottom: 24%;
+  display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 2px; text-align: center;
+  color: #3a2259; line-height: 1.05;
 }
 .card-name { font-size: 25px; font-weight: 700; white-space: nowrap; }
 .card-pos { font-size: 22px; font-weight: 600; white-space: nowrap; }
-.card-pos-val { font-size: 38px; display: inline-block; min-width: 1.5em; -webkit-text-stroke-width: 6px; }
-.card-pos-val.pos { color: #ffd38a; }
-.card-pos-val.neg { color: #a9dcff; }
+.card-pos-val { font-size: 38px; display: inline-block; min-width: 1em; color: #fff; -webkit-text-stroke: 6px #3a2259; paint-order: stroke fill; }
+.card-pos-val.pos { color: #ffb23e; }
+.card-pos-val.neg { color: #5fb4ff; }
+.card-pos-label { color: #6b5487; }
 .player-card:not(.active) .card-text { opacity: .78; }
 .land .card-name { font-size: 20px; }
 .land .card-pos { font-size: 18px; }
@@ -425,7 +427,7 @@ body:not([data-tutorial]) #spotlight { display: none; }
 .land #coach-pose { left: 12px; bottom: 12px; width: 120px; height: 132px; }
 .land #coach-step { left: 30px; top: 22px; }
 .land #coach-skip { right: 18px; top: 14px; }
-.land #coach-text { left: 26px; right: 22px; top: 54px; font-size: 22px; }
+.land #coach-text { left: 26px; right: 22px; top: 54px; font-size: 21px; }
 .land #coach-hint { right: 34px; bottom: 44px; font-size: 24px; }
 .land #coach-next { right: 18px; bottom: 18px; width: 190px; height: 95px; }
 .port #coach-pose { left: 16px; bottom: 10px; width: 150px; height: 180px; }
@@ -440,6 +442,26 @@ body:not([data-tutorial]) #spotlight { display: none; }
   text-decoration: underline; text-underline-offset: 4px;
 }
 body[data-tut-roll] #btn-roll, body[data-tut-roll] #tray { z-index: 33; }
+
+/* ---------- tap to start ---------- */
+#screen-tap { z-index: 95; display: none; overflow: hidden; cursor: pointer; }
+#screen-tap.open { display: block; }
+#tap-bg { background: radial-gradient(120% 90% at 50% 30%, #1d5fa8 0%, #0b2f63 45%, #03102b 100%); }
+#tap-bubbles i { position: absolute; bottom: -40px; border-radius: 50%; border: 3px solid rgba(190, 235, 255, .55);
+  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, .55), rgba(160, 220, 255, .08) 60%); animation: tap-rise linear infinite; }
+@keyframes tap-rise { from { transform: translateY(0); opacity: 0; } 10% { opacity: 1; } to { transform: translateY(-1200px); opacity: 0; } }
+#tap-logo { object-fit: contain; filter: drop-shadow(0 14px 18px rgba(0, 0, 0, .45)); animation: tap-float 2.4s ease-in-out infinite alternate; }
+@keyframes tap-float { from { translate: 0 -8px; } to { translate: 0 8px; } }
+#btn-tap { animation: tap-pulse 1s ease-in-out infinite alternate; }
+@keyframes tap-pulse { from { scale: 1; filter: drop-shadow(0 0 6px rgba(255, 214, 90, .4)); } to { scale: 1.07; filter: drop-shadow(0 0 26px rgba(255, 214, 90, .95)); } }
+#btn-tap .btn-label { font-size: 40px; }
+#tap-hint { text-align: center; font-size: 26px; font-weight: 600; color: #cfe8ff; opacity: .85; }
+.land #tap-logo { left: 510px; top: 150px; width: 900px; height: 391px; }
+.land #btn-tap { left: 750px; top: 620px; width: 420px; height: 216px; }
+.land #tap-hint { left: 660px; top: 860px; width: 600px; }
+.port #tap-logo { left: 60px; top: 460px; width: 960px; height: 417px; }
+.port #btn-tap { left: 310px; top: 1000px; width: 460px; height: 237px; }
+.port #tap-hint { left: 240px; top: 1270px; width: 600px; }
 
 /* ---------- intro cinematic ---------- */
 #screen-intro { z-index: 90; display: none; overflow: hidden; background: #062447; }
@@ -473,4 +495,4 @@ body[data-tut-roll] #btn-roll, body[data-tut-roll] #tray { z-index: 33; }
   color: #fff; background: rgba(20, 10, 60, .55); padding: 10px 24px; border-radius: 999px; box-shadow: 0 0 0 3px rgba(255, 214, 90, .8);
 }
 #wipe { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 300; display: none; pointer-events: none; overflow: visible; }
-body[data-screen="intro"] #screen-game, body[data-screen="start"] #screen-game { visibility: hidden; }
+body[data-screen="tap"] #screen-game, body[data-screen="intro"] #screen-game, body[data-screen="start"] #screen-game { visibility: hidden; }
