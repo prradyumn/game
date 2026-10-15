@@ -25,10 +25,13 @@ button { font-family: inherit; }
 
 /* ---------- background ---------- */
 #bg { position: fixed; inset: 0; overflow: hidden; }
-#bg-image { position: absolute; inset: 0; background: url(../assets/background/desktop.webp) center / cover no-repeat; }
+/* the world outside the board is quieter than the board: softly blurred, slightly dimmed and desaturated */
+#bg-image { position: absolute; inset: -24px; background: url(../assets/background/desktop.webp) center / cover no-repeat;
+  filter: blur(4px) saturate(.8) brightness(.86); }
 body[data-mode="port"] #bg-image { background-image: url(../assets/background/phone.webp); }
 #ambient { position: absolute; inset: 0; pointer-events: none; }
-#ambient .amb { position: absolute; left: 0; top: 0; will-change: transform; }
+#ambient .amb { position: absolute; left: 0; top: 0; will-change: transform; filter: saturate(.8); }
+#ambient { opacity: .75; }
 
 /* ---------- stage ---------- */
 #viewport { position: fixed; inset: 0; overflow: hidden; }
@@ -121,6 +124,19 @@ body.no-fade .overlay-screen, body.no-fade .modal, body.no-fade #coach { transit
 
 /* ---------- player cards ---------- */
 .player-card { transform-origin: 30% 50%; transition: filter .35s ease; }
+/* turn ribbon (replaces the separate turn banner): sits on the active card's top edge */
+#turn-banner { display: none; }
+.card-ribbon {
+  position: absolute; left: 50%; top: -6%; translate: -50% -50%; z-index: 2; white-space: nowrap; pointer-events: none;
+  padding: 5px 16px 6px; border-radius: 999px; font-weight: 700; font-size: 20px; color: #fff; letter-spacing: .3px;
+  background: linear-gradient(#ff6f61, #e0383a); border: 3px solid var(--gold);
+  box-shadow: 0 0 0 3px #5a1726, 0 6px 10px rgba(0, 0, 0, .3);
+  -webkit-text-stroke: 4px #5a1726; paint-order: stroke fill;
+  opacity: 0; transition: opacity .2s;
+}
+.player-card[data-player="computer"] .card-ribbon { background: linear-gradient(#8d5cf6, #5b2bd0); box-shadow: 0 0 0 3px #2b0f63, 0 6px 10px rgba(0, 0, 0, .3); -webkit-text-stroke-color: #2b0f63; }
+.player-card.active .card-ribbon { opacity: 1; }
+.port .card-ribbon { font-size: 22px; }
 .player-card.active { animation: card-glow 1.6s ease-in-out infinite alternate; }
 .player-card:not(.active) { filter: saturate(.75) brightness(.92); }
 @keyframes card-glow { from { filter: drop-shadow(0 0 4px rgba(255, 214, 90, .5)); } to { filter: drop-shadow(0 0 18px rgba(255, 214, 90, .95)); } }
@@ -148,7 +164,7 @@ body.no-fade .overlay-screen, body.no-fade .modal, body.no-fade #coach { transit
 #board-wrap { z-index: 2; }
 #board { position: absolute; left: 0; top: 0; width: 1000px; height: 1000px; transform-origin: 0 0; z-index: 1; }
 #board > * { position: absolute; left: 0; top: 0; width: 1000px; height: 1000px; }
-#board-world { border-radius: 14px; display: block; }
+#board-world { border-radius: 14px; display: block; filter: saturate(.84) contrast(.9) brightness(1.03); }
 #board-grid, #board-pieces { width: 1000px; height: 1000px; pointer-events: none; border-radius: 14px; }
 #board-labels, #board-decor, #board-tags, #board-tokens, #board-fx { pointer-events: none; overflow: visible; }
 #board-frame {
@@ -157,11 +173,13 @@ body.no-fade .overlay-screen, body.no-fade .modal, body.no-fade #coach { transit
   background: #6b3f1d;
   box-shadow: inset 0 0 0 4px var(--gold), 0 0 0 4px #2a160a, 0 18px 40px rgba(5, 15, 40, .45);
 }
+/* square numbers: calm by default, landmarks (0-adjacent tens and ±50) stand out */
 .cell-label {
-  position: absolute; font-weight: 700; font-size: 32px; line-height: 1; color: #fff; padding: 2px 7px 3px; border-radius: 10px;
-  background: rgba(16, 28, 62, .38); -webkit-text-stroke: 7px #14224a; paint-order: stroke fill; letter-spacing: -.5px;
-  text-shadow: 0 2px 0 rgba(10, 20, 50, .5);
+  position: absolute; font-weight: 700; font-size: 28px; line-height: 1; color: #fff; padding: 2px 4px;
+  -webkit-text-stroke: 5px rgba(20, 34, 74, .9); paint-order: stroke fill; letter-spacing: -.5px; opacity: .92;
 }
+.cell-label.mark { font-size: 34px; color: #ffd34d; -webkit-text-stroke: 7px #3a1f05; opacity: 1; }
+.cell-label.neg.mark { color: #8fe3ff; -webkit-text-stroke-color: #0d2350; }
 .cell-label.neg { color: #d6f1ff; -webkit-text-stroke-color: #0d2350; }
 .decor { position: absolute; }
 .snake-head { position: absolute; transform-origin: 50% 70%; filter: drop-shadow(3px 5px 2px rgba(8,18,40,.3)); }
@@ -170,11 +188,11 @@ body.no-fade .overlay-screen, body.no-fade .modal, body.no-fade #coach { transit
 .value-tag img { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
 .value-tag span {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  font-weight: 700; font-size: 26px; line-height: 1; letter-spacing: -.5px;
+  font-weight: 700; font-size: 22px; line-height: 1; letter-spacing: -.5px;
 }
 .snake-tag span { color: #fff; -webkit-text-stroke: 4px #0b2a66; paint-order: stroke fill; padding: 0 8% 0 4%; }
-.ladder-tag.dry span { color: #8a3d00; font-size: 22px; padding-top: 6%; }
-.ladder-tag.wet span { color: #6b3300; font-size: 25px; padding-top: 14%; }
+.ladder-tag.dry span { color: #8a3d00; font-size: 19px; padding-top: 6%; }
+.ladder-tag.wet span { color: #6b3300; font-size: 21px; padding-top: 14%; }
 
 .token { position: absolute; left: 0; top: 0; width: 0; height: 0; }
 .token-body { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-origin: 0 0; }

@@ -18,23 +18,23 @@
         'board-wrap':    { x: 120,  y: 20,  w: 1220, h: 1040 },      // wide board (aspect ~1.17)
         'logo-small':    { x: 1372, y: 14,  w: 300, h: ar('ui/logo/wordmark-dark', 300) },
         'topbar':        { x: 1816, y: 24,  w: 84,  h: 84 },
-        'turn-banner':   { x: 1471, y: 156, w: 330, h: ar('ui/panels/turn-student', 330) },
-        'card-student':  { x: 1372, y: 330, w: 258, h: ar('ui/panels/player-student-active', 258) },
-        'card-computer': { x: 1642, y: 330, w: 258, h: ar('ui/panels/player-computer-active', 258) },
-        'tray':          { x: 1471, y: 500, w: 330, h: ar('dice/sign-kit/tray', 330) },
-        'btn-roll':      { x: 1486, y: 820, w: 300, h: ar('ui/buttons/large-idle', 300) },
-        'roll-nudge':    { x: 1596, y: 732, w: 80,  h: 94 },
+        'turn-banner':   { x: 1471, y: 156, w: 330, h: ar('ui/panels/turn-student', 330) },   // hidden (ribbon on the card)
+        'card-student':  { x: 1372, y: 214, w: 258, h: ar('ui/panels/player-student-active', 258) },
+        'card-computer': { x: 1642, y: 214, w: 258, h: ar('ui/panels/player-computer-active', 258) },
+        'tray':          { x: 1471, y: 420, w: 330, h: ar('dice/sign-kit/tray', 330) },
+        'btn-roll':      { x: 1486, y: 770, w: 300, h: ar('ui/buttons/large-idle', 300) },
+        'roll-nudge':    { x: 1596, y: 684, w: 80,  h: 94 },
         'toast':         { x: 120,  y: 60,  w: 1220, h: 90 },
         'hop-hud':       { x: 510,  y: 30,  w: 440, h: 92 },
         'hop-hud-low':   { x: 510,  y: 958, w: 440, h: 92 },
         'coach':         { x: 1366, y: 150, w: 534, h: 340 }
       },
       port: {
-        'logo-small':    { x: 30,   y: 22,  w: 270, h: ar('ui/logo/wordmark-dark', 270) },
+        'logo-small':    { x: 395,  y: 192, w: 290, h: ar('ui/logo/wordmark-dark', 290) },   // centred between the cards
         'topbar':        { x: 966,  y: 40,  w: 84,  h: 84 },
-        'card-student':  { x: 24,   y: 150, w: 330, h: ar('ui/panels/player-student-active', 330) },
+        'card-student':  { x: 24,   y: 168, w: 330, h: ar('ui/panels/player-student-active', 330) },
         'turn-banner':   { x: 384,  y: 152, w: 312, h: ar('ui/panels/turn-student', 312) },
-        'card-computer': { x: 726,  y: 150, w: 330, h: ar('ui/panels/player-computer-active', 330) },
+        'card-computer': { x: 726,  y: 168, w: 330, h: ar('ui/panels/player-computer-active', 330) },
         'board-wrap':    { x: 112,  y: 352, w: 930, h: 930 },
         'tray':          { x: 330,  y: 1322, w: 420, h: ar('dice/sign-kit/tray', 420) },
         'btn-roll':      { x: 360,  y: 1700, w: 360, h: ar('ui/buttons/large-idle', 360) },

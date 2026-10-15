@@ -26,7 +26,7 @@
   const SNAKES = [
     // the big one: from the summit side all the way to the deep, winding down the left edge
     // (via = waypoints in cell coordinates [col, row], centre of a cell = +0.5)
-    { from: 43,  to: -40, kind: 'python', tagAt: 0.47,
+    { from: 43,  to: -40, kind: 'python',
       via: [[1.75, 1.25], [0.85, 1.95], [0.42, 2.9], [0.8, 3.85], [0.38, 4.8], [0.8, 5.75], [0.38, 6.7], [0.72, 7.6]] },
     { from: 35,  to: 15,  kind: 'tree-snake', bend: -1 },
     { from: 13,  to: -7,  kind: 'tree-snake', bend: 1 },
@@ -152,7 +152,7 @@
     for (let r = 0; r < 10; r++) for (let c = 0; c < 10; c++) {
       if ((r + c) % 2 === 0) { ctx.fillStyle = r < 5 ? 'rgba(255,250,230,0.10)' : 'rgba(200,240,255,0.08)'; ctx.fillRect(c * CW, r * CELL, CW, CELL); }
     }
-    ctx.strokeStyle = 'rgba(24,42,86,0.32)'; ctx.lineWidth = 1.6;
+    ctx.strokeStyle = 'rgba(24,42,86,0.18)'; ctx.lineWidth = 1.2;
     ctx.beginPath();
     for (let i = 0; i <= 10; i++) { ctx.moveTo(i * CW, 0); ctx.lineTo(i * CW, 1000); ctx.moveTo(0, i * CELL); ctx.lineTo(BW, i * CELL); }
     ctx.stroke();
@@ -167,7 +167,7 @@
       if (n === 0) continue;
       const c = cellOf(n);
       const el = document.createElement('span');
-      el.className = 'cell-label ' + (n > 0 ? 'pos' : 'neg');
+      el.className = 'cell-label ' + (n > 0 ? 'pos' : 'neg') + (n % 10 === 0 ? ' mark' : '');
       el.textContent = label(n);
       el.style.left = (c.col * CW + 4) + 'px';
       el.style.top = (c.row * CELL + 4) + 'px';
@@ -369,9 +369,33 @@
     });
   }
 
+  /* ---------- value tags ----------
+     Each tag sits where the decision happens — just past a snake's head, or at a ladder's foot —
+     and is nudged along the piece until it covers no square number, snake head or other tag. */
+  function labelBox(n) {
+    const c = cellOf(n), big = n % 10 === 0;
+    const w = (label(n).length * (big ? 21 : 18)) + 14, h = big ? 44 : 38;
+    return { x: c.col * CW + 2, y: c.row * CELL + 2, w, h };
+  }
+  const hit = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  /** First spot along `pointAt(d)` (d = distance from the start, in units) that is free. */
+  function placeTag(pointAt, maxD, tw, th, blocked) {
+    let best = null;
+    for (let d = 0; d <= maxD; d += 6) {
+      const p = pointAt(d), box = { x: p.x - tw / 2, y: p.y - th / 2, w: tw, h: th };
+      const inside = box.x >= 4 && box.y >= 4 && box.x + box.w <= BW - 4 && box.y + box.h <= 996;
+      if (inside && !blocked.some(b => hit(box, b))) { best = box; break; }
+      if (!best && inside) best = box;            // fallback: nearest in-bounds spot
+    }
+    blocked.push(best);
+    return best;
+  }
+
   function buildSnakeHeadsAndTags() {
     const tags = document.getElementById('board-tags');
     tags.innerHTML = '';
+    const blocked = [];
+    for (let n = MIN; n <= MAX; n++) if (n) blocked.push(labelBox(n));
     SNAKES.forEach((s, i) => {
       const st = SNAKE_STYLE[s.kind];
       const c = center(s.from);
@@ -385,24 +409,29 @@
       wrap.appendChild(img);
       tags.appendChild(wrap);
       s.headEl = wrap; s.headImg = img;
-      // value tag on the body
+      blocked.push({ x: c.x - w / 2, y: c.y - h / 2 - 4, w, h });
+    });
+    // snake tags just below the head, ladder tags at the foot
+    SNAKES.forEach(s => {
       const tk = `snakes/${s.kind}/value-tag`;
-      const tw = 84, th = A.hForW(tk, tw);
-      const p = along(s.pts, s.tagAt || 0.5);
+      const tw = 72, th = A.hForW(tk, tw);
+      const start = Math.min(s.pts.total * 0.4, 70);
+      const box = placeTag(d => along(s.pts, Math.min(1, (start + d) / s.pts.total)), Math.max(0, s.pts.total * 0.6 - start), tw, th, blocked);
       const tag = document.createElement('div');
       tag.className = 'value-tag snake-tag';
-      place(tag, p.x - tw / 2, p.y - th / 2, tw, th);
+      place(tag, box.x, box.y, tw, th);
       tag.innerHTML = `<img src="${A.url(tk)}" alt=""><span>${fmt(s.to - s.from)}</span>`;
       tags.appendChild(tag); s.tagEl = tag;
     });
     LADDERS.forEach(l => {
       const e = ladderEnds(l);
-      const mx = (e.cb.x + e.ct.x) / 2, my = (e.cb.y + e.ct.y) / 2;
       const tk = l.from < 0 ? 'ladders/wet/value-tag' : 'ladders/dry/value-tag';
-      const tw = l.from < 0 ? 74 : 62, th = A.hForW(tk, tw);
+      const tw = l.from < 0 ? 63 : 53, th = A.hForW(tk, tw);
+      const L = Math.hypot(e.ct.x - e.cb.x, e.ct.y - e.cb.y);
+      const box = placeTag(d => ({ x: e.cb.x + e.ux * (d + 10), y: e.cb.y + e.uy * (d + 10) }), L * 0.6, tw, th, blocked);
       const tag = document.createElement('div');
       tag.className = 'value-tag ladder-tag' + (l.from < 0 ? ' wet' : ' dry');
-      place(tag, mx - tw / 2, my - th / 2, tw, th);
+      place(tag, box.x, box.y, tw, th);
       tag.innerHTML = `<img src="${A.url(tk)}" alt=""><span>${fmt(l.to - l.from)}</span>`;
       tags.appendChild(tag); l.tagEl = tag;
     });

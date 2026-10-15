@@ -43,7 +43,11 @@
       const active = p === who;
       card.querySelector('.card-img').src = A.url(`ui/panels/player-${p}-${active ? 'active' : 'waiting'}`);
       card.classList.toggle('active', active);
-      if (active) gsap.fromTo(card, { scale: 1 }, { scale: 1.05, duration: 0.18, yoyo: true, repeat: 1, ease: 'sine.inOut' });
+      if (active) {
+        gsap.fromTo(card, { scale: 1 }, { scale: 1.05, duration: 0.18, yoyo: true, repeat: 1, ease: 'sine.inOut' });
+        // the turn ribbon on the active card replaces the separate turn banner
+        gsap.fromTo(card.querySelector('.card-ribbon'), { scale: 0.4, y: 10 }, { scale: 1, y: 0, duration: 0.45, ease: 'back.out(2.6)' });
+      }
     });
   }
   function setCardPos(who, n, pop = true) {

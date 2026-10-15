@@ -134,7 +134,7 @@
         const dist = vw() + w + 40 - startX;
         gsap.to(el, { x: vw() + 40, duration: dist / rnd(12, 22), ease: 'none', onComplete: () => { el.remove(); spawnCloud(false); } });
       };
-      for (let i = 0; i < 5; i++) spawnCloud(true);
+      for (let i = 0; i < 3; i++) spawnCloud(true);
       // birds crossing occasionally
       const spawnBird = () => {
         if (!alive()) return;
@@ -147,7 +147,7 @@
         gsap.to(el, { x: ltr ? vw() + w : -w * 2, duration: rnd(14, 22), ease: 'none', onComplete: () => el.remove() });
         gsap.to(el, { y: `+=${rnd(20, 50)}`, duration: rnd(1.6, 2.4), repeat: -1, yoyo: true, ease: 'sine.inOut' });
         gsap.to(el, { scaleY: 0.82, duration: 0.28, repeat: -1, yoyo: true, ease: 'sine.inOut' });
-        gsap.delayedCall(rnd(7, 14), spawnBird);
+        gsap.delayedCall(rnd(16, 28), spawnBird);
       };
       gsap.delayedCall(2, spawnBird);
       // fish in the sea (bottom half)
@@ -163,7 +163,7 @@
         gsap.to(el, { x: ltr ? vw() + w : -w * 2, duration: Math.abs((ltr ? vw() + w : -w * 2) - x0) / rnd(25, 45), ease: 'none', onComplete: () => { el.remove(); gsap.delayedCall(rnd(1, 4), () => spawnFish(false)); } });
         gsap.to(el, { y: `+=${rnd(10, 26)}`, duration: rnd(1.2, 2), repeat: -1, yoyo: true, ease: 'sine.inOut' });
       };
-      for (let i = 0; i < 4; i++) spawnFish(true);
+      for (let i = 0; i < 2; i++) spawnFish(true);
       // light rays just under the horizon
       ['ray-01', 'ray-02', 'ray-03'].forEach((r, i) => {
         const w = 300 * Math.max(unit(), 0.5);
@@ -179,7 +179,7 @@
         gsap.to(el, { skewX: rnd(4, 7), duration: rnd(2, 3), repeat: -1, yoyo: true, ease: 'sine.inOut', delay: i * 0.4 });
       });
       // pollen sparkles in the sky
-      for (let i = 0; i < 6; i++) {
+      for (let i = 0; i < 3; i++) {
         const el = img('background/atmosphere/' + pick(['pollen-small', 'pollen-medium']), rnd(40, 70) * Math.max(unit(), 0.5), amb, 'amb pollen');
         gsap.set(el, { x: rnd(0, vw()), y: rnd(0.1, 0.45) * vh(), opacity: 0 });
         gsap.to(el, { opacity: 0.8, y: '-=40', duration: rnd(3, 5), repeat: -1, yoyo: true, ease: 'sine.inOut', delay: rnd(0, 4) });
