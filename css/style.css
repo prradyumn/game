@@ -39,6 +39,7 @@ body[data-mode="port"] #bg-image { background-image: url(../assets/background/ph
 .overlay-screen, .modal { opacity: 0; visibility: hidden; transition: opacity .3s ease, visibility 0s linear .3s; z-index: 50; }
 .overlay-screen.open, .modal.open { opacity: 1; visibility: visible; transition: opacity .3s ease, visibility 0s; }
 .modal { z-index: 60; }
+body.no-fade .overlay-screen, body.no-fade .modal, body.no-fade #coach { transition: none !important; }
 .scrim { position: absolute; inset: 0; background: rgba(8, 18, 45, .62); }
 
 .outlined { paint-order: stroke fill; }
@@ -442,11 +443,12 @@ body[data-tut-roll] #btn-roll, body[data-tut-roll] #tray { z-index: 33; }
 .intro-ray { mix-blend-mode: screen; }
 .die-pop { filter: drop-shadow(0 10px 8px rgba(0, 0, 0, .3)); }
 #intro-title img { position: absolute; inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 12px 14px rgba(0,0,0,.35)); }
-#intro-shine {
-  position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(105deg, transparent 42%, rgba(255,255,255,.9) 50%, transparent 58%) 150% 0 / 300% 100% no-repeat;
-  -webkit-mask: url(../assets/ui/logo/wordmark-dark.webp) center / 100% 100% no-repeat; mask: url(../assets/ui/logo/wordmark-dark.webp) center / 100% 100% no-repeat;
-  mix-blend-mode: overlay;
+/* shine: a brightened copy of the wordmark revealed through a moving gradient band
+   (a gradient mask needs no image fetch, so it also works when opened from file://) */
+#intro-title #intro-shine {
+  filter: brightness(1.9) saturate(.7); opacity: .9; pointer-events: none;
+  -webkit-mask: linear-gradient(105deg, transparent 42%, #000 50%, transparent 58%) 150% 0 / 300% 100% no-repeat;
+  mask: linear-gradient(105deg, transparent 42%, #000 50%, transparent 58%) 150% 0 / 300% 100% no-repeat;
 }
 #intro-ticker { font-weight: 700; line-height: 1; white-space: nowrap; }
 #intro-ticker .tk-num { color: #fff; -webkit-text-stroke: 14px var(--ink); paint-order: stroke fill; filter: drop-shadow(0 8px 6px rgba(0,0,0,.3)); }

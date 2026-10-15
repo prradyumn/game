@@ -111,7 +111,7 @@
             VO.stop();
           }
         }
-        this.finish(true);
+        ISL.main.transition(() => this.finish(true));   // "Let's play!" — real game starts under the wave
       } catch (e) {
         if (e !== game.ABORT) console.error(e);
       }
@@ -131,7 +131,7 @@
     relayout() { if (this.active && spotKey) spot(spotKey); },
     init() {
       $('coach-next').addEventListener('click', () => { if (nextResolver) { const r = nextResolver; nextResolver = null; r(); } });
-      $('coach-skip').addEventListener('click', () => { ISL.audio.play('click'); this.finish(true); });
+      $('coach-skip').addEventListener('click', () => { ISL.audio.play('click'); ISL.main.transition(() => this.finish(true)); });
       gsap.set('#spotlight', { opacity: 0 });
       ISL.layout.onChange.push(() => this.relayout());
     }

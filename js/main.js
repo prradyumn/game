@@ -9,40 +9,58 @@
   function show(id, on) { $(id).classList.toggle('open', on); }
   function setScreen(name) { document.body.dataset.screen = name; }
 
+  /* ---------- screen transitions ----------
+     Every screen change runs under the wave wipe: the swap (resets, modals, which screen is
+     shown) happens while the wave fully covers the stage, so nothing pops, flashes or visibly
+     resets. `busy` swallows extra clicks and blocks pausing until the wave has passed. */
+  let busy = false;
+  function transition(swap, duration = 1.25) {
+    if (busy) return;
+    busy = true;
+    AU.unlock();
+    ISL.voice.stop();
+    paused = false; document.body.removeAttribute('data-paused');
+    gsap.globalTimeline.resume();                  // the wave itself runs on GSAP
+    ISL.intro.wipe(() => {
+      // screens swap instantly under the wave (no half-faded modal peeking out as it lifts)
+      document.body.classList.add('no-fade');
+      try { swap(); } catch (e) { console.error(e); }
+      requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.remove('no-fade')));
+    }, duration).then(() => { busy = false; });
+  }
+
   /* ---------- start screen ---------- */
-  function openStart() {
+  /** delay: hold the entrance until a covering wave starts to pass */
+  function openStart(delay = 0) {
     setScreen('start');
-    gsap.killTweensOf(['#start-student', '#start-computer']);
+    gsap.killTweensOf(['#start-logo', '#start-student', '#start-computer', '#start-tagline', '#btn-play', '#btn-howto']);
     $('screen-start').classList.add('open');
-    const tl = gsap.timeline();
+    const tl = gsap.timeline({ delay });
     tl.fromTo('#start-logo', { y: -60, opacity: 0, scale: 0.8 }, { y: 0, opacity: 1, scale: 1, duration: 0.8, ease: 'back.out(1.8)' })
       .fromTo('#start-student', { x: -120, opacity: 0 }, { x: 0, opacity: 1, duration: 0.6, ease: 'power3.out' }, 0.3)
       .fromTo('#start-computer', { x: 120, opacity: 0 }, { x: 0, opacity: 1, duration: 0.6, ease: 'power3.out' }, 0.4)
       .fromTo('#start-tagline', { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.4 }, 0.6)
       .fromTo(['#btn-play', '#btn-howto'], { scale: 0.4, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, stagger: 0.1, ease: 'back.out(2.2)' }, 0.7);
-    gsap.to('#start-student', { y: -10, duration: 1.4, yoyo: true, repeat: -1, ease: 'sine.inOut', delay: 1 });
-    gsap.to('#start-computer', { y: -10, duration: 1.6, yoyo: true, repeat: -1, ease: 'sine.inOut', delay: 1.2 });
+    gsap.to('#start-student', { y: -10, duration: 1.4, yoyo: true, repeat: -1, ease: 'sine.inOut', delay: delay + 1 });
+    gsap.to('#start-computer', { y: -10, duration: 1.6, yoyo: true, repeat: -1, ease: 'sine.inOut', delay: delay + 1.2 });
   }
-  function startGame() {
-    AU.unlock(); AU.startMusic();
-    $('screen-start').classList.remove('open');
+  /** Swap to the game screen (called under the wave). */
+  function enterGame(tutorial) {
+    AU.startMusic();
+    hideWin();
+    show('screen-start', false); show('screen-howto', false); show('screen-pause', false);
     setScreen('game');
     introBoard();
-    if (!ISL.tutorial.seen()) ISL.tutorial.run(); else ISL.game.start();
+    if (ISL.tutorial.active && !tutorial) ISL.tutorial.finish(false);
+    if (tutorial) ISL.tutorial.run(); else ISL.game.start();
   }
-  function startTutorial() {
-    AU.unlock();
-    $('screen-start').classList.remove('open');
-    show('screen-howto', false);
-    setScreen('game');
-    introBoard();
-    ISL.tutorial.run();
-  }
+  const startGame = () => transition(() => enterGame(!ISL.tutorial.seen()));
+  const startTutorial = () => transition(() => enterGame(true));
   function introBoard() {
     gsap.fromTo('#board-wrap', { scale: 0.92, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: 'back.out(1.4)' });
     gsap.fromTo('.snake-head', { scale: 0 }, { scale: 1, duration: 0.45, stagger: 0.06, ease: 'back.out(2.5)', delay: 0.3 });
     gsap.fromTo('.value-tag', { scale: 0 }, { scale: 1, duration: 0.35, stagger: 0.03, ease: 'back.out(2.5)', delay: 0.5 });
-    gsap.fromTo(['#turn-banner', '#card-student', '#card-computer', '#numberline', '#equation', '#tray', '#btn-roll'], { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.05, delay: 0.2 });
+    gsap.fromTo(['#logo-small', '#topbar', '#turn-banner', '#card-student', '#card-computer', '#numberline', '#equation', '#tray', '#btn-roll'], { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.04, delay: 0.2 });
   }
 
   /* ---------- how to play ---------- */
@@ -55,14 +73,14 @@
     $('howto-next').querySelector('.btn-label').textContent = slide === 2 ? "Let's go!" : 'Next';
     $('howto-prev').style.visibility = slide === 0 ? 'hidden' : 'visible';
   }
-  function openHowto() { setSlide(0); show('screen-howto', true); pauseGame(true, false); }
+  function openHowto() { if (busy) return; setSlide(0); show('screen-howto', true); pauseGame(true, false); }
   function closeHowto() { show('screen-howto', false); pauseGame(false, false); }
   const howtoOpen = () => $('screen-howto').classList.contains('open');
 
   /* ---------- pause ---------- */
   let paused = false;
   function pauseGame(on, showMenu = true) {
-    if (document.body.dataset.screen !== 'game') return;
+    if (document.body.dataset.screen !== 'game' || busy) return;
     paused = on;
     on ? gsap.globalTimeline.pause() : gsap.globalTimeline.resume();
     on ? ISL.voice.pause() : ISL.voice.resume();
@@ -85,14 +103,14 @@
   }
   function hideWin() { $('screen-win').classList.remove('open'); $('confetti').innerHTML = ''; gsap.killTweensOf('#win-rays'); }
 
-  function goHome() {
+  /** Back to the start screen (called under the wave). */
+  function enterHome() {
     if (ISL.tutorial.active) ISL.tutorial.finish(false, false);   // left early: offer it again next time
-    hideWin(); show('screen-pause', false); show('screen-howto', false); paused = false;
-    document.body.removeAttribute('data-paused');
-    gsap.globalTimeline.resume(); ISL.voice.resume();
+    hideWin(); show('screen-pause', false); show('screen-howto', false);
     ISL.game.reset();
-    openStart();
+    openStart(0.3);
   }
+  const goHome = () => transition(enterHome);
 
   /* ---------- debug overlay (?debug) ---------- */
   function debugOverlay() {
@@ -136,13 +154,13 @@
     $('btn-help').addEventListener('click', openHowto);
     $('howto-close').addEventListener('click', () => document.body.dataset.screen === 'game' ? closeHowto() : show('screen-howto', false));
     $('howto-next').addEventListener('click', () => { if (slide === 2) closeHowto(); else setSlide(slide + 1); });
-    $('howto-live').addEventListener('click', () => { closeHowto(); startTutorial(); });
+    $('howto-live').addEventListener('click', startTutorial);
     $('howto-prev').addEventListener('click', () => setSlide(slide - 1));
     $('btn-pause').addEventListener('click', () => pauseGame(true));
     $('btn-resume').addEventListener('click', () => pauseGame(false));
-    $('btn-restart').addEventListener('click', () => { pauseGame(false); if (ISL.tutorial.active) ISL.tutorial.finish(false); ISL.game.start(); });
+    $('btn-restart').addEventListener('click', () => transition(() => enterGame(false)));
     $('btn-home').addEventListener('click', goHome);
-    $('btn-again').addEventListener('click', () => { hideWin(); setScreen('game'); ISL.game.start(); });
+    $('btn-again').addEventListener('click', () => transition(() => enterGame(false)));
     $('btn-win-home').addEventListener('click', goHome);
     $('btn-sound').addEventListener('click', () => {
       const on = AU.toggle();
@@ -150,7 +168,7 @@
       $('btn-sound').querySelector('img:not(.btn-bg)').src = A.url(on ? 'ui/icons/sound-on' : 'ui/icons/sound-off');
     });
     window.addEventListener('keydown', e => {
-      if (e.code !== 'Escape' || document.body.dataset.screen !== 'game') return;
+      if (e.code !== 'Escape' || document.body.dataset.screen !== 'game' || busy) return;
       if (howtoOpen()) closeHowto();           // Esc closes the help sheet instead of un-pausing underneath it
       else pauseGame(!paused);
     });
@@ -161,9 +179,9 @@
     if (params.has('tutorial')) startTutorial();
     else if (params.has('play')) { setScreen('game'); $('screen-start').classList.remove('open'); ISL.game.start(); }
     else if (params.has('nointro')) openStart();
-    else { setScreen('intro'); $('screen-intro').classList.add('open'); gsap.delayedCall(0.45, () => ISL.intro.play(() => openStart())); }
+    else { setScreen('intro'); $('screen-intro').classList.add('open'); gsap.delayedCall(0.45, () => ISL.intro.play(() => openStart(0.35))); }
   }
 
-  ISL.main = { showWin, startGame, startTutorial, goHome, debugOverlay };
+  ISL.main = { showWin, startGame, startTutorial, goHome, debugOverlay, transition, enterGame, get busy() { return busy; } };
   window.addEventListener('DOMContentLoaded', boot);
 })(window.ISL);

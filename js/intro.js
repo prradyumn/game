@@ -55,7 +55,8 @@
     for (let x = W; x >= -1; x -= step) d += `L ${x.toFixed(1)} ${(top + band + Math.sin(x / W * Math.PI * 2.5 - phase) * amp).toFixed(1)} `;
     return d + 'Z';
   }
-  function wipe(onCovered) {
+  /** Wave transition. onCovered fires while the screen is fully covered; resolves when it has passed. */
+  function wipe(onCovered, duration = 1.7) {
     const st = ISL.layout.stage, W = st.w, H = st.h;
     const svg = $('wipe');
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
@@ -66,7 +67,7 @@
     let covered = false;
     return new Promise(res => {
       gsap.to(o, {
-        t: 1, duration: 1.7, ease: 'power1.inOut',
+        t: 1, duration, ease: 'power1.inOut',
         onUpdate() {
           const top = H + 40 - o.t * (H + band + 120);
           const ph = o.t * 9;
@@ -126,7 +127,7 @@
     const tbox = document.createElement('div');
     tbox.id = 'intro-title'; tbox.className = 'intro-el';
     Object.assign(tbox.style, { width: t.w + 'px', height: th + 'px' });
-    tbox.innerHTML = `<img src="${A.url('ui/logo/wordmark-dark')}" alt="Integer Snakes &amp; Ladders"><i id="intro-shine"></i>`;
+    tbox.innerHTML = `<img src="${A.url('ui/logo/wordmark-dark')}" alt="Integer Snakes &amp; Ladders"><img id="intro-shine" src="${A.url('ui/logo/wordmark-dark')}" alt="">`;
     layer.appendChild(tbox); at(tbox, t.cx, t.cy); E.title = tbox;
 
     const tk = document.createElement('div');
@@ -192,7 +193,7 @@
       .fromTo('#intro-flash', { opacity: 0.75 }, { opacity: 0, duration: 0.55, ease: 'power2.out', immediateRender: false }, 2.75)
       .fromTo(layer, { x: -14 }, { x: 0, duration: 0.45, ease: 'elastic.out(1.2, 0.2)', immediateRender: false }, 2.75)
       .call(() => { AU.play('diceLand'); FX.sparkles(P.title.cx, P.title.cy, 18, layer, P.title.w * 0.55); }, null, 2.78)
-      .fromTo('#intro-shine', { backgroundPosition: '150% 0' }, { backgroundPosition: '-60% 0', duration: 1.1, ease: 'power2.inOut', immediateRender: false }, 3.05)
+      .fromTo('#intro-shine', { webkitMaskPosition: '150% 0', maskPosition: '150% 0' }, { webkitMaskPosition: '-60% 0', maskPosition: '-60% 0', duration: 1.1, ease: 'power2.inOut', immediateRender: false }, 3.05)
       .to(E.title, { y: '-=10', duration: 1.4, yoyo: true, repeat: 3, ease: 'sine.inOut' }, 3.3);
 
     // sign dice pop in and float
@@ -228,6 +229,7 @@
   }
 
   ISL.intro = {
+    wipe,
     /** Plays the cinematic. `onCovered` fires while the wave covers the screen. */
     play(onCovered) {
       const E = build();
@@ -238,6 +240,7 @@
           if (wiping) return; wiping = true;
           tl.pause();
           wipe(() => {
+            tl.kill();                          // drop the whole cinematic timeline, not just its element tweens
             gsap.killTweensOf($('screen-intro').querySelectorAll('*'));
             $('screen-intro').classList.remove('open');
             $('screen-intro').innerHTML = '';

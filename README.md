@@ -37,6 +37,10 @@ Every hop plays a note that climbs for + moves and falls for − moves, and a ru
 Then the big equation card dolly-zooms in (the card pushes in while the scene pulls back), reveals the answer, and docks into the equation panel.
 Snake and ladder rides get the same treatment. With *reduce motion* turned on, the camera stays still and the card just fades.
 
+## Screen transitions
+Every screen change runs under the wave wipe (`transition()` in `js/main.js`): Play, How to play, Skip tutorial, the end of the tutorial, Play again, Restart, and Home.
+The swap happens while the wave fully covers the stage, so resets never show, and modal fades are switched off under the wave. Extra clicks are ignored mid-transition, and Pause, Help and Esc wait until the wave has passed.
+
 ## Controls feedback
 - Roll glows and breathes while it's your move. After 3.5 s idle it nudges: a wiggle, the dice hop, a bouncing arrow and a soft chime (repeats every 5 s).
 - The token whose turn it is gets a glowing ring, plus a bobbing marker while waiting to roll. The active player card glows.
