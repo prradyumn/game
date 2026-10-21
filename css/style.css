@@ -550,7 +550,7 @@ body[data-picking] #board-wrap { cursor: pointer; touch-action: none; }
 /* zero: the gold 0 tile at the left end of the shoreline boardwalk */
 .zero-tile { display: flex; align-items: center; justify-content: center; border-radius: 14px; z-index: 2;
   background: radial-gradient(circle at 35% 30%, #fff3b0, #ffc531 55%, #e09a10); color: #3a1f05;
-  font: 700 46px/1 var(--font); box-shadow: 0 0 0 4px #fff, 0 0 0 7px #3a1f05, 0 6px 12px rgba(0, 0, 0, .4); }
+  font: 700 58px/1 var(--font); box-shadow: 0 0 0 5px #fff, 0 0 0 9px #3a1f05, 0 6px 12px rgba(0, 0, 0, .4); }
 /* pick countdown bar */
 #pick-prompt { position: absolute; overflow: hidden; }
 #pick-prompt .pp-bar { position: absolute; left: 8%; right: 8%; bottom: 7px; height: 6px; border-radius: 3px;

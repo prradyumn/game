@@ -259,13 +259,20 @@
 
     if (who === 'student') {
       // the student decides where the explorer lands (whole board in view), with hints if wrong
-      const res = await ISL.answer.ask({ token: t, start, roll, dest, guard, narrate });
+      const land = () => {                      // a right pick: the explorer simply stands on the square, no hopping
+        const prev = t.pos; t.pos = dest; t.setPose(roll > 0 ? 'happy' : (dest < 0 ? 'underwater' : 'worried'));
+        arrange(0); UI.setCardPos('student', dest, false);
+        const a = B.anchor(dest, G.slotFor('student'));
+        if (dest < 0 && prev >= 0) FX.splash(a.x, a.y); else if (dest > 0) FX.sandPuff(a.x, a.y);
+      };
+      const res = await ISL.answer.ask({ token: t, start, roll, dest, guard, narrate, land });
       G.stars += 4 - res.tries;
       UI.setStars(G.stars, 4 - res.tries);
       // then the camera swoops in and the explorer hops there — or they count it together
-      await guard(CINE.cam.focus(t.el, ZOOM.move, 0.8));
-      if (res.together) await hopByTap(t, dest, guard, narrate);
-      else await moveSteps(t, dest, guard, true);
+      if (res.together) {
+        await guard(CINE.cam.focus(t.el, ZOOM.move, 0.8));
+        await hopByTap(t, dest, guard, narrate);
+      }
     } else {
       // camera swoops in so the character fills the view, then the hops happen
       await guard(CINE.cam.focus(t.el, ZOOM.move, 0.8));
