@@ -54,7 +54,7 @@
     let h = $('pick-cell');
     if (n === null) { if (h) h.remove(); return; }
     if (!h) { h = document.createElement('i'); h.id = 'pick-cell'; $('board-ui').appendChild(h); }
-    const c = B.center(n), w = n === 0 ? 120 : B.W / 10, hh = n === 0 ? 80 : B.CELL;
+    const c = B.center(n), w = n === 0 ? 170 : B.W / 10, hh = n === 0 ? 70 : B.CELL;
     Object.assign(h.style, { width: w + 'px', height: hh + 'px' });
     gsap.set(h, { x: c.x, y: c.y, xPercent: -50, yPercent: -50 });
     h.classList.toggle('zero', n === 0);
@@ -124,7 +124,7 @@
     for (let n = start + dir, i = 0; ; n += dir, i++) {
       const c = B.center(n);
       const el = document.createElement('i'); el.className = 'path-glow' + (n === 0 ? ' zero' : '');
-      Object.assign(el.style, { width: (n === 0 ? 120 : B.W / 10) + 'px', height: (n === 0 ? 80 : B.CELL) + 'px' });
+      Object.assign(el.style, { width: (n === 0 ? 170 : B.W / 10) + 'px', height: (n === 0 ? 70 : B.CELL) + 'px' });
       box.appendChild(el);
       gsap.set(el, { x: c.x, y: c.y, xPercent: -50, yPercent: -50 });
       gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.25, delay: i * 0.08 });
