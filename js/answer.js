@@ -1,7 +1,7 @@
 /* "Pick the square": after rolling, the student decides where the explorer lands.
    They tap any square (or drag the explorer onto one) — picking IS the answer, no Go button.
    Every pick stays for 3 s first (a countdown bar shows it), so a slip or an overshoot can be fixed.
-   Then it is judged: right → marked right; wrong → counts as a try, with a hint and a higher/lower arrow.
+   Then it is judged: right → marked right; wrong → counts as a try, with a hint and an up/down arrow.
    A wrong pick gets feedback aimed at the specific mistake, with support that builds up:
      1st wrong — a hint about that mistake      2nd wrong — the path lights up as well
      3rd wrong — count it together (tap to hop)
@@ -90,7 +90,7 @@
     if (!dir) return;
     const g = ghost(), img = g.querySelector('img');
     const el = document.createElement('b'); el.id = 'pick-dir'; el.className = dir > 0 ? 'up' : 'down';
-    el.innerHTML = dir > 0 ? '▲ <span>higher</span>' : '▼ <span>lower</span>';
+    el.innerHTML = dir > 0 ? '▲' : '▼';
     el.style.top = (parseFloat(img.style.top) - 30) + 'px';
     g.appendChild(el);
     gsap.fromTo(el, { scale: 0.3, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: 'back.out(3)' });
@@ -206,7 +206,7 @@
         VO.stop();
         if (n === dest) {
           ISL.ui.rollReady(false); ISL.ui.enable($('btn-roll'), false);
-          setPrompt(`✔ ${['Brilliant!', 'Well done!', 'You got it!'][tries]} ${P(start)} ${roll > 0 ? '+' : '−'} ${Math.abs(roll)} lands on ${P(dest)}`, 'good');
+          setPrompt(`✔ ${P(start)} ${roll > 0 ? '+' : '−'} ${Math.abs(roll)} lands on ${P(dest)}`, 'good');
           AU.play('correct');
           const h = $('pick-cell'); if (h) h.classList.add('right');
           const c = dest === 0 ? B.anchor(0, 0) : B.center(dest);
@@ -236,9 +236,7 @@
           return { tries: 3, together: true };
         }
         dirArrow(way);
-        const dirText = way > 0 ? 'Try a <b>higher</b> number ▲' : 'Try a <b>lower</b> number ▼';
-        const generic = ['hint_close', 'hint_far', 'hint_zero', 'hint_next'].includes(d.id);
-        setPrompt(`${d.html}${generic ? ' ' + dirText : ''}${tries === 2 ? ' <small>Follow the glowing path.</small>' : ''} <small>Try ${tries + 1} of 3</small>`, 'hint');
+        setPrompt(`${d.html} <small>Try ${tries + 1} of 3</small>`, 'hint');
         nudgeVoice = d.id;
         if (narrate) VO.say(d.id);   // direction + path are shown (arrow, text, glow), so only the mistake-specific hint is spoken
         if (tries === 2) showPath(start, dest);

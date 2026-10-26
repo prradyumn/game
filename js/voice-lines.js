@@ -16,12 +16,8 @@
 
   const LINES = {
     // gameplay
-    your_turn: 'Your turn, explorer! Tap Roll.',
-    nudge: 'Go on, tap the Roll button to throw the dice!',
     tap_hop: 'Now tap to hop! One tap for every square.',
     pick_square: 'Where will you land? Tap that square, or drag your explorer there!',
-    go_higher: 'Try a higher number!',
-    go_lower: 'Try a lower number!',
     hint_stay: "You didn't move! Hop the number you rolled.",
     hint_up: 'A plus number moves you up, toward the land!',
     hint_down: 'A minus number moves you down, toward the sea!',
@@ -31,12 +27,7 @@
     hint_next: 'Start counting from the next square, not your own.',
     hint_close: 'So close! Count again.',
     hint_far: 'Count carefully, one square for each step.',
-    hint_path: 'Follow the glowing path.',
     count_together: "Let's count together! Tap to hop.",
-    correct_1: 'Brilliant!',
-    correct_2: 'Well done!',
-    correct_3: 'You got it!',
-    computer_turn: "Computer's turn. Let's see what it rolls!",
     plus: 'plus',
     equals: 'equals',
     ladder: 'A ladder! Ladders add a positive number. Up you go!',
