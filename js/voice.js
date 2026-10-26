@@ -99,7 +99,7 @@
     init() {
       if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = () => { synthVoice = pickVoice(); };
       // warm the cache for the short gameplay words
-      ['plus', 'equals', 'your_turn', 'computer_turn'].forEach(clipEl);
+      ['plus', 'equals'].forEach(clipEl);
     }
   };
   ISL.voice = VO;

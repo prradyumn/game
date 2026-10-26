@@ -197,8 +197,8 @@
     ISL.ui.rollReady(true, onNudge, 'pick');
     ISL.ui.enable($('btn-roll'), false);
     setPrompt(`You rolled ${P(roll)}. Where will you land? <small>Tap that square, or drag your explorer there</small>`, 'ask');
-    nudgeVoice = 'pick_square';
-    if (narrate) VO.say('pick_square');
+    nudgeVoice = null;
+    if (narrate && !ISL.game.G.pickTold) { ISL.game.G.pickTold = true; VO.say('pick_square'); }   // spoken once; the on-screen prompt carries every later turn
     let tries = 0;
     try {
       for (;;) {
@@ -216,7 +216,7 @@
           const g = $('pick-ghost'); if (g) gsap.to(g, { opacity: 0, duration: 0.25 });
           gsap.to(token.el, { opacity: 1, duration: 0.25 });
           highlight(null); clearPath();
-          if (narrate) VO.say([['correct_1', 'correct_2', 'correct_3'][tries], window.VOICE_NUM.numId(dest)]);
+          if (narrate) VO.say(window.VOICE_NUM.numId(dest));   // just read the landing integer aloud; the banner already praises
           await guard(ISL.ui.wait(0.6));
           return { tries: tries + 1, together: false };
         }
@@ -240,7 +240,7 @@
         const generic = ['hint_close', 'hint_far', 'hint_zero', 'hint_next'].includes(d.id);
         setPrompt(`${d.html}${generic ? ' ' + dirText : ''}${tries === 2 ? ' <small>Follow the glowing path.</small>' : ''} <small>Try ${tries + 1} of 3</small>`, 'hint');
         nudgeVoice = d.id;
-        if (narrate) VO.say([d.id, ...(generic ? [way > 0 ? 'go_higher' : 'go_lower'] : []), ...(tries === 2 ? ['hint_path'] : [])]);
+        if (narrate) VO.say(d.id);   // direction + path are shown (arrow, text, glow), so only the mistake-specific hint is spoken
         if (tries === 2) showPath(start, dest);
         await guard(ISL.ui.wait(0.5));
         token.rest();

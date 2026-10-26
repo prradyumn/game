@@ -52,7 +52,7 @@
 
   /* ---------- game state ---------- */
   const G = {
-    sid: 0, tokens: {}, turn: 'student', over: false, forced: [], rollResolver: null, hopResolver: null, hopTold: false, stars: 0, pickDest: null,
+    sid: 0, tokens: {}, turn: 'student', over: false, forced: [], rollResolver: null, hopResolver: null, hopTold: false, pickTold: false, told: {}, stars: 0, pickDest: null,
     positions() { return { student: this.tokens.student.pos, computer: this.tokens.computer.pos }; },
     slotFor(who) {
       const p = this.positions();
@@ -229,9 +229,8 @@
     arrange(0.2);
 
     if (who === 'student') {
-      if (narrate) VO.say('your_turn');
       UI.enable($('btn-roll'), true);
-      UI.rollReady(true, n => { if (narrate && n === 2) VO.say('nudge'); });
+      UI.rollReady(true);
       t.el.classList.add('awaiting');
       await guard(new Promise(r => { G.rollResolver = r; }));
       opts.onRoll && opts.onRoll();
@@ -241,7 +240,6 @@
     } else {
       UI.rollReady(false);
       t.setPose('thinking');
-      if (narrate) VO.say('computer_turn');
       await guard(UI.wait(1.0));
     }
     UI.enable($('btn-roll'), false);
@@ -293,7 +291,8 @@
 
     const s = B.snakeAt(t.pos), l = B.ladderAt(t.pos);
     if (s || l) {
-      if (narrate) VO.say(s ? 'snake' : 'ladder');
+      const kind = s ? 'snake' : 'ladder';
+      if (narrate && !G.told[kind]) { G.told[kind] = true; VO.say(kind); }   // explained the first time only; the toast covers the rest
       await guard(CINE.cam.focus(t.el, ZOOM.ride, 0.6));
       if (s) await rideSnake(t, s, guard); else await climbLadder(t, l, guard);
       UI.setCardPos(who, t.pos);
