@@ -28,8 +28,6 @@
     hint_close: 'So close! Count again.',
     hint_far: 'Count carefully, one square for each step.',
     count_together: "Let's count together! Tap to hop.",
-    plus: 'plus',
-    equals: 'equals',
     ladder: 'A ladder! Ladders add a positive number. Up you go!',
     snake: 'Uh oh, a snake! Snakes add a negative number. Down you slide!',
     summit_past: "That's past positive fifty. You made it to the summit!",
@@ -48,7 +46,7 @@
     t_snake_done: 'The snake added negative twenty and slid you down to negative seven. Snakes pull you down!',
     t_finish: "The first explorer to reach positive fifty plants the flag and wins. You're ready. Let's play!"
   };
-  for (let n = -56; n <= 56; n++) LINES[numId(n)] = numText(n);
+  for (let n = -50; n <= 50; n++) LINES[numId(n)] = numText(n);
 
   window.VOICE_LINES = LINES;
   window.VOICE_NUM = { numText, numId };

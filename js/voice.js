@@ -75,8 +75,6 @@
       chain = chain.then(() => run(ids, my));
       return chain;
     },
-    /** Speak "a plus b equals c" with integer words. */
-    equation(a, b, c) { return VO.say([numId(a), 'plus', numId(b), 'equals', numId(c)]); },
     number(n) { return VO.say([numId(n)]); },
     stop() {
       epoch++;
@@ -98,8 +96,6 @@
     hasClips() { return Object.keys(clips()).length > 0; },
     init() {
       if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = () => { synthVoice = pickVoice(); };
-      // warm the cache for the short gameplay words
-      ['plus', 'equals'].forEach(clipEl);
     }
   };
   ISL.voice = VO;
