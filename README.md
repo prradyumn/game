@@ -1,4 +1,4 @@
-# Integer Snakes & Ladders — first draft
+# Snake and Ladder — Integer Version
 
 Open `index.html` in Chrome/Edge/Safari (double-click works; no server needed).
 
@@ -7,8 +7,8 @@ Open `index.html` in Chrome/Edge/Safari (double-click works; no server needed).
 - Each turn: roll the **sign die** (4 plus faces, 2 minus faces) and the **number die** (1–6). Move = position + (±n).
 - After the roll, the player **picks the square** where the explorer will land: tap any square (or drag the explorer onto one, or use the arrow keys) — picking is the answer, there is no Go button. Nothing is restricted; they work out the sum themselves.
   - Every pick stays for 3 seconds first (a countdown bar shows it), so a slip or an overshoot can be fixed by tapping another square.
-  - Then it's judged. Right: green square, chime, praise, and the explorer hops there square by square. Wrong: counts as a try.
-  - Wrong: gentle feedback and a hint aimed at the specific mistake (`js/answer.js` → `diagnose`): wrong direction, didn't move, counted the starting square, skipped 0, close, far off, or past ±50. The 2nd wrong answer also lights up the path; the 3rd switches to **counting together** (tap to hop, one tap per square).
+  - Then it's judged. Right: green square, chime, and the explorer is placed on that square (narrator: "You land on …. Good job."). Wrong: counts as a try.
+  - Wrong: gentle feedback and a hint aimed at the specific mistake (`js/answer.js` → `diagnose`): wrong direction, didn't move, counted the starting square, skipped 0, close, far off, or past ±50. The 2nd wrong answer also lights up the path (no extra words); the 3rd switches to **counting together** (tap to hop, one tap per square).
   - Stars: 3 for the first try, 2 for the second, 1 for the third — shown on the player card and the win screen.
   - The computer still moves on its own. No equations are shown on screen; the roll is shown on the dice and the round chip on the tray.
 - Ladders add (+), snakes subtract (−). Values are on the tags. The big python at +43 slides you all the way down to −40.
@@ -49,20 +49,20 @@ Every screen change runs under the wave wipe (`transition()` in `js/main.js`): P
 The swap happens while the wave fully covers the stage, so resets never show, and modal fades are switched off under the wave. Extra clicks are ignored mid-transition, and Pause, Help and Esc wait until the wave has passed.
 
 ## Controls feedback
-- Roll glows and breathes while it's your move. After 3.5 s idle it nudges: a wiggle, the dice hop, a bouncing arrow and a soft chime (repeats every 5 s). While hopping, the button reads **Hop!**, and if the player stalls for 3 s the hop bubble bounces and the voice says "Now tap to hop!".
-- The token whose turn it is gets a glowing ring, plus a bobbing marker while waiting to roll. The active player card glows.
-- **Space** rolls or hops. **Enter** does too, unless another button has focus. **Esc** pauses, or closes the help sheet if it's open.
-- The only corner button is **Pause**. The pause menu holds Resume, Restart, Home, **Sound** and **How to play**; closing How to play returns to the pause menu.
+- On your move the dice box and Roll glow and a yellow arrow bounces over Roll straight away; tapping the dice box rolls too. During the computer's turn Roll is dimmed ("Wait…"). After 3.5 s idle it also nudges: a wiggle, the dice hop and a soft chime (repeats every 5 s). While hopping, the button reads **Hop!**, and if the player stalls for 3 s the hop bubble bounces and the voice says "Now tap to hop!".
+- The token whose turn it is gets a glowing ring, and the active player card glows. There is no turn banner or ribbon text.
+- **Space** rolls or hops. **Enter** does too, unless another button has focus. **Esc** pauses, or closes the rules sheet if it was opened from the pause menu.
+- The only corner button is **Pause**. The pause menu holds Resume, Restart, Home, **Music**, **Rules** and **How to play**. There is no sound button; closing Rules returns to the pause menu.
 
 ## Opening cinematic
 Every load opens with a ~7 s intro: you rise from the deep sea, a ladder bursts out of the water, snakes appear, the title slams in, both explorers land on the jetty, and an integer ticker counts −50 → +50. Then an SVG wave sweeps you to the start screen. **Skip ›** (or `?nointro`) jumps past it. Code: `js/intro.js`.
 
 ## Live tutorial
-The first time you press **Play**, a coach walks you through four real scripted turns (+4, crossing zero with −6, a ladder, a snake). **How to play** on the start screen replays it. You can also replay it from the **?** help panel. Use **Skip tutorial** to jump straight into a game.
+**Play** first shows the **Rules of the Game** (four slides, each read aloud; mandatory, no skip): the last **Next** starts the game. The live tutorial is optional: **How to play** (start screen or pause menu) runs a coach through four real scripted turns (+4, crossing zero with −6, a ladder, a snake); **Skip tutorial** leaves it. **Rules** in the pause menu reopens the slides; **Play again** goes straight into a game.
 
 ## Voiceover
-- All lines live in `js/voice-lines.js`: numbers −56…+56 spoken as "negative three" / "positive four", the gameplay prompts, and the tutorial script.
-- Without clips, the game speaks with the browser's built-in voice.
+- All lines live in `js/voice-lines.js`: numbers −50…+50 spoken as "minus three" / "plus four", the gameplay prompts, and the tutorial script.
+- Without clips, the game speaks with the browser's built-in voice. Lines reworded to match the dialogue sheet (all number words, the rules, the tutorial, hints and win lines) currently have no clips, so run the generator below to make them.
 - The shipped clips (`audio/voice/*.ogg`, Opus 32 kbps) were made with `gemini-2.5-pro-preview-tts`, voice **Puck**, directed as a friendly explorer guide (numbers and the words "plus" and "equals" are read evenly so they splice into equations).
 - To regenerate from the command line: `GEMINI_API_KEY=... node tools/generate-voice.js` (`--force` remakes everything, `--only id,id` remakes chosen lines, `--voice` and `--model` override). It needs ffmpeg. Keep the key in the environment and never commit it.
 - Use a TTS model that follows spoken style direction. `gemini-3.8-flash-tts` reads the direction (and `[tags]`) aloud, so it isn't suitable.

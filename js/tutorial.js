@@ -11,25 +11,25 @@
   const P = n => `<b class="${n > 0 ? 'plus' : n < 0 ? 'minus' : ''}">${B.fmt(n)}</b>`;
   const STEPS = [
     { id: 't_welcome', pose: 'wave', spot: 'board', next: 'Next',
-      html: `This board is a <b>number line</b>! Land squares are ${P(1)} <b>positive</b>, sea squares are ${P(-1)} <b>negative</b>. <b>0</b> is the boardwalk on the shoreline.` },
+      html: `This board is an integers' number line! <b>Positive</b> numbers are at the land, and <b>negative</b> numbers are in the sea. <b>0</b> is the boardwalk between them.` },
     { id: 't_dice', pose: 'thinking', spot: 'dice', roll: true,
-      html: `Roll two dice: the <b>sign die</b> says <b class="plus">+</b> or <b class="minus">−</b>, the <b>number die</b> says how many. Then work out where you'll land and <b>tap that square</b> (or drag your explorer there).` },
+      html: `Roll two dice: the <b>sign die</b> says <b class="plus">+</b> or <b class="minus">−</b>. It will decide your direction. For <b class="plus">positive</b> sign on the die means move forward, the <b class="minus">negative</b> sign means moving backward. The <b>number die</b> will decide how many squares to jump.<br>Check the dice and drag your explorer to the correct number.` },
     { id: 't_up', pose: 'happy', spot: 'shore', next: 'Next',
       html: `You rolled ${P(4)} and hopped <b>4 squares up</b>. Positive numbers move you <b>up</b>, toward the summit.` },
     { id: 't_neg', pose: 'thinking', spot: 'dice', roll: true,
-      html: `Now let's roll a <b class="minus">negative</b> number. Roll, then pick the square where you'll land!` },
+      html: `Now let's check a <b class="minus">negative</b> number. Roll, then pick the square where you'll land!` },
     { id: 't_down', pose: 'underwater', spot: 'shore', next: 'Next',
-      html: `${P(-6)} took you <b>6 squares down</b>. You crossed <b>0</b> and dived into the sea! Negative numbers move you <b>down</b>.` },
+      html: `${P(-6)} took you <b>6 squares down</b>. You crossed <b>0</b> and dived into the sea! Negative numbers will take you <b>backward</b> or <b>down</b>.` },
     { id: 't_ladder', pose: 'idle', spot: 'ladder', roll: true,
-      html: `See this ladder? Land on its bottom and it <b>adds a positive</b> number. Roll!` },
+      html: `Got a ladder? Climb it. It can take you up faster.` },
     { id: 't_ladder_done', pose: 'cheer', spot: 'ladder', next: 'Next',
-      html: `The ladder added ${P(22)} and lifted you all the way to ${P(19)}. What a climb!` },
+      html: `This ladder took you to ${P(19)}, twenty-two squares forward.` },
     { id: 't_snake', pose: 'worried', spot: 'snake', roll: true,
-      html: `Watch out! A snake's head <b>adds a negative</b> number and slides you down. Roll!` },
+      html: `Watch out! A snake's bite. It adds a negative number and slides you down.` },
     { id: 't_snake_done', pose: 'worried', spot: 'snake', next: 'Next',
-      html: `The snake added ${P(-20)} and slid you down to ${P(-7)}. Snakes pull you down!` },
+      html: `The snake brought you 20 steps back and slid you down to ${P(-7)}. Snakes pull you down!` },
     { id: 't_finish', pose: 'cheer', spot: 'summit', next: "Let's play!",
-      html: `First explorer to reach ${P(50)} plants the flag and wins. You're ready!` }
+      html: `First explorer to reach ${P(50)}, will wins. Are you ready?` }
   ];
 
   /* ---------- spotlight targets in stage pixels ---------- */
@@ -69,8 +69,15 @@
     c.classList.toggle('open', on);
     if (on) gsap.fromTo('#coach-card', { scale: 0.85, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(2)' });
   }
+  /** Long coach lines shrink (down to ~70%) until they fit their box, so nothing spills over the character or buttons. */
+  function fitText() {
+    const tx = $('coach-text'); tx.style.fontSize = '';
+    let fs = parseFloat(getComputedStyle(tx).fontSize); const min = fs * 0.7;
+    while (tx.scrollHeight > tx.clientHeight + 1 && fs > min) { fs -= 0.5; tx.style.fontSize = fs + 'px'; }
+  }
   function setStep(i, st) {
     $('coach-text').innerHTML = st.html;
+    fitText(); setTimeout(fitText, 450);   // again once fonts and the pop-in have settled
     $('coach-step').textContent = `${i + 1} / ${STEPS.length}`;
     const pose = $('coach-pose');
     pose.src = A.url('tokens/student-poses/' + st.pose);
@@ -127,7 +134,7 @@
       document.body.removeAttribute('data-tut-roll');
       if (startGame) ISL.game.start();
     },
-    relayout() { if (this.active && spotKey) spot(spotKey); },
+    relayout() { if (this.active) { fitText(); if (spotKey) spot(spotKey); } },
     init() {
       $('coach-next').addEventListener('click', () => { if (nextResolver) { const r = nextResolver; nextResolver = null; r(); } });
       $('coach-skip').addEventListener('click', () => { ISL.audio.play('click'); ISL.main.transition(() => this.finish(true)); });

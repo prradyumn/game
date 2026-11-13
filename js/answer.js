@@ -20,8 +20,8 @@
     const crossesZero = (start < 0 && dest >= 0) || (start > 0 && dest <= 0) || (start < 0 && start + roll > 0) || (start > 0 && start + roll < 0);
     if (n === start) return { id: 'hint_stay', html: `You didn't move! You rolled ${P(roll)}, so hop <b>${k}</b> square${k === 1 ? '' : 's'}.` };
     if (Math.sign(moved) !== dir) return dir > 0
-      ? { id: 'hint_up', html: `${P(roll)} means <b>up</b>! Move toward the land.` }
-      : { id: 'hint_down', html: `${P(roll)} means <b>down</b>! Move toward the sea.` };
+      ? { id: 'hint_up', html: `${P(roll)} means <b>up</b>! Move forward.` }
+      : { id: 'hint_down', html: `${P(roll)} means <b>down</b>! Move backward.` };
     if (start + roll > B.MAX) return { id: 'hint_top', html: `You can't go past ${P(50)}. Stop at the flag!` };
     if (start + roll < B.MIN) return { id: 'hint_bottom', html: `${P(-50)} is the seafloor. Stop there!` };
     if (crossesZero && m === k + 1) return { id: 'hint_zero', html: `Don't forget <b>0</b>! The boardwalk counts as a step.` };
@@ -80,7 +80,7 @@
     if (!S.resolve) return;
     if (S.timer && S.timing === n) return;      // same square tapped again: keep the countdown going
     cancelTimer(); S.timing = n;
-    setPrompt(`You landed on ${P(n)} <small>Checking… change your mind? Tap another square</small><i class="pp-bar"></i>`, 'ask');
+    setPrompt(`You landed on ${P(n)} <small>Are you sure? I am checking</small><i class="pp-bar"></i>`, 'ask');
     gsap.fromTo('#pick-prompt .pp-bar', { scaleX: 1 }, { scaleX: 0, duration: WAIT, ease: 'none' });
     S.timer = gsap.delayedCall(WAIT, () => { S.timer = null; if (S.sel === n) settle(n); });
   }
@@ -216,7 +216,7 @@
           const g = $('pick-ghost'); if (g) gsap.to(g, { opacity: 0, duration: 0.25 });
           gsap.to(token.el, { opacity: 1, duration: 0.25 });
           highlight(null); clearPath();
-          if (narrate) VO.say(window.VOICE_NUM.numId(dest));   // just read the landing integer aloud; the banner already praises
+          if (narrate) VO.say(['land_on', window.VOICE_NUM.numId(dest), 'good_job']);
           await guard(ISL.ui.wait(0.6));
           return { tries: tries + 1, together: false };
         }

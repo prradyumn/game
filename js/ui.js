@@ -31,13 +31,14 @@
     setBtnState(el, on ? 'idle' : 'disabled');
   }
 
-  /* ---------- turn banner + cards ---------- */
+  /* ---------- game title (text, so it can read exactly what the game is called) ---------- */
+  function titleHTML() {
+    return `<span class="gt-row gt-1" aria-hidden="true"><i>Snake and Ladder</i><b>Snake and Ladder</b></span>` +
+      `<span class="gt-row gt-2" aria-hidden="true"><i>Integer Version</i><b>Integer Version</b></span>`;
+  }
+
+  /* ---------- turn cards (the active card glows; there is no turn banner or ribbon text) ---------- */
   function setTurn(who) {
-    const banner = $('turn-banner');
-    $('turn-banner-img').src = A.url(who === 'student' ? 'ui/panels/turn-student' : 'ui/panels/turn-computer');
-    $('turn-text').textContent = who === 'student' ? 'Your Turn!' : "Computer's Turn";
-    banner.dataset.who = who;
-    gsap.fromTo(banner, { scale: 0.7, rotation: -4 }, { scale: 1, rotation: 0, duration: 0.55, ease: 'elastic.out(1, 0.5)' });
     ['student', 'computer'].forEach(p => {
       const card = $('card-' + p);
       const active = p === who;
@@ -164,7 +165,9 @@
     btn.classList.toggle('ready', on);
     btn.classList.toggle('small-label', on && m === 'pick');
     $('tray').classList.toggle('ready', on && m === 'roll');
-    $('roll-nudge').classList.remove('on');
+    const arrow = $('roll-nudge');
+    arrow.classList.remove('on', 'loop');
+    if (on && m === 'roll') arrow.classList.add('loop');   // your turn: the arrow bounces over Roll straight away
     gsap.killTweensOf(btn, 'scale,rotation');
     gsap.killTweensOf(['#die-sign', '#die-num'], 'y');
     gsap.set(btn, { scale: 1, rotation: 0 });
@@ -268,7 +271,7 @@
 
   ISL.ui = {
     initButtons, enable, setBtnState, setTurn, setCardPos,
-    buildDice, sizeDice, rollDice, setFace, toast, wait, rollReady, poke, setStars,
+    buildDice, sizeDice, rollDice, setFace, toast, wait, rollReady, poke, setStars, titleHTML,
     hopPrompt, hideHopPrompt, nextSquare
   };
 })(window.ISL);

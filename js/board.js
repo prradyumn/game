@@ -11,7 +11,7 @@
   const A = ISL.assets;
   const CELL = 100;                 // cell height (and width on a square board)
   let BW = 1000, CW = CELL;         // board width and cell width in units — set from the layout's aspect
-  function setAspect(r) { BW = Math.round(1000 * r); CW = BW / 10; JETTY.x = CW * 0.5; }   // the 0 tile sits mid column 0, at the left end of the boardwalk
+  function setAspect(r) { BW = Math.round(1000 * r); CW = BW / 10; JETTY.x = Math.max(CW * 0.5, JETTY.w / 2 + 6); }   // the 0 tile sits mid column 0, at the left end of the boardwalk
   const MIN = -50, MAX = 50;
 
   // Ladders go up (bottom -> top). Snakes go down (head -> tail).

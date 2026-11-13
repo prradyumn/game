@@ -341,6 +341,7 @@
         else if (G.hopResolver) G.hopResolver();
       };
       $('btn-roll').addEventListener('click', act);
+      $('tray').addEventListener('click', () => { if (G.rollResolver) act(); });   // the dice box itself is a Roll button too
       // while hopping, a tap anywhere on the play area (not on a button) makes one hop
       $('screen-game').addEventListener('pointerdown', e => {
         if (!G.hopResolver || e.target.closest('button') || document.body.hasAttribute('data-paused')) return;

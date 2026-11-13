@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-  <title>Integer Snakes &amp; Ladders</title>
+  <title>Snake and Ladder Integer Version</title>
   <link rel="icon" href="assets/ui/logo/app-icon-64.webp">
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -20,20 +20,14 @@
 
       <!-- ============ GAME SCREEN ============ -->
       <section id="screen-game" class="screen">
-        <img id="logo-small" class="abs" src="assets/ui/logo/wordmark-dark.webp" alt="Integer Snakes & Ladders">
 
         <div id="topbar" class="abs">
           <button class="icon-btn" id="btn-pause" aria-label="Pause"><img src="assets/ui/icons/pause.webp" alt=""></button>
         </div>
 
-        <div id="turn-banner" class="abs">
-          <img class="fill" id="turn-banner-img" src="assets/ui/panels/turn-student.webp" alt="">
-          <span id="turn-text">Your Turn!</span>
-        </div>
 
         <div id="card-student" class="player-card abs" data-player="student">
           <img class="fill card-img" src="assets/ui/panels/player-student-active.webp" alt="">
-          <div class="card-ribbon">Your turn!</div>
           <div class="card-stars" id="card-stars" aria-label="Stars"><b>★</b><span>0</span></div>
           <div class="card-text">
             <div class="card-name">You</div>
@@ -42,7 +36,6 @@
         </div>
         <div id="card-computer" class="player-card abs" data-player="computer">
           <img class="fill card-img" src="assets/ui/panels/player-computer-waiting.webp" alt="">
-          <div class="card-ribbon">Computer's turn</div>
           <div class="card-text">
             <div class="card-name">Computer</div>
             <div class="card-pos"><span class="card-pos-label">at</span> <b class="card-pos-val">0</b></div>
@@ -86,7 +79,6 @@
         <button id="btn-roll" class="big-btn abs" aria-label="Roll the dice">
           <img class="fill btn-bg" src="assets/ui/buttons/large-idle.webp" alt="">
           <span class="btn-label">Roll!</span>
-          <span class="key-hint">or press <kbd>Space</kbd></span>
         </button>
         <div id="roll-nudge" class="abs" aria-hidden="true">
           <svg viewBox="0 0 60 70"><path d="M19 5h22v27h13L30 64 6 32h13z" fill="#ffd34d" stroke="#2b0f63" stroke-width="5" stroke-linejoin="round"/><path d="M24 10h6v24" fill="none" stroke="#fff6c8" stroke-width="4" stroke-linecap="round" opacity=".8"/></svg>
@@ -113,7 +105,7 @@
       <!-- ============ START SCREEN ============ -->
       <section id="screen-start" class="screen overlay-screen">
         <div id="start-bg" class="fill"></div>
-        <img id="start-logo" class="abs" src="assets/ui/logo/wordmark-dark.webp" alt="Integer Snakes & Ladders">
+        <div id="start-logo" class="abs game-title" role="img" aria-label="Snake and Ladder Integer Version"></div>
         <img id="start-student" class="abs" src="assets/tokens/student-poses/wave.webp" alt="">
         <img id="start-computer" class="abs" src="assets/tokens/computer-poses/idle.webp" alt="">
         <div id="start-tagline" class="abs">Climb ladders, dodge snakes, master integers!</div>
@@ -127,34 +119,37 @@
         </button>
       </section>
 
-      <!-- ============ HOW TO PLAY ============ -->
-      <section id="screen-howto" class="screen modal">
+      <!-- ============ RULES OF THE GAME (mandatory before a new game; also reachable from the pause menu) ============ -->
+      <section id="screen-rules" class="screen modal">
         <div class="scrim"></div>
-        <div id="howto-panel" class="abs">
+        <div id="rules-panel" class="abs">
           <img class="fill" src="assets/ui/menus/settings-sheet.webp" alt="">
-          <div id="howto-title">How to play</div>
-          <div id="howto-slides">
-            <div class="howto-slide">
+          <div id="rules-title">Rules of the Game</div>
+          <div id="rules-slides">
+            <div class="rules-slide">
+              <div class="rules-duo"><img src="assets/tokens/student-poses/wave.webp" alt=""><img src="assets/tokens/computer-poses/idle.webp" alt=""></div>
+              <p>2 players will play this game. You and computer. Each player will roll the dice turn by turn. Both the players will start from the "<b>Zero</b>"</p>
+            </div>
+            <div class="rules-slide">
               <img src="assets/ui/screens/how-to-roll.webp" alt="">
-              <p>Roll the <b class="plus">sign die</b> and the <b>number die</b>. Together they make an integer like <b class="plus">+4</b> or <b class="minus">−3</b>. Then tap the square where you'll land!</p>
+              <p>Roll the <b class="plus">sign die</b> and the <b>number die</b>. Together they give you an integer number like <b class="plus">+4</b> or <b class="minus">−3</b>. You have to move your explorer as many steps on the board as the number appear on the dice.</p>
             </div>
-            <div class="howto-slide">
+            <div class="rules-slide">
               <img src="assets/ui/screens/how-to-think.webp" alt="">
-              <p>Add the roll to where you are. Adding a <b class="minus">negative</b> moves you <b class="minus">down</b> toward the deep sea!</p>
+              <p>For a <b class="plus">positive</b> number, you will move forward and for the <b class="minus">negative</b> number, you moves <b class="minus">down</b> toward the deep sea!</p>
             </div>
-            <div class="howto-slide">
+            <div class="rules-slide">
               <img src="assets/ui/screens/how-to-finish.webp" alt="">
-              <p><b class="plus">Ladders</b> add, <b class="minus">snakes</b> subtract. First explorer to reach <b class="plus">+50</b> plants the flag!</p>
+              <p>If you find a <b class="plus">ladder</b>, climb up the ladder. It can take you to the mountain top faster. But if <b class="minus">snake</b> bites, you will slide down the tail. First explorer to reach <b class="plus">+50</b>, will win!</p>
             </div>
           </div>
-          <div id="howto-dots"><i></i><i></i><i></i></div>
-          <button id="howto-prev" class="icon-btn" aria-label="Previous"><img src="assets/ui/icons/retry.webp" alt=""></button>
-          <button id="howto-next" class="mid-btn" aria-label="Next">
+          <div id="rules-dots"><i></i><i></i><i></i><i></i></div>
+          <button id="rules-prev" class="icon-btn" aria-label="Previous"><img src="assets/ui/icons/retry.webp" alt=""></button>
+          <button id="rules-next" class="mid-btn" aria-label="Next">
             <img class="fill btn-bg" src="assets/ui/buttons/medium-idle.webp" alt="">
             <span class="btn-label">Next</span>
           </button>
-          <button id="howto-live" type="button">▶ Replay live tutorial</button>
-          <button id="howto-close" class="icon-btn close" aria-label="Close"><img src="assets/ui/icons/close.webp" alt=""></button>
+          <button id="rules-close" class="icon-btn close" aria-label="Close"><img src="assets/ui/icons/close.webp" alt=""></button>
         </div>
       </section>
 
@@ -168,8 +163,10 @@
           <button class="mid-btn" id="btn-restart"><img class="fill btn-bg" src="assets/ui/buttons/medium-idle.webp" alt=""><span class="btn-label">Restart</span></button>
           <button class="mid-btn" id="btn-home"><img class="fill btn-bg" src="assets/ui/buttons/medium-idle.webp" alt=""><span class="btn-label">Home</span></button>
           <div id="pause-extras">
-            <button class="icon-btn" id="btn-sound" aria-label="Sound on/off" data-cap="Sound"><img src="assets/ui/icons/sound-on.webp" alt=""></button>
-            <button class="icon-btn" id="btn-music" aria-label="Music on/off" data-cap="Music"><img src="assets/ui/icons/music.webp" alt=""></button>
+            <button class="icon-btn" id="btn-music" aria-label="Music on/off"><img src="assets/ui/icons/music.webp" alt=""></button>
+            <button class="icon-btn" id="btn-rules" aria-label="Rules" data-cap="Rules">
+              <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M16 6h26l10 10v40a4 4 0 0 1-4 4H16a4 4 0 0 1-4-4V10a4 4 0 0 1 4-4z" fill="#ffc531" stroke="#2b1550" stroke-width="5" stroke-linejoin="round"/><path d="M42 6v10h10" fill="#ffe17a" stroke="#2b1550" stroke-width="4" stroke-linejoin="round"/><path d="M21 28h22M21 38h22M21 48h14" stroke="#2b1550" stroke-width="5" stroke-linecap="round"/></svg>
+            </button>
             <button class="icon-btn" id="btn-help" aria-label="How to play" data-cap="How to play"><img src="assets/ui/icons/help.webp" alt=""></button>
           </div>
         </div>
@@ -191,7 +188,7 @@
       <section id="screen-tap" class="screen" aria-label="Tap to start">
         <div id="tap-bg" class="fill"></div>
         <div id="tap-bubbles" class="fill" aria-hidden="true"></div>
-        <img id="tap-logo" class="abs" src="assets/ui/logo/wordmark-dark.webp" alt="Integer Snakes & Ladders">
+        <div id="tap-logo" class="abs game-title" role="img" aria-label="Snake and Ladder Integer Version"></div>
         <button id="btn-tap" class="big-btn abs">
           <img class="fill btn-bg" src="assets/ui/buttons/large-idle.webp" alt="">
           <span class="btn-label">Tap to start</span>

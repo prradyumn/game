@@ -50,40 +50,52 @@
   function enterGame(tutorial) {
     AU.music('loop', 2);
     hideWin();
-    show('screen-start', false); show('screen-howto', false); show('screen-pause', false);
+    show('screen-start', false); show('screen-rules', false); show('screen-pause', false);
     setScreen('game');
     introBoard();
     if (ISL.tutorial.active && !tutorial) ISL.tutorial.finish(false);
     if (tutorial) ISL.tutorial.run(); else ISL.game.start();
   }
-  const startGame = () => transition(() => enterGame(!ISL.tutorial.seen()));
+  const startGame = () => transition(() => enterGame(false));          // the rules were just read; the live tutorial is optional (How to play)
   const startTutorial = () => transition(() => enterGame(true));
   function introBoard() {
     gsap.fromTo('#board-wrap', { scale: 0.92, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: 'back.out(1.4)' });
     gsap.fromTo('.snake-head', { scale: 0 }, { scale: 1, duration: 0.45, stagger: 0.06, ease: 'back.out(2.5)', delay: 0.3 });
     gsap.fromTo('.value-tag', { scale: 0 }, { scale: 1, duration: 0.35, stagger: 0.03, ease: 'back.out(2.5)', delay: 0.5 });
-    gsap.fromTo(['#logo-small', '#topbar', '#turn-banner', '#card-student', '#card-computer', '#numberline', '#equation', '#tray', '#btn-roll'], { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.04, delay: 0.2 });
+    gsap.fromTo(['#topbar', '#card-student', '#card-computer', '#numberline', '#equation', '#tray', '#btn-roll'], { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.04, delay: 0.2 });
   }
 
-  /* ---------- how to play ---------- */
-  let slide = 0;
+  /* ---------- rules of the game ----------
+     Mandatory: Play opens the rules first, each slide is read aloud, and only the last Next starts the game.
+     The pause menu can reopen them (with a close button); the optional live tutorial is "How to play". */
+  const RULE_LINES = ['rules_players', 'rules_roll', 'rules_move', 'rules_win'];
+  let slide = 0, rulesMode = null;     // rulesMode: 'start' (before a game) | 'pause' (from the pause menu)
   function setSlide(i) {
-    slide = Math.max(0, Math.min(2, i));
-    const slides = document.querySelectorAll('.howto-slide');
-    slides.forEach((s, k) => s.classList.toggle('on', k === slide));
-    document.querySelectorAll('#howto-dots i').forEach((d, k) => d.classList.toggle('on', k === slide));
-    $('howto-next').querySelector('.btn-label').textContent = slide === 2 ? "Let's go!" : 'Next';
-    $('howto-prev').style.visibility = slide === 0 ? 'hidden' : 'visible';
+    slide = Math.max(0, Math.min(RULE_LINES.length - 1, i));
+    document.querySelectorAll('.rules-slide').forEach((s, k) => s.classList.toggle('on', k === slide));
+    document.querySelectorAll('#rules-dots i').forEach((d, k) => d.classList.toggle('on', k === slide));
+    $('rules-prev').style.visibility = slide === 0 ? 'hidden' : 'visible';
+    ISL.voice.stop(); ISL.voice.say(RULE_LINES[slide]);
   }
-  // How to play opens from the pause menu: it swaps with the menu and closing it returns there.
-  function openHowto() {
+  function openRules(mode) {
     if (busy) return;
+    rulesMode = mode;
+    $('rules-close').style.display = mode === 'pause' ? '' : 'none';   // before a game there is no way past them but through
+    if (mode === 'pause') {
+      show('screen-pause', false);
+      if (!paused) pauseGame(true, false);
+      ISL.voice.resume();                                              // the pause froze the speech engine; the rules need it
+    }
+    show('screen-rules', true);
     setSlide(0);
-    show('screen-pause', false); show('screen-howto', true);
-    if (!paused) pauseGame(true, false);
   }
-  function closeHowto() { show('screen-howto', false); if (paused) show('screen-pause', true); }
-  const howtoOpen = () => $('screen-howto').classList.contains('open');
+  function closeRules() { ISL.voice.stop(); show('screen-rules', false); if (rulesMode === 'pause' && paused) show('screen-pause', true); rulesMode = null; }
+  function rulesNext() {
+    if (slide < RULE_LINES.length - 1) return setSlide(slide + 1);
+    if (rulesMode === 'start') { rulesMode = null; show('screen-rules', false); startGame(); }
+    else closeRules();
+  }
+  const rulesOpen = () => $('screen-rules').classList.contains('open');
 
   /* ---------- pause ---------- */
   let paused = false;
@@ -103,7 +115,7 @@
     $('win-art').src = A.url(who === 'student' ? 'ui/screens/student-win' : 'ui/screens/computer-win');
     $('win-title').textContent = who === 'student' ? 'You reached +50!' : 'Computer reached +50!';
     const stars = ISL.game.G.stars;
-    $('win-sub').innerHTML = (who === 'student' ? 'You planted the flag on the summit. Integer champion!' : 'So close! Roll again and beat the computer.') +
+    $('win-sub').innerHTML = (who === 'student' ? 'You planted the flag on the summit. Integer champion!' : 'So close! Play again and beat the computer.') +
       (stars ? ` <span class="win-stars">You earned <b>${stars} ★</b></span>` : '');
     AU.play(who === 'student' ? 'win' : 'lose');
     $('screen-win').classList.add('open');
@@ -117,7 +129,7 @@
   /** Back to the start screen (called under the wave). */
   function enterHome() {
     if (ISL.tutorial.active) ISL.tutorial.finish(false, false);   // left early: offer it again next time
-    hideWin(); show('screen-pause', false); show('screen-howto', false);
+    hideWin(); show('screen-pause', false); show('screen-rules', false);
     ISL.game.reset();
     openStart(0.3);
   }
@@ -172,6 +184,7 @@
     // switching orientation changes the board's aspect: rebuild it and put the tokens back
     ISL.layout.onChange.push(() => { ISL.board.build(); ISL.game.arrange && ISL.game.arrange(0); UI.sizeDice(); if (params.has('debug')) debugOverlay(); });
     ISL.voice.init();
+    document.querySelectorAll('.game-title').forEach(el => { el.innerHTML = UI.titleHTML(); });
     UI.buildDice();
     ISL.game.init();
     ISL.answer.init();
@@ -187,13 +200,13 @@
     gsap.to('.weed', { skewX: 8, duration: 1.8, yoyo: true, repeat: -1, ease: 'sine.inOut', transformOrigin: '50% 100%' });
 
     // wire buttons
-    $('btn-play').addEventListener('click', startGame);
+    $('btn-play').addEventListener('click', () => openRules('start'));
     $('btn-howto').addEventListener('click', startTutorial);
-    $('btn-help').addEventListener('click', openHowto);
-    $('howto-close').addEventListener('click', () => document.body.dataset.screen === 'game' ? closeHowto() : show('screen-howto', false));
-    $('howto-next').addEventListener('click', () => { if (slide === 2) closeHowto(); else setSlide(slide + 1); });
-    $('howto-live').addEventListener('click', startTutorial);
-    $('howto-prev').addEventListener('click', () => setSlide(slide - 1));
+    $('btn-rules').addEventListener('click', () => openRules('pause'));
+    $('btn-help').addEventListener('click', startTutorial);
+    $('rules-close').addEventListener('click', closeRules);
+    $('rules-next').addEventListener('click', rulesNext);
+    $('rules-prev').addEventListener('click', () => setSlide(slide - 1));
     $('btn-pause').addEventListener('click', () => pauseGame(true));
     $('btn-resume').addEventListener('click', () => pauseGame(false));
     $('btn-restart').addEventListener('click', () => transition(() => enterGame(false)));
@@ -203,14 +216,9 @@
     const musicIcon = () => { $('btn-music').classList.toggle('off', !AU.musicOn); };
     musicIcon();
     $('btn-music').addEventListener('click', () => { AU.toggleMusic(); musicIcon(); });
-    $('btn-sound').addEventListener('click', () => {
-      const on = AU.toggle();
-      ISL.voice.setEnabled(on);
-      $('btn-sound').querySelector('img:not(.btn-bg)').src = A.url(on ? 'ui/icons/sound-on' : 'ui/icons/sound-off');
-    });
     window.addEventListener('keydown', e => {
       if (e.code !== 'Escape' || document.body.dataset.screen !== 'game' || busy) return;
-      if (howtoOpen()) closeHowto();           // Esc closes the help sheet instead of un-pausing underneath it
+      if (rulesOpen()) { if (rulesMode === 'pause') closeRules(); }   // Esc closes the rules sheet instead of un-pausing underneath it
       else pauseGame(!paused);
     });
 

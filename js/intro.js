@@ -18,7 +18,6 @@
       jetty: { cx: 960, cy: 700, w: 400 },
       chars: { h: 210, student: 872, computer: 1048 },
       ticker: { cx: 960, y: 780, size: 128 },
-      tagline: { cx: 960, y: 935, w: 1300, size: 42 },
       krait: { y: 850, w: 300 }
     },
     port: {
@@ -30,7 +29,6 @@
       jetty: { cx: 540, cy: 1080, w: 400 },
       chars: { h: 230, student: 452, computer: 630 },
       ticker: { cx: 540, y: 1250, size: 124 },
-      tagline: { cx: 540, y: 1420, w: 800, size: 42 },
       krait: { y: 1720, w: 330 }
     }
   };
@@ -123,11 +121,11 @@
     at(E.plus, P.plus.cx, P.plus.cy, { rotation: P.plus.rot });
     at(E.minus, P.minus.cx, P.minus.cy, { rotation: P.minus.rot });
 
-    const t = P.title, th = A.hForW('ui/logo/wordmark-dark', t.w);
+    const t = P.title, th = Math.round(t.w * 0.42);
     const tbox = document.createElement('div');
     tbox.id = 'intro-title'; tbox.className = 'intro-el';
     Object.assign(tbox.style, { width: t.w + 'px', height: th + 'px' });
-    tbox.innerHTML = `<img src="${A.url('ui/logo/wordmark-dark')}" alt="Integer Snakes &amp; Ladders"><img id="intro-shine" src="${A.url('ui/logo/wordmark-dark')}" alt="">`;
+    tbox.innerHTML = `<div class="game-title" role="img" aria-label="Snake and Ladder Integer Version">${ISL.ui.titleHTML()}</div><div id="intro-shine" class="game-title" aria-hidden="true">${ISL.ui.titleHTML()}</div>`;
     layer.appendChild(tbox); at(tbox, t.cx, t.cy); E.title = tbox;
 
     const tk = document.createElement('div');
@@ -135,12 +133,6 @@
     tk.style.fontSize = P.ticker.size + 'px';
     tk.innerHTML = '<span class="tk-num">−50</span>';
     layer.appendChild(tk); gsap.set(tk, { x: P.ticker.cx, y: P.ticker.y, xPercent: -50 }); E.ticker = tk;
-
-    const tg = document.createElement('div');
-    tg.id = 'intro-tagline'; tg.className = 'intro-el';
-    Object.assign(tg.style, { width: P.tagline.w + 'px', fontSize: P.tagline.size + 'px' });
-    tg.innerHTML = 'A number-line adventure from <b class="minus">−50</b> to <b class="plus">+50</b>!';
-    layer.appendChild(tg); gsap.set(tg, { x: P.tagline.cx, y: P.tagline.y, xPercent: -50 }); E.tagline = tg;
 
     // light rays + bubbles
     E.rays = ['ray-01', 'ray-02', 'ray-03'].map((r, i) => {
@@ -236,8 +228,7 @@
           num.className = 'tk-num ' + (v > 0 ? 'plus' : v < 0 ? 'minus' : 'zero');
         }
       }, 4.0)
-      .to(E.ticker, { scale: 1.18, duration: 0.18, yoyo: true, repeat: 1 }, 5.5)
-      .fromTo(E.tagline, { opacity: 0, y: P.tagline.y + 20 }, { opacity: 1, y: P.tagline.y, duration: 0.45 }, 4.6);
+      .to(E.ticker, { scale: 1.18, duration: 0.18, yoyo: true, repeat: 1 }, 5.5);
     tl.addLabel('wipe', 6.6);
     return tl;
   }

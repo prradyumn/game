@@ -10,8 +10,8 @@
     const t = Math.floor(k / 10), o = k % 10;
     return TENS[t] + (o ? '-' + ONES[o] : '');
   }
-  /** Spoken form of an integer: "negative three", "zero", "positive four". */
-  function numText(n) { return n === 0 ? 'zero' : (n > 0 ? 'positive ' : 'negative ') + words(Math.abs(n)); }
+  /** Spoken form of an integer: "minus three", "zero", "plus four". */
+  function numText(n) { return n === 0 ? 'zero' : (n > 0 ? 'plus ' : 'minus ') + words(Math.abs(n)); }
   function numId(n) { return n === 0 ? 'n_0' : (n > 0 ? 'n_p' : 'n_m') + Math.abs(n); }
 
   const LINES = {
@@ -21,8 +21,8 @@
     hint_stay: "You didn't move! Hop the number you rolled.",
     hint_up: 'A plus number moves you up, toward the land!',
     hint_down: 'A minus number moves you down, toward the sea!',
-    hint_top: "You can't go past positive fifty. Stop at the flag!",
-    hint_bottom: 'Negative fifty is the seafloor. Stop there!',
+    hint_top: "You can't go past plus fifty. Stop at the flag!",
+    hint_bottom: "Minus fifty is the seafloor. Stop there!",
     hint_zero: "Don't forget zero! The boardwalk counts as a step.",
     hint_next: 'Start counting from the next square, not your own.',
     hint_close: 'So close! Count again.',
@@ -30,21 +30,28 @@
     count_together: "Let's count together! Tap to hop.",
     ladder: 'A ladder! Ladders add a positive number. Up you go!',
     snake: 'Uh oh, a snake! Snakes add a negative number. Down you slide!',
-    summit_past: "That's past positive fifty. You made it to the summit!",
-    seafloor: "You can't go below negative fifty. You rest on the seafloor.",
-    win_student: 'You reached positive fifty and planted the flag! You are an integer champion!',
-    win_computer: 'The computer reached positive fifty first. So close! Play again and beat it.',
+    summit_past: "That's past plus fifty. You made it to the summit!",
+    seafloor: "You can't go below minus fifty. You rest on the seafloor.",
+    win_student: "You reached plus fifty and planted the flag! You are an integer champion!",
+    win_computer: "The computer reached plus fifty first. So close! Play again and beat it.",
+    land_on: 'You land on',
+    good_job: 'Good job.',
+    // rules of the game (shown and spoken before every new game)
+    rules_players: '2 players will play this game. You and computer. Each player will roll the dice turn by turn. Both the players will start from the "Zero"',
+    rules_roll: 'Roll the sign die and the number die. Together they give you an integer number like plus four or minus three. You have to move your explorer as many steps on the board as the number appear on the dice.',
+    rules_move: 'For a positive number, you will move forward and for the negative number, you moves down toward the deep sea!',
+    rules_win: 'If you find a ladder, climb up the ladder. It can take you to the mountain top faster. But if snake bites, you will slide down the tail. First explorer to reach plus fifty, will win!',
     // live tutorial
-    t_welcome: 'Welcome, explorer! This whole board is a number line. Land squares are positive numbers, sea squares are negative numbers, and zero is the boardwalk right on the shoreline.',
-    t_dice: 'Every turn, you roll two dice. The sign die says plus or minus, and the number die says how many. Then work out where you will land, and tap that square, or drag your explorer there. Tap Roll to try it!',
-    t_up: 'You rolled positive four, so you hopped four squares up. Positive numbers move you up, toward the summit!',
-    t_neg: "Now let's roll a negative number. Roll, then pick the square where you will land!",
-    t_down: 'Negative six took you six squares down. You crossed zero and dived into the sea! Negative numbers move you down.',
-    t_ladder: 'See this ladder? Land at its bottom and it adds a positive number, so you climb up. Tap Roll!',
-    t_ladder_done: 'The ladder added positive twenty-two and lifted you all the way to positive nineteen. What a climb!',
-    t_snake: "Watch out for snakes! A snake's head adds a negative number and slides you down. Tap Roll!",
-    t_snake_done: 'The snake added negative twenty and slid you down to negative seven. Snakes pull you down!',
-    t_finish: "The first explorer to reach positive fifty plants the flag and wins. You're ready. Let's play!"
+    t_welcome: "Welcome, explorer! This board is an integers' number line. Positive numbers are on the land, and negative numbers are in the sea. Zero is the boardwalk between them.",
+    t_dice: "Roll two dice. The sign die says plus or minus, and it decides your direction. A plus sign means move forward, and a minus sign means move backward. The number die decides how many squares to jump. Check the dice, then drag your explorer to the correct number.",
+    t_up: "You rolled plus four and hopped four squares up. Positive numbers move you up, toward the summit.",
+    t_neg: "Now let's check a negative number. Roll, then pick the square where you'll land!",
+    t_down: "Minus six took you six squares down. You crossed zero and dived into the sea! Negative numbers take you backward, or down.",
+    t_ladder: "Got a ladder? Climb it! It can take you up faster. Roll!",
+    t_ladder_done: "This ladder took you to plus nineteen, twenty-two squares forward. What a climb!",
+    t_snake: "Watch out for a snake's bite! It adds a negative number and slides you down. Roll!",
+    t_snake_done: "The snake brought you twenty steps back and slid you down to minus seven. Snakes pull you down!",
+    t_finish: "The first explorer to reach plus fifty, will wins. Are you ready?"
   };
   for (let n = -50; n <= 50; n++) LINES[numId(n)] = numText(n);
 

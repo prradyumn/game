@@ -18,7 +18,6 @@
         'board-wrap':    { x: 24,   y: 20,  w: 1316, h: 1040 },      // wide board (aspect ~1.27); 0 is the shoreline boardwalk
         // right column, evenly spaced: Pause pinned top-right; cards (+ turn ribbon), dice tray, Roll
         'topbar':        { x: 1816, y: 24,  w: 84,  h: 84 },
-        'turn-banner':   { x: 1471, y: 156, w: 330, h: ar('ui/panels/turn-student', 330) },   // hidden (ribbon on the card)
         'card-student':  { x: 1372, y: 170, w: 258, h: ar('ui/panels/player-student-active', 258) },
         'card-computer': { x: 1642, y: 170, w: 258, h: ar('ui/panels/player-computer-active', 258) },
         'tray':          { x: 1471, y: 408, w: 330, h: ar('dice/sign-kit/tray', 330) },
@@ -29,12 +28,11 @@
         'hop-hud-low':   { x: 462,  y: 958, w: 440, h: 92 },
         'pick-hud':      { x: 1366, y: 16,  w: 440, h: 126 },     // above the cards, never over the board
         'pick-hud-low':  { x: 1366, y: 16,  w: 440, h: 126 },
-        'coach':         { x: 1366, y: 24,  w: 440, h: 372 }        // above the dice tray, beside Pause
+        'coach':         { x: 1350, y: 20,  w: 550, h: 380 }        // above the dice tray (covers Pause while the tutorial runs)
       },
       port: {
         'topbar':        { x: 966,  y: 40,  w: 84,  h: 84 },
         'card-student':  { x: 140,  y: 168, w: 330, h: ar('ui/panels/player-student-active', 330) },
-        'turn-banner':   { x: 384,  y: 152, w: 312, h: ar('ui/panels/turn-student', 312) },
         'card-computer': { x: 610,  y: 168, w: 330, h: ar('ui/panels/player-computer-active', 330) },
         'board-wrap':    { x: 34,   y: 352, w: 1012, h: 930 },
         'tray':          { x: 330,  y: 1322, w: 420, h: ar('dice/sign-kit/tray', 420) },
@@ -45,7 +43,7 @@
         'hop-hud-low':   { x: 320,  y: 1172, w: 440, h: 92 },
         'pick-hud':      { x: 24,   y: 20,  w: 926, h: 116 },     // strip above the cards
         'pick-hud-low':  { x: 24,   y: 20,  w: 926, h: 116 },
-        'coach':         { x: 20,   y: 140, w: 1040, h: 200 }
+        'coach':         { x: 20,   y: 128, w: 1040, h: 224 }
       }
     };
   }
