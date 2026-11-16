@@ -11,7 +11,7 @@
   const A = ISL.assets;
   const CELL = 100;                 // cell height (and width on a square board)
   let BW = 1000, CW = CELL;         // board width and cell width in units — set from the layout's aspect
-  function setAspect(r) { BW = Math.round(1000 * r); CW = BW / 10; JETTY.x = Math.max(CW * 0.5, JETTY.w / 2 + 6); }   // the 0 tile sits mid column 0, at the left end of the boardwalk
+  function setAspect(r) { BW = Math.round(1000 * r); CW = BW / 10; JETTY.x = Math.max(CW * 0.5, JETTY.w / 2 + 8); }   // the 0 tile sits mid column 0, at the left end of the boardwalk
   const MIN = -50, MAX = 50;
 
   // Ladders go up (bottom -> top). Snakes go down (head -> tail).
@@ -50,7 +50,7 @@
     const row = n > 0 ? 4 - r : 5 + r;
     return { col, row };
   }
-  const JETTY = { x: 50, y: 500, w: 156, h: 60 };  // 0 tile centre (board units), on the shoreline boardwalk in column 0; x set by setAspect
+  const JETTY = { x: 50, y: 500, w: 120, h: 56 };  // 0 tile centre (board units), on the shoreline boardwalk in column 0; x set by setAspect
   const WALK = { y: 480, h: 40 };                 // the boardwalk band along the shoreline (the 0 line)
   const SEA_LABEL_DROP = 24;                      // first sea row's numbers sit just below the boardwalk
   function center(n) {
@@ -61,7 +61,7 @@
   /** Where a token's feet stand for number n. `slot` -1 / +1 when two tokens share a spot. */
   function anchor(n, slot = 0) {
     const c = center(n);
-    if (n === 0) return { x: c.x - 6 + slot * 30, y: c.y - 27 };     // standing on top of the 0 tile, which stays visible
+    if (n === 0) return { x: c.x + JETTY.w / 2 + CW * 0.62 + slot * 34, y: c.y + 16 };   // standing on the boardwalk just right of the 0 tile, so neither the tile nor the +1 / −1 / +2 labels are covered
     return { x: c.x + slot * 20, y: c.y + 34 };
   }
   const fmt = n => n > 0 ? '+' + n : n < 0 ? '−' + Math.abs(n) : '0';
