@@ -157,6 +157,7 @@
   function tapToStart(go) {
     setScreen('tap');
     const scr = $('screen-tap'); scr.classList.add('open');
+    ISL.hero.play($('tap-logo'));
     const bub = $('tap-bubbles');
     for (let i = 0; i < 18; i++) {
       const b = document.createElement('i'), sz = 14 + Math.random() * 40;
@@ -169,7 +170,7 @@
       if (done) return; done = true;
       if (e) e.preventDefault();
       AU.unlock(); AU.play('click');
-      gsap.to(scr, { opacity: 0, duration: 0.35, onComplete: () => { scr.classList.remove('open'); scr.style.opacity = ''; bub.innerHTML = ''; } });
+      gsap.to(scr, { opacity: 0, duration: 0.35, onComplete: () => { scr.classList.remove('open'); scr.style.opacity = ''; ISL.hero.stop(); bub.innerHTML = ''; } });
       go();
     };
     scr.addEventListener('pointerdown', start, { once: true });
@@ -186,7 +187,7 @@
     // switching orientation changes the board's aspect: rebuild it and put the tokens back
     ISL.layout.onChange.push(() => { ISL.board.build(); ISL.game.arrange && ISL.game.arrange(0); UI.sizeDice(); if (params.has('debug')) debugOverlay(); });
     ISL.voice.init();
-    document.querySelectorAll('.game-title').forEach(el => { el.innerHTML = UI.titleHTML(); });
+    document.querySelectorAll('.game-title').forEach(el => { if (el.id === 'tap-logo') ISL.hero.build(el); else el.innerHTML = UI.titleHTML(); });
     UI.buildDice();
     ISL.game.init();
     ISL.answer.init();
