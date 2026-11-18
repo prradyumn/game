@@ -117,7 +117,7 @@
     $('win-art').src = A.url(who === 'student' ? 'ui/screens/student-win' : 'ui/screens/computer-win');
     $('win-title').textContent = who === 'student' ? 'You reached +50!' : 'Computer reached +50!';
     const stars = ISL.game.G.stars;
-    $('win-sub').innerHTML = (who === 'student' ? 'You planted the flag on the summit. Integer champion!' : 'So close! Play again and beat the computer.') +
+    $('win-sub').innerHTML = (who === 'student' ? 'Integer champion!' : 'So close!') +
       (stars ? ` <span class="win-stars">You earned <b>${stars} ★</b></span>` : '');
     AU.play(who === 'student' ? 'win' : 'lose');
     $('screen-win').classList.add('open');

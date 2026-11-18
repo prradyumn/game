@@ -11,11 +11,11 @@
   const P = n => `<b class="${n > 0 ? 'plus' : n < 0 ? 'minus' : ''}">${B.fmt(n)}</b>`;
   const STEPS = [
     { id: 't_welcome', pose: 'wave', spot: 'board', next: 'Next',
-      html: `This board is an integers' number line! <b>Positive</b> numbers are at the land, and <b>negative</b> numbers are in the sea. <b>0</b> is the boardwalk between them.` },
+      html: `This board is an integers' number line! <b>positive</b> numbers are at the land, and <b>negative</b> numbers are in the sea. <b>0</b> is the boardwalk between them.` },
     { id: 't_dice', pose: 'thinking', spot: 'dice', roll: true,
-      html: `Roll two dice: the <b>sign die</b> says <b class="plus">+</b> or <b class="minus">−</b>. It will decide your direction. For <b class="plus">positive</b> sign on the die means move forward, the <b class="minus">negative</b> sign means moving backward. The <b>number die</b> will decide how many squares to jump.<br>Check the dice and drag your explorer to the correct number.` },
+      html: `Roll two dice: the <b>sign die</b> says <b class="plus">+</b> or <b class="minus">−</b>. It will decide your direction. For <b class="plus">plus</b> sign on the die means move forward, the <b class="minus">minus</b> sign means moving backward. The <b>number die</b> will decide how many squares to jump.<br>Check the dice and drag your explorer to the correct number.` },
     { id: 't_up', pose: 'happy', spot: 'shore', next: 'Next',
-      html: `You rolled ${P(4)} and hopped <b>4 squares up</b>. Positive numbers move you <b>up</b>, toward the summit.` },
+      html: `You rolled ${P(4)} and hopped <b>4 squares forward</b>. Positive numbers move you <b>forward</b>, toward the mountain peak.` },
     { id: 't_neg', pose: 'thinking', spot: 'dice', roll: true,
       html: `Now let's check a <b class="minus">negative</b> number. Roll, then pick the square where you'll land!` },
     { id: 't_down', pose: 'underwater', spot: 'shore', next: 'Next',
@@ -29,7 +29,7 @@
     { id: 't_snake_done', pose: 'worried', spot: 'snake', next: 'Next',
       html: `The snake brought you 20 steps back and slid you down to ${P(-7)}. Snakes pull you down!` },
     { id: 't_finish', pose: 'cheer', spot: 'summit', next: "Let's play!",
-      html: `First explorer to reach ${P(50)}, will wins. Are you ready?` }
+      html: `First explorer to reach ${P(50)}, will win. Are you ready?` }
   ];
 
   /* ---------- spotlight targets in stage pixels ---------- */

@@ -52,7 +52,7 @@
 
   /* ---------- game state ---------- */
   const G = {
-    sid: 0, tokens: {}, turn: 'student', over: false, forced: [], rollResolver: null, hopResolver: null, hopTold: false, pickTold: false, told: {}, stars: 0, pickDest: null,
+    sid: 0, tokens: {}, turn: 'student', over: false, forced: [], rollResolver: null, hopResolver: null, hopTold: false, numTold: 0, pickTold: false, told: {}, stars: 0, pickDest: null,
     positions() { return { student: this.tokens.student.pos, computer: this.tokens.computer.pos }; },
     slotFor(who) {
       const p = this.positions();
@@ -253,7 +253,7 @@
     const target = start + roll;
     const dest = Math.max(B.MIN, Math.min(B.MAX, target));
     if (who === 'computer') FX.target(who, B.center(dest).x - 32, B.center(dest).y - 32 + (dest === 0 ? 0 : 6));
-    if (narrate) VO.number(roll);
+    if (narrate && (G.numTold = (G.numTold || 0) + 1) <= 3) VO.number(roll);   // the rolled integer is read aloud for the first few rolls only; later the dice chip carries it
 
     if (who === 'student') {
       // the student decides where the explorer lands (whole board in view), with hints if wrong
