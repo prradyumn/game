@@ -529,14 +529,21 @@ body[data-picking] #board-wrap { cursor: pointer; touch-action: none; }
   background: var(--gold); transform-origin: 0 50%; }
 
 /* ---------- game title: "Snake and Ladder / Integer Version" (sized by its container, so it scales anywhere) ---------- */
-.game-title { container-type: inline-size; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; pointer-events: none;
-  filter: drop-shadow(0 10px 12px rgba(0, 0, 0, .32)); }
-.gt-row { position: relative; display: block; font-weight: 700; white-space: nowrap; line-height: 1.04; }
+.game-title { container-type: inline-size; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; pointer-events: none;
+  filter: drop-shadow(0 0 .5cqw #7b3fe4) drop-shadow(0 10px 12px rgba(0, 0, 0, .35)); }
+.gt-row { position: relative; display: block; font-weight: 700; white-space: nowrap; line-height: 1.02; }
 .gt-row > i, .gt-row > b { display: block; font-style: normal; font-weight: 700; }
-.gt-row > i { position: absolute; inset: 0; color: #3b1a78; -webkit-text-stroke: .22em #3b1a78; text-shadow: 0 .1em 0 #230f52; }
+.gt-row > i { position: absolute; inset: 0; color: #4a1fa0; -webkit-text-stroke: .3em #4a1fa0; text-shadow: 0 .12em 0 #2a0f66, 0 0 .05em #2a0f66; }
 .gt-row > b { position: relative; color: transparent; -webkit-background-clip: text; background-clip: text; }
-.gt-1 { font-size: 11.4cqw; }
-.gt-1 > b { background-image: linear-gradient(#fff7b8, #ffc531 52%, #f0900f); }
-.gt-2 { font-size: 7cqw; letter-spacing: .06em; margin-top: .12em; }
-.gt-2 > b { background-image: linear-gradient(#ffffff, #cfe6ff); }
+.gt-1 { font-size: 10.6cqw; }
+.gt-1 > b { background-image: linear-gradient(#fffbd2 0 28%, #ffe04a 28% 52%, #ffb21c 52% 82%, #f58a0c 82%); }
+.gt-2 { font-size: 8cqw; letter-spacing: .05em; margin-top: .2em; }
+.gt-2 > b { background-image: linear-gradient(#ffffff 0 30%, #fff1c4 30% 58%, #ffd98a 58%); }
+.gt-snake { position: absolute; width: 15cqw; height: auto; top: 0; margin-top: 3cqw; filter: drop-shadow(0 .5cqw 0 rgba(0,0,0,.25)); animation: gt-bob 2.4s ease-in-out infinite; }
+.gt-l { left: 0; } .gt-r { right: 0; animation-delay: -1.2s; transform: scaleX(-1); }
+.gt-badge { position: absolute; top: 50%; margin-top: 3cqw; width: 8cqw; height: 8cqw; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 7.4cqw; line-height: 1; color: #fff; -webkit-text-stroke: .3cqw #3a1a80; paint-order: stroke fill; border: .5cqw solid #fff; box-shadow: 0 .6cqw 0 rgba(0,0,0,.28); animation: gt-bob 2.4s ease-in-out infinite; }
+.gt-pl { left: 4%; background: linear-gradient(#ffb340, #f0700c); }
+.gt-mi { right: 4%; background: linear-gradient(#4fb3ff, #1f63d8); animation-delay: -1.2s; }
+@keyframes gt-bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -1.2cqw; } }
 #intro-title .game-title { position: absolute; inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 12px 14px rgba(0,0,0,.35)); }

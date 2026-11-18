@@ -33,7 +33,11 @@
 
   /* ---------- game title (text, so it can read exactly what the game is called) ---------- */
   function titleHTML() {
-    return `<span class="gt-row gt-1" aria-hidden="true"><i>Snake and Ladder</i><b>Snake and Ladder</b></span>` +
+    // lettering in the same candy style as the old wordmark, flanked by the two snakes with their + / − badges
+    return `<img class="gt-snake gt-l" src="${A.url('snakes/python/head-content')}" alt="">` +
+      `<img class="gt-snake gt-r" src="${A.url('snakes/sea-krait/head-content')}" alt="">` +
+      `<b class="gt-badge gt-pl" aria-hidden="true">+</b><b class="gt-badge gt-mi" aria-hidden="true">−</b>` +
+      `<span class="gt-row gt-1" aria-hidden="true"><i>Snake and Ladder</i><b>Snake and Ladder</b></span>` +
       `<span class="gt-row gt-2" aria-hidden="true"><i>Integer Version</i><b>Integer Version</b></span>`;
   }
 
