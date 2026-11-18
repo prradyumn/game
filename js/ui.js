@@ -240,9 +240,9 @@
     gsap.set(el, { xPercent: -50, yPercent: -50, x: c.x, y: c.y + 8 });
     gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.18 });
     // a tapping hand makes the next step obvious even where the ring is hard to see
-    const hand = document.createElement('div'); hand.id = 'next-hand'; hand.innerHTML = '<span>👆</span>';
+    const hand = document.createElement('div'); hand.id = 'next-hand'; hand.innerHTML = '<span>👇</span>';
     $('board-ui').appendChild(hand);
-    gsap.set(hand, { xPercent: -50, x: c.x, y: c.y + 6 });
+    gsap.set(hand, { xPercent: -50, yPercent: -100, x: c.x, y: c.y + 4 });   // fingertip points down at the square; the hand stays above it so it never covers the 0 tile
     gsap.fromTo(hand, { opacity: 0 }, { opacity: 1, duration: 0.18 });
   }
   function hideHopPrompt() {

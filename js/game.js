@@ -133,7 +133,7 @@
     const markNext = () => UI.nextSquare(t.pos + dir === 0 ? B.anchor(0, 0) : B.center(t.pos + dir));
     G.hopResolver = () => { if (done + queued < total) { queued++; UI.poke(); if (wake) { const w = wake; wake = null; w(); } } };
     UI.enable($('btn-roll'), true);
-    UI.rollReady(true, n => { if (narrate && n === 1) VO.say('tap_hop'); }, 'hop');
+    UI.rollReady(true, null, 'hop');   // tap_hop is spoken once at the start, never replayed by the idle nudge
     prompt(); markNext();
     if (narrate && !G.hopTold) { G.hopTold = true; VO.say('tap_hop'); }
     const dots = [];
