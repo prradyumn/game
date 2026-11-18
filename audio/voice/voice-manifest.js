@@ -3,14 +3,10 @@ window.VOICE_CLIPS = {
  "tap_hop": "tap_hop.ogg",
  "pick_square": "pick_square.ogg",
  "hint_stay": "hint_stay.ogg",
- "hint_up": "hint_up.ogg",
- "hint_down": "hint_down.ogg",
  "hint_zero": "hint_zero.ogg",
  "hint_next": "hint_next.ogg",
  "hint_close": "hint_close.ogg",
  "hint_far": "hint_far.ogg",
  "count_together": "count_together.ogg",
- "ladder": "ladder.ogg",
- "snake": "snake.ogg",
  "n_0": "n_0.ogg"
 };
