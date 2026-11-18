@@ -433,16 +433,18 @@ body[data-tut-roll] #btn-roll, body[data-tut-roll] #tray { z-index: 33; }
 #tap-bubbles i { position: absolute; bottom: -40px; border-radius: 50%; border: 3px solid rgba(190, 235, 255, .55);
   background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, .55), rgba(160, 220, 255, .08) 60%); animation: tap-rise linear infinite; }
 @keyframes tap-rise { from { transform: translateY(0); opacity: 0; } 10% { opacity: 1; } to { transform: translateY(-1200px); opacity: 0; } }
-#tap-logo { animation: tap-float 2.4s ease-in-out infinite alternate; }
+#tap-logo { animation: tap-in 1s cubic-bezier(.2, 1.5, .35, 1) both, tap-float 2.4s ease-in-out 1s infinite alternate, tap-glow 1.8s ease-in-out 1s infinite alternate; }
+@keyframes tap-in { from { scale: .35; opacity: 0; rotate: -4deg; } 60% { opacity: 1; } to { scale: 1; opacity: 1; rotate: 0deg; } }
+@keyframes tap-glow { from { filter: drop-shadow(0 0 .5cqw #7b3fe4) drop-shadow(0 10px 12px rgba(0,0,0,.35)); } to { filter: drop-shadow(0 0 2.6cqw #b27bff) drop-shadow(0 0 5cqw rgba(255,196,60,.55)) drop-shadow(0 10px 12px rgba(0,0,0,.35)); } }
 @keyframes tap-float { from { translate: 0 -8px; } to { translate: 0 8px; } }
 #btn-tap { animation: tap-pulse 1s ease-in-out infinite alternate; }
 @keyframes tap-pulse { from { scale: 1; filter: drop-shadow(0 0 6px rgba(255, 214, 90, .4)); } to { scale: 1.07; filter: drop-shadow(0 0 26px rgba(255, 214, 90, .95)); } }
 #btn-tap .btn-label { font-size: 40px; }
 #tap-hint { text-align: center; font-size: 26px; font-weight: 600; color: #cfe8ff; opacity: .85; }
-.land #tap-logo { left: 510px; top: 150px; width: 900px; height: 391px; }
+.land #tap-logo { left: 230px; top: 60px; width: 1460px; height: 540px; }
 .land #btn-tap { left: 750px; top: 620px; width: 420px; height: 216px; }
 .land #tap-hint { left: 660px; top: 860px; width: 600px; }
-.port #tap-logo { left: 60px; top: 460px; width: 960px; height: 417px; }
+.port #tap-logo { left: 10px; top: 400px; width: 1060px; height: 480px; }
 .port #btn-tap { left: 310px; top: 1000px; width: 460px; height: 237px; }
 .port #tap-hint { left: 240px; top: 1270px; width: 600px; }
 
