@@ -113,7 +113,7 @@ body.no-fade .overlay-screen, body.no-fade .modal, body.no-fade #coach { transit
 @keyframes card-glow { from { filter: drop-shadow(0 0 4px rgba(255, 214, 90, .5)); } to { filter: drop-shadow(0 0 18px rgba(255, 214, 90, .95)); } }
 /* text sits inside the card's panel (right of the portrait ring), dark on the light panel */
 .card-text {
-  position: absolute; left: 55%; right: 11%; top: 22%; bottom: 24%;
+  position: absolute; left: 53%; right: 9%; top: 22%; bottom: 24%;
   display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 2px; text-align: center;
   color: #3a2259; line-height: 1.05;
 }
@@ -124,10 +124,10 @@ body.no-fade .overlay-screen, body.no-fade .modal, body.no-fade #coach { transit
 .card-pos-val.neg { color: #5fb4ff; }
 .card-pos-label { color: #6b5487; }
 .player-card:not(.active) .card-text { opacity: .78; }
-.land .card-name { font-size: 20px; }
+.land .card-name { font-size: 18px; }
 .land .card-pos { font-size: 18px; }
 .land .card-pos-val { font-size: 30px; }
-.port .card-name { font-size: 24px; }
+.port .card-name { font-size: 22px; }
 .port .card-pos { font-size: 21px; }
 .port .card-pos-val { font-size: 34px; }
 

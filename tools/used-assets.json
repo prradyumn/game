@@ -35,7 +35,6 @@
  "dice/sign-kit/minus-face",
  "dice/sign-kit/plus-face",
  "dice/sign-kit/shadow",
- "dice/sign-kit/shine",
  "dice/sign-kit/tray",
  "fx/confetti/confetti-01",
  "fx/confetti/confetti-02",
@@ -122,7 +121,6 @@
  "ui/icons/sound-off",
  "ui/icons/sound-on",
  "ui/logo/app-icon-64",
- "ui/logo/wordmark-dark",
  "ui/menus/pause-menu",
  "ui/menus/settings-sheet",
  "ui/panels/answer-correct",
@@ -139,9 +137,6 @@
  "ui/panels/turn-computer",
  "ui/panels/turn-student",
  "ui/screens/computer-win",
- "ui/screens/how-to-finish",
- "ui/screens/how-to-roll",
- "ui/screens/how-to-think",
  "ui/screens/start-backdrop",
  "ui/screens/student-win"
 ]

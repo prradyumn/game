@@ -87,6 +87,7 @@
       if (!paused) pauseGame(true, false);
       ISL.voice.resume();                                              // the pause froze the speech engine; the rules need it
     }
+    if (!inGame) gsap.set('#start-logo', { opacity: 0 });   // the title behind the sheet would only add clutter
     show('screen-rules', true);
     setSlide(0);
   }
@@ -223,6 +224,14 @@
       if (e.code !== 'Escape' || document.body.dataset.screen !== 'game' || busy) return;
       if (rulesOpen()) { if (document.body.dataset.screen === 'game') closeRules(); }   // Esc closes the rules sheet instead of un-pausing underneath it
       else pauseGame(!paused);
+    });
+
+    // minimise / switch tab: a game in progress pauses itself (menu up, music and voice frozen); other screens just go quiet
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        if (document.body.dataset.screen === 'game' && !paused && !busy) pauseGame(true);
+        else if (!paused) { AU.pause(); ISL.voice.pause(); }
+      } else if (!paused) { AU.resume(); ISL.voice.resume(); }
     });
 
     gsap.to('#loader', { opacity: 0, duration: 0.4, onComplete: () => $('loader').remove() });
