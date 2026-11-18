@@ -230,13 +230,20 @@
   /** A still ring on the square the next tap hops to (null removes it). It never glides or pulses:
       it simply fades out as a hop starts and fades in on the next square once the character lands. */
   function nextSquare(c) {
-    const old = $('next-square');
-    if (old) { old.id = ''; gsap.to(old, { opacity: 0, duration: 0.12, onComplete: () => old.remove() }); }
+    for (const id of ['next-square', 'next-hand']) {
+      const old = $(id);
+      if (old) { old.id = ''; gsap.to(old, { opacity: 0, duration: 0.12, onComplete: () => old.remove() }); }
+    }
     if (!c) return;
     const el = document.createElement('i'); el.id = 'next-square';
     $('board-ui').appendChild(el);
     gsap.set(el, { xPercent: -50, yPercent: -50, x: c.x, y: c.y + 8 });
     gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.18 });
+    // a tapping hand makes the next step obvious even where the ring is hard to see
+    const hand = document.createElement('div'); hand.id = 'next-hand'; hand.innerHTML = '<span>👆</span>';
+    $('board-ui').appendChild(hand);
+    gsap.set(hand, { xPercent: -50, x: c.x, y: c.y + 6 });
+    gsap.fromTo(hand, { opacity: 0 }, { opacity: 1, duration: 0.18 });
   }
   function hideHopPrompt() {
     const p = $('hop-prompt'); if (!p) return;

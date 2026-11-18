@@ -37,6 +37,7 @@
     land_on: 'You land on',
     good_job: 'Good job.',
     // rules of the game (shown and spoken before every new game)
+    rules_intro: "Before starting to play, let's understand the rules of the game.",
     rules_players: '2 players will play this game. You and computer. Each player will roll the dice turn by turn. Both the players will start from the "Zero"',
     rules_roll: 'Roll the sign die and the number die. Together they give you an integer number like plus four or minus three. You have to move your explorer as many steps on the board as the number appear on the dice.',
     rules_move: 'For a positive number, you will move forward and for the negative number, you moves down toward the deep sea!',

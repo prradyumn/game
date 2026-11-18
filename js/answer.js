@@ -134,7 +134,7 @@
   function clearPath() { document.querySelectorAll('.path-glow').forEach(el => el.remove()); }
 
   let nudgeVoice = null;
-  function onNudge(count) { if (count === 1 && nudgeVoice) ISL.voice.say(nudgeVoice); }
+  function onNudge() {}   // feedback is spoken once, right when it appears; the idle nudge only wiggles the button
 
   /* pointer: tap a square, or press on the explorer and drag its ghost */
   function onDown(e) {
@@ -197,7 +197,7 @@
     ISL.ui.rollReady(true, onNudge, 'pick');
     ISL.ui.enable($('btn-roll'), false);
     setPrompt(`You rolled ${P(roll)}. Where will you land? <small>Tap that square, or drag your explorer there</small>`, 'ask');
-    nudgeVoice = null;
+    nudgeVoice = null; const spokenHints = new Set();
     if (narrate && !ISL.game.G.pickTold) { ISL.game.G.pickTold = true; VO.say('pick_square'); }   // spoken once; the on-screen prompt carries every later turn
     let tries = 0;
     try {
@@ -238,7 +238,7 @@
         dirArrow(way);
         setPrompt(`${d.html} <small>Try ${tries + 1} of 3</small>`, 'hint');
         nudgeVoice = d.id;
-        if (narrate) VO.say(d.id);   // direction + path are shown (arrow, text, glow), so only the mistake-specific hint is spoken
+        if (narrate && !spokenHints.has(d.id)) { spokenHints.add(d.id); VO.say(d.id); }   // each hint is spoken once, never repeated; direction + path are shown (arrow, text, glow), so only the mistake-specific hint is spoken
         if (tries === 2) showPath(start, dest);
         await guard(ISL.ui.wait(0.5));
         token.rest();

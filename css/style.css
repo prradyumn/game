@@ -205,6 +205,9 @@ body.no-fade .overlay-screen, body.no-fade .modal, body.no-fade #coach { transit
   box-shadow: inset 0 0 0 4px rgba(255, 214, 90, .95), 0 0 22px 6px rgba(255, 214, 90, .6); }
 .cell-flash.minus { background: radial-gradient(closest-side, rgba(170, 220, 255, .75), rgba(90, 170, 255, .25) 70%, transparent);
   box-shadow: inset 0 0 0 4px rgba(120, 200, 255, .95), 0 0 22px 6px rgba(90, 170, 255, .6); }
+#next-hand { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 60; font-size: 64px; line-height: 1; filter: drop-shadow(0 4px 4px rgba(0,0,0,.45)); }
+#next-hand span { display: block; animation: hand-tap .8s ease-in-out infinite; }
+@keyframes hand-tap { 0%, 100% { transform: translateY(6px) scale(1); } 45% { transform: translateY(-14px) scale(1.08); } }
 #next-square { position: absolute; left: 0; top: 0; width: 64px; height: 30px; border-radius: 50%; pointer-events: none;
   border: 4px dashed #fff4c2; box-shadow: 0 0 14px 3px rgba(255, 214, 90, .8); }
 .tap-ripple { position: absolute; left: 0; top: 0; width: 120px; height: 120px; border-radius: 50%; pointer-events: none; z-index: 45;
@@ -300,6 +303,13 @@ body.no-fade .overlay-screen, body.no-fade .modal, body.no-fade #coach { transit
 @keyframes slidein { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: none; } }
 .rules-slide > img { max-width: 80%; max-height: 42%; object-fit: contain; }
 .rules-duo { display: flex; align-items: flex-end; justify-content: center; gap: 28px; height: 42%; }
+.rules-duo figure { margin: 0; height: 100%; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.rules-duo figcaption { font-size: 26px; font-weight: 800; color: var(--paper-ink); }
+.rules-duo figure > img { flex: 1; min-height: 0; height: auto; max-width: 100%; }
+.rules-dice { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.rules-dice .dpair { display: flex; align-items: center; gap: 14px; }
+.rules-dice .dpair img { height: 92px; width: auto; filter: drop-shadow(0 5px 4px rgba(0,0,0,.3)); }
+.rules-dice .dpair b { font-size: 46px; margin-left: 10px; }
 .rules-duo img { height: 100%; width: auto; object-fit: contain; filter: drop-shadow(0 6px 5px rgba(0, 0, 0, .25)); }
 .rules-slide p { margin: 0; font-size: 26px; font-weight: 600; color: var(--paper-ink); text-align: center; line-height: 1.28; }
 .port .rules-slide p { font-size: 31px; }
