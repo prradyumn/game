@@ -49,7 +49,7 @@ Every screen change runs under the wave wipe (`transition()` in `js/main.js`): P
 The swap happens while the wave fully covers the stage, so resets never show, and modal fades are switched off under the wave. Extra clicks are ignored mid-transition, and Pause, Help and Esc wait until the wave has passed.
 
 ## Controls feedback
-- On your move the dice box and Roll glow and a yellow arrow bounces over Roll straight away; tapping the dice box rolls too. During the computer's turn Roll is dimmed ("Wait…"). After 3.5 s idle it also nudges: a wiggle, the dice hop and a soft chime (repeats every 5 s). While hopping, the button reads **Hop!**, and if the player stalls for 3 s the hop bubble bounces and the voice says "Now tap to hop!".
+- On your move the dice box and Roll glow and a yellow arrow bounces over Roll straight away; tapping the dice box rolls too. During the computer's turn Roll is dimmed ("Wait…"). After 3.5 s idle it also nudges: a wiggle, the dice hop and a soft chime (repeats every 5 s). While hopping, the button reads **Hop!**, and if the player stalls for 3 s the hop bubble bounces (the "Now tap to hop!" line is spoken once, at the start).
 - The token whose turn it is gets a glowing ring, and the active player card glows. There is no turn banner or ribbon text.
 - **Space** rolls or hops. **Enter** does too, unless another button has focus. **Esc** pauses, or closes the rules sheet if it was opened from the pause menu.
 - The only corner button is **Pause**. The pause menu holds Resume, Restart, Home, **Music**, **Rules** and **How to play**. There is no sound button; closing Rules returns to the pause menu.
@@ -62,8 +62,8 @@ Every load opens with a ~7 s intro: you rise from the deep sea, a ladder bursts 
 
 ## Voiceover
 - All lines live in `js/voice-lines.js`: numbers −50…+50 spoken as "minus three" / "plus four", the gameplay prompts, and the tutorial script.
-- Without clips, the game speaks with the browser's built-in voice. Lines reworded to match the dialogue sheet (all number words, the rules, the tutorial, hints and win lines) currently have no clips, so run the generator below to make them.
-- The shipped clips (`audio/voice/*.ogg`, Opus 32 kbps) were made with `gemini-2.5-pro-preview-tts`, voice **Puck**, directed as a friendly explorer guide (numbers and the words "plus" and "equals" are read evenly so they splice into equations).
+- Narration currently uses the browser's built-in voice for every line, spoken straight from `js/voice-lines.js` (which matches the dialogue sheet). There are no recorded clips; add them with the generator below.
+- Generated clips (`audio/voice/*.ogg`, Opus 32 kbps) use `gemini-2.5-pro-preview-tts`, voice **Puck**, directed as a friendly explorer guide (numbers and the words "plus" and "equals" are read evenly so they splice into equations).
 - To regenerate from the command line: `GEMINI_API_KEY=... node tools/generate-voice.js` (`--force` remakes everything, `--only id,id` remakes chosen lines, `--voice` and `--model` override). It needs ffmpeg. Keep the key in the environment and never commit it.
 - Use a TTS model that follows spoken style direction. `gemini-3.8-flash-tts` reads the direction (and `[tags]`) aloud, so it isn't suitable.
 - Browser alternative: open `tools/voice-generator.html` in Chrome or Edge, paste your key, press **Choose the game folder & generate**, then pick this `game` folder.
