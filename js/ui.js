@@ -32,12 +32,23 @@
   }
 
   /* ---------- game title (text, so it can read exactly what the game is called) ---------- */
+  /** The "L" of Ladder drawn as a real wooden ladder (rails, rungs and a foot), outline layer or colour layer. */
+  function ladderL(outline) {
+    const pw = outline ? 'stroke="#4a1fa0" stroke-width="15" stroke-linejoin="round" stroke-linecap="round"' : '';
+    const wood = outline ? '#4a1fa0' : 'url(#gtw)', rung = outline ? '#4a1fa0' : '#f6b24a';
+    return `<svg class="gt-ladder" viewBox="-8 -8 80 116" aria-hidden="true">` +
+      (outline ? '' : `<defs><linearGradient id="gtw" x1="0" x2="1"><stop offset="0" stop-color="#e3963a"/><stop offset=".5" stop-color="#b8661c"/><stop offset="1" stop-color="#8a4510"/></linearGradient></defs>`) +
+      `<g ${pw} fill="${wood}"><rect x="4" y="0" width="17" height="98" rx="6"/><rect x="35" y="0" width="17" height="98" rx="6"/><rect x="4" y="80" width="62" height="18" rx="8"/></g>` +
+      `<g ${pw} fill="${rung}">${[12, 31, 50, 66].map(y => `<rect x="16" y="${y}" width="24" height="12" rx="4"/>`).join('')}</g>` +
+      (outline ? '' : `<g fill="#fff" opacity=".35"><rect x="8" y="5" width="4" height="86" rx="2"/><rect x="39" y="5" width="4" height="86" rx="2"/></g>`) + `</svg>`;
+  }
   function titleHTML() {
-    // lettering in the same candy style as the old wordmark, flanked by the two snakes with their + / − badges
+    // candy lettering: "Snake" in snake-skin print, the L of Ladder is a wooden ladder, flanked by the two snakes with + / − badges
+    const row1 = o => `<span class="gt-sn">Snake</span> and ${ladderL(o)}<span class="gt-ad">adder</span>`;
     return `<img class="gt-snake gt-l" src="${A.url('snakes/python/head-content')}" alt="">` +
       `<img class="gt-snake gt-r" src="${A.url('snakes/sea-krait/head-content')}" alt="">` +
       `<b class="gt-badge gt-pl" aria-hidden="true">+</b><b class="gt-badge gt-mi" aria-hidden="true">−</b>` +
-      `<span class="gt-row gt-1" aria-hidden="true"><i>Snake and Ladder</i><b>Snake and Ladder</b></span>` +
+      `<span class="gt-row gt-1" aria-hidden="true"><i>${row1(true)}</i><b>${row1(false)}</b></span>` +
       `<span class="gt-row gt-2" aria-hidden="true"><i>Integer Version</i><b>Integer Version</b></span>`;
   }
 
